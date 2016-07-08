@@ -30,7 +30,7 @@ success, sta, loc, model, sendir = utils.select_raw_cal_sensor(station)
 if not success:
     print('Unsuccessful')
     exit(1)
-print(success, sta, loc, model, sendir)
+# print(success, sta, loc, model, sendir)
 
 success, lf_date_str, lf_date_dir = utils.select_raw_cal_date(sendir, 'rblf')
 if not success:
@@ -122,7 +122,7 @@ elif len(user_choice_groups[1]) == 1:
 elif len(user_choice_groups[2]) == 1:
     nom_resp_fn = os.path.join(os.getcwd(), pickrespgroups[2][user_choice_groups[2][0]])
 
-print(os.path.normpath(nom_resp_fn))
+# print(os.path.normpath(nom_resp_fn))
 
 paz = PAZ(pzfilename=nom_resp_fn, fileformat='ida', mode='vel', units='hz')
 paz_fit_lf = paz.make_partial2(norm_freq=1.0, partial_mode=PAZ.PARTIAL_FITTING_LF)
@@ -130,7 +130,7 @@ paz_fit_hf = paz.make_partial2(norm_freq=1.0, partial_mode=PAZ.PARTIAL_FITTING_H
 
 success, lf_map, hf_map = select_perturb_map(paz)
 
-print(success, lf_map, hf_map)
+# print(success, lf_map, hf_map)
 
 if not success:
     print('quitter')
