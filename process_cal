@@ -1,0 +1,70 @@
+#!/usr/bin/python3
+
+import argparse
+from sys import exit
+from ida.utils import pick, pick2
+from ida.calibration import utils
+from ida.db.io import read
+from ida.db.query import find_sensor_file
+
+VERSION = '0.1'
+
+# raw_root_dir = os.environ.get('IDA_CAL_RAW_DIR')
+# ana_root_dir = os.environ.get('IDA_CAL_ANALYSIS_DIR')
+
+parser = argparse.ArgumentParser(description="Process random binary calibration data acquired by qcal.")
+parser.add_argument("station", help="IDA Station code")
+
+parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + VERSION)
+
+args = parser.parse_args()
+station = args.station.lower()
+
+# success, infotpl = utils.select_raw_cal_info(station)
+success, sta, loc, model, sendir = utils.select_raw_cal_sensor(station)
+
+if not success:
+    print('Unsuccessful')
+    exit(1)
+print(success, sta, loc, model, sendir)
+
+success, lf_date_str, lf_date_dir = utils.select_raw_cal_date(sendir, 'rblf')
+if not success:
+    print('Unsuccessful')
+    exit(1)
+print(success, lf_date_str, lf_date_dir)
+
+success, hf_date_str, hf_date_dir = utils.select_raw_cal_date(sendir, 'rbhf')
+if not success:
+    print('Unsuccessful')
+    exit(1)
+print(success, hf_date_str, hf_date_dir)
+
+
+success, rblf_files = utils.select_raw_cal_files(lf_date_dir)
+
+if not success:
+    exit(1)
+
+print('RBLF Files: {}'.format(rblf_files))
+
+success, rbhf_files = utils.select_raw_cal_files(hf_date_dir)
+if not success:
+    exit(1)
+print('RBHF Files: {}'.format(rbhf_files))
+
+
+success, choice, comp, ndxtpl = pick2([['Z', 'N', 'E']], 'Select Component to Process', prompt='Select desired component:', 
+    allow_quit_q=True, menu_on_error=True, err_message='Invalid choice. Please try again')
+
+if not success:
+    exit(1)
+print('Component:', comp)
+
+print('Reading IDA.stage...')
+stage_df = read('datascope', 'stage')
+print('Finding sensor file...')
+sensor_fn_list = find_sensor_file(stage_df, sta, loc, comp, lf_date_str)
+print('Sensor File list:',sensor_fn_list)
+print()
+print('Sta:  {}\nLoc:  {}\nComp: {}\nDate: {}\nResp: {}'.format(sta,loc,comp,lf_date_str, sensor_fn_list[0]))
