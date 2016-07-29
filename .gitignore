@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 
 *.ipaz
+testtree/*
 
 # C extensions
 *.so

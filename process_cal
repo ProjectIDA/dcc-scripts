@@ -1,137 +1,123 @@
 #!/usr/bin/env python
 
 import os
-from pathlib import Path
 import argparse
-from sys import exit
-from ida.utils import pick, pick2, select_perturb_map
-from ida.calibration import utils
-from ida.db.io import read
-from ida.db.query import find_sensor_file
-from ida import IDA_RESPONSES_CUR_DIR, IDA_RESPONSES_NOM_DIR
-from ida.system import nom_resp_for_model, local_resp_files
-from ida.signals.paz import PAZ
-VERSION = '0.1'
+import shutil
 
-# raw_root_dir = os.environ.get('IDA_CAL_RAW_DIR')
-# ana_root_dir = os.environ.get('IDA_CAL_ANALYSIS_DIR')
+from numpy import pi, cos, sin, multiply
+import matplotlib
+matplotlib.use('Qt4Agg')
+import matplotlib.pyplot as plt
+
+# os.environ['IDA_CAL_RAW_DIR'] = '/Users/dauerbach/dev/dcc/dcc-scripts/testtree'
+# os.environ['IDA_RESPONSES_NOM_DIR'] = '/Users/dauerbach/dev/dcc/dcc-modules-py'
+
+from ida.instruments import CALTYPE_RBLF, CALTYPE_RBHF
+from ida.calibration.cal_info import CalInfo
+from ida.calibration.process import process_cal_component, analyze_cal_component
+from ida.calibration.cross import cross_correlate
+from ida.calibration.plots import cross_tf_plot
+
+version = '0.1'
 
 parser = argparse.ArgumentParser(description="Process random binary calibration data acquired by qcal.")
-parser.add_argument("station", help="IDA Station code")
+parser.add_argument('-b', '--batch', help='run in batrch mode', action='store_true')
+parser.add_argument('-v', '--version', action='version', version=version)
+parser.add_argument('staloc', help="IDA Station + loc code (for example: pfo00)", nargs='?', default='')
+parser.add_argument('sensor', help="Sensor model", nargs='?', default='')
+parser.add_argument('comp', help="Component", nargs='?', default='')
+parser.add_argument('chan', help="Channel Code", nargs='?', default='')
+parser.add_argument('lfdate', help="Low Freq cal date (yyyy-mm-dd)", nargs='?', default='')
+parser.add_argument('hfdate', help="High Freq cal date (yyyy-mm-dd)", nargs='?', default='')
 
-parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + VERSION)
+# for non-idadcc execution
+# parser.add_argument('-d', '--datadir', help='Data Directory containing LF and HF idacal/qcal miniseed and log files.')
+# parser.add_argument('-r', '--response', help='IDA format poles/zeros sensor response file')
 
 args = parser.parse_args()
-station = args.station.lower()
 
-# success, infotpl = utils.select_raw_cal_info(station)
-success, sta, loc, model, sendir = utils.select_raw_cal_sensor(station)
+ci = CalInfo(os.environ['IDA_CAL_RAW_DIR'], # getenv('IDA_CAL_RAW_DIR'),
+             '',    # getenv('IDA_RESPONSE_CUR_DIR'),
+             os.environ['IDA_RESPONSES_NOM_DIR']
+             )
 
-if not success:
-    print('Unsuccessful')
-    exit(1)
-# print(success, sta, loc, model, sendir)
+if args.staloc:
+    ci.staloc = args.staloc
+if args.sensor:
+    ci.sensor = args.sensor
+if args.comp:
+    ci.comp = args.comp
+if args.chan:
+    ci.chan = args.chan
+if args.lfdate:
+    ci.lfdate = args.lfdate
+if args.hfdate:
+    ci.hfdate = args.hfdate
 
-success, lf_date_str, lf_date_dir = utils.select_raw_cal_date(sendir, 'rblf')
-if not success:
-    print('Unsuccessful')
-    exit(1)
-# print(success, lf_date_str, lf_date_dir)
+# ci.print_info()
 
-success, hf_date_str, hf_date_dir = utils.select_raw_cal_date(sendir, 'rbhf')
-if not success:
-    print('Unsuccessful')
-    exit(1)
-# print(success, hf_date_str, hf_date_dir)
+if ci.collect():
 
+    samp_rate_lf, lf_start_time, lfinput, lfmeas, \
+        samp_rate_hf, hf_start_time, hfinput, hfmeas, \
+        freqs_lf, freqs_hf = process_cal_component(ci)
 
-success, rblf_files = utils.select_raw_cal_files(lf_date_dir)
+    lftf_f, lftf_amp, lftf_pha, lftf_coh = cross_correlate(samp_rate_lf, lfinput, lfmeas)
+    hftf_f, hftf_amp, hftf_pha, hftf_coh = cross_correlate(samp_rate_hf, hfinput, hfmeas)
 
-if not rblf_files[0]:
-    print('ERROR: NO MINISEED FILES FOUND IN RBLF DIRECTORY: ', lf_date_dir)
-    exit(0)
+    plt.ion()
+    tol_limits = (1.0, 1.0, 1.0)  # (amp_pcnt, pha_deg, coh)
+    lf_fig = cross_tf_plot(ci.sta, ci.loc, ci.chan, ci.sensor, ci.lfdate, CALTYPE_RBLF,
+                           samp_rate_lf, lftf_f, lftf_amp, lftf_pha, lftf_coh,
+                           tolerance_limits=tol_limits)
+    hf_fig = cross_tf_plot(ci.sta, ci.loc, ci.chan, ci.sensor, ci.hfdate, CALTYPE_RBHF,
+                           ci.opsr, hftf_f, hftf_amp, hftf_pha, hftf_coh,
+                           tolerance_limits=tol_limits)
 
-if not success:
-    print('quitter')
-    exit(1)
+    output_path = os.path.join(os.environ['IDA_CAL_ANALYSIS_DIR'],
+                               ci.staloc, ci.lfdate)
+    if not os.path.exists(output_path):
+        os.makedirs(output_path, exist_ok=True)
 
-success, rbhf_files = utils.select_raw_cal_files(hf_date_dir)
+    shutil.copy2(ci.respfn, output_path)
+    lf_fig.savefig(os.path.join(output_path, 'cross_lf_plot_start.png'), dpi=400)
+    hf_fig.savefig(os.path.join(output_path, 'cross_hf_plot_start.png'), dpi=400)
 
-if not rbhf_files[0]:
-    print('ERROR: NO MINISEED FILES FOUND IN RBHF DIRECTORY: ', hf_date_dir)
-    exit(0)
+    doit = input('Fit a new response (y/n):')
 
-if not success:
-    print('quitter')
-    exit(1)
+    if doit.upper() == 'Y':
 
-print('\nRBLF File selected: {}'.format(rblf_files[0]))
-print('RBHF File selected: {}'.format(rbhf_files[0]))
+        lftf_pha_rad = lftf_pha * pi / 180
+        hftf_pha_rad = hftf_pha * pi / 180
 
-complist1 = ['Z', 'N', 'E']
-grouplist = [complist1]
-success, _, user_choice_groups = pick2(grouplist, 'Select Component to Process',
-                                      prompt='Enter selection (or "q" to quit): ',
-                                      implicit_quit_q=True, multiple_choice=False,
-                                      menu_on_error=True, err_message='Invalid choice. Please try again')
+        # create complex TF
+        hftf = multiply(hftf_amp, (cos(hftf_pha_rad) + 1j * sin(hftf_pha_rad)))
+        lftf = multiply(lftf_amp, (cos(lftf_pha_rad) + 1j * sin(lftf_pha_rad)))
 
-if not success:
-    exit(1)
-# print('Pick2 results:')
-# print('  success:', success)
-# print('  user_choices:', user_choices)
-# print('  user_choice_groups:', user_choice_groups)
+        new_paz = analyze_cal_component(ci, lftf_f, lftf, hftf_f, hftf,
+                                        samp_rate_lf, lfinput, lfmeas,
+                                        samp_rate_hf, hfinput, hfmeas)
 
-# for k, v in user_choice_groups.items():
-#     print('Component:', [grouplist[k][item] for item in v])
+        ci.fullpaz = new_paz
 
-comp = grouplist[0][user_choice_groups[0][0]]
-# print('Component:', comp)
+        samp_rate_lf, lf_start_time, lfinput, lfmeas, \
+        samp_rate_hf, hf_start_time, hfinput, hfmeas, \
+        freqs_lf, freqs_hf = process_cal_component(ci)
 
-print('\nReading IDA.stage...')
-stage_df = read('datascope', 'stage')
-sensor_fn_list = find_sensor_file(stage_df, sta, loc, comp, lf_date_str)
-# print('Sta:  {}\nLoc:  {}\nComp: {}\nDate: {}\nResp: {}'.format(sta,loc,comp,lf_date_str, sensor_fn_list[0]))
+        lftf_f, lftf_amp, lftf_pha, lftf_coh = cross_correlate(samp_rate_lf, lfinput, lfmeas)
+        hftf_f, hftf_amp, hftf_pha, hftf_coh = cross_correlate(samp_rate_hf, hfinput, hfmeas)
 
-# print('NOM Resp for model:', model)
-# print('Search path:', os.path.join(IDA_RESPONSES_NOM_DIR, (model+'*').lower()))
-nom_resps = nom_resp_for_model(model)
-nom_resps_names = [Path(respfn).name for respfn in nom_resps]
-# print(nom_resps)
-local_resp = local_resp_files()
-local_resp_names = [Path(respfn).name for respfn in local_resp]
+        plt.ion()
+        lf_fig = cross_tf_plot(ci.sta, ci.loc, ci.chan, ci.sensor, ci.lfdate, CALTYPE_RBLF,
+                               samp_rate_lf, lftf_f, lftf_amp, lftf_pha, lftf_coh,
+                               tolerance_limits=tol_limits)
+        hf_fig = cross_tf_plot(ci.sta, ci.loc, ci.chan, ci.sensor, ci.hfdate, CALTYPE_RBHF,
+                               ci.opsr, hftf_f, hftf_amp, hftf_pha, hftf_coh,
+                               tolerance_limits=tol_limits)
 
-pickrespgroups = [[('C', sensor_fn_list[0])], nom_resps_names, local_resp_names]
-success, _, user_choice_groups = pick2(pickrespgroups, 'Select Response File as starting model',
-                                                  prompt='Enter selection (or "q" to quit): ',
-                                                  group_titles=['Response on Date of Calibration',
-                                                                'Nominal Responses for model: ' + model.upper(),
-                                                                'Responses Found in CWD'],
-                                                  implicit_quit_q=True, multiple_choice=False,
-                                                  menu_on_error=True, err_message='Invalid choice. Please try again')
+        lf_fig.savefig(os.path.join(output_path, 'cross_lf_plot_fit.png'), dpi=400)
+        hf_fig.savefig(os.path.join(output_path, 'cross_hf_plot_fit.png'), dpi=400)
 
-if not success:
-    print('quitter')
-    exit(1)
+        new_paz.save(os.path.join(output_path, ci.new_resp_filename_stem() + '.ipaz'))
 
-nom_resp_fn = ''
-if len(user_choice_groups[0]) == 1:
-    nom_resp_fn = os.path.join(IDA_RESPONSES_CUR_DIR, sensor_fn_list[0])
-elif len(user_choice_groups[1]) == 1:
-    nom_resp_fn = os.path.join(IDA_RESPONSES_NOM_DIR, pickrespgroups[1][user_choice_groups[1][0]])
-elif len(user_choice_groups[2]) == 1:
-    nom_resp_fn = os.path.join(os.getcwd(), pickrespgroups[2][user_choice_groups[2][0]])
-
-# print(os.path.normpath(nom_resp_fn))
-
-paz = PAZ(pzfilename=nom_resp_fn, fileformat='ida', mode='vel', units='hz')
-paz_fit_lf = paz.make_partial2(norm_freq=1.0, partial_mode=PAZ.PARTIAL_FITTING_LF)
-paz_fit_hf = paz.make_partial2(norm_freq=1.0, partial_mode=PAZ.PARTIAL_FITTING_HF)
-
-success, lf_map, hf_map = select_perturb_map(paz)
-
-# print(success, lf_map, hf_map)
-
-if not success:
-    print('quitter')
-    exit(1)
+        input('Hit enter to finish')
