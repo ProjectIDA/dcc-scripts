@@ -3,8 +3,9 @@
 import os
 import argparse
 import shutil
+from subprocess import call
 
-from numpy import pi, cos, sin, multiply
+from numpy import pi, cos, sin, multiply, linspace
 import matplotlib
 matplotlib.use('Qt4Agg')
 import matplotlib.pyplot as plt
@@ -12,11 +13,12 @@ import matplotlib.pyplot as plt
 # os.environ['IDA_CAL_RAW_DIR'] = '/Users/dauerbach/dev/dcc/dcc-scripts/testtree'
 # os.environ['IDA_RESPONSES_NOM_DIR'] = '/Users/dauerbach/dev/dcc/dcc-modules-py'
 
-from ida.instruments import CALTYPE_RBLF, CALTYPE_RBHF
+from ida.tui import input_yn
+from ida.instruments import CALTYPE_RBLF, CALTYPE_RBHF, Q330_FIR_GAIN_1HZ
 from ida.calibration.cal_info import CalInfo
-from ida.calibration.process import process_cal_component, analyze_cal_component
+from ida.calibration.process import prepare_cal_data, analyze_cal_component, compare_component_response
 from ida.calibration.cross import cross_correlate
-from ida.calibration.plots import cross_tf_plot
+from ida.calibration.plots import cross_tf_plot, save_comp_response_comparison_plot
 
 version = '0.1'
 
@@ -37,7 +39,7 @@ parser.add_argument('hfdate', help="High Freq cal date (yyyy-mm-dd)", nargs='?',
 args = parser.parse_args()
 
 ci = CalInfo(os.environ['IDA_CAL_RAW_DIR'], # getenv('IDA_CAL_RAW_DIR'),
-             '',    # getenv('IDA_RESPONSE_CUR_DIR'),
+             os.environ['IDA_RESPONSES_CUR_DIR'],
              os.environ['IDA_RESPONSES_NOM_DIR']
              )
 
@@ -59,8 +61,9 @@ if args.hfdate:
 if ci.collect():
 
     samp_rate_lf, lf_start_time, lfinput, lfmeas, \
-        samp_rate_hf, hf_start_time, hfinput, hfmeas, \
-        freqs_lf, freqs_hf = process_cal_component(ci)
+    samp_rate_hf, hf_start_time, hfinput, hfmeas, \
+    freqs_lf, freqs_hf = prepare_cal_data(ci.lfpath, ci.lffile, ci.hfpath, ci.hffile,
+                                          ci.sensor, ci.comp, ci.fullpaz)
 
     lftf_f, lftf_amp, lftf_pha, lftf_coh = cross_correlate(samp_rate_lf, lfinput, lfmeas)
     hftf_f, hftf_amp, hftf_pha, hftf_coh = cross_correlate(samp_rate_hf, hfinput, hfmeas)
@@ -76,16 +79,17 @@ if ci.collect():
 
     output_path = os.path.join(os.environ['IDA_CAL_ANALYSIS_DIR'],
                                ci.staloc, ci.lfdate)
+
+    #todo: clean out output_path directory
+
     if not os.path.exists(output_path):
         os.makedirs(output_path, exist_ok=True)
 
     shutil.copy2(ci.respfn, output_path)
-    lf_fig.savefig(os.path.join(output_path, 'cross_lf_plot_start.png'), dpi=400)
-    hf_fig.savefig(os.path.join(output_path, 'cross_hf_plot_start.png'), dpi=400)
+    lf_fig.savefig(os.path.join(output_path, 'cross_lf_plot_start_' + ci.comp + '.png'), dpi=400)
+    hf_fig.savefig(os.path.join(output_path, 'cross_hf_plot_start_' + ci.comp + '.png'), dpi=400)
 
-    doit = input('Fit a new response (y/n):')
-
-    if doit.upper() == 'Y':
+    if input_yn('Fit a new response (y/n):').upper() == 'Y':
 
         lftf_pha_rad = lftf_pha * pi / 180
         hftf_pha_rad = hftf_pha * pi / 180
@@ -94,15 +98,15 @@ if ci.collect():
         hftf = multiply(hftf_amp, (cos(hftf_pha_rad) + 1j * sin(hftf_pha_rad)))
         lftf = multiply(lftf_amp, (cos(lftf_pha_rad) + 1j * sin(lftf_pha_rad)))
 
-        new_paz = analyze_cal_component(ci, lftf_f, lftf, hftf_f, hftf,
+        new_paz = analyze_cal_component(ci.fullpaz, ci.lfpert, ci.hfpert, ci.opsr,
+                                        lftf_f, lftf, hftf_f, hftf,
                                         samp_rate_lf, lfinput, lfmeas,
                                         samp_rate_hf, hfinput, hfmeas)
 
-        ci.fullpaz = new_paz
-
         samp_rate_lf, lf_start_time, lfinput, lfmeas, \
         samp_rate_hf, hf_start_time, hfinput, hfmeas, \
-        freqs_lf, freqs_hf = process_cal_component(ci)
+        freqs_lf, freqs_hf = prepare_cal_data(ci.lfpath, ci.lffile, ci.hfpath, ci.hffile,
+                                          ci.sensor, ci.comp, new_paz)
 
         lftf_f, lftf_amp, lftf_pha, lftf_coh = cross_correlate(samp_rate_lf, lfinput, lfmeas)
         hftf_f, hftf_amp, hftf_pha, hftf_coh = cross_correlate(samp_rate_hf, hfinput, hfmeas)
@@ -115,9 +119,60 @@ if ci.collect():
                                ci.opsr, hftf_f, hftf_amp, hftf_pha, hftf_coh,
                                tolerance_limits=tol_limits)
 
-        lf_fig.savefig(os.path.join(output_path, 'cross_lf_plot_fit.png'), dpi=400)
-        hf_fig.savefig(os.path.join(output_path, 'cross_hf_plot_fit.png'), dpi=400)
+        lf_fig.savefig(os.path.join(output_path, 'cross_lf_plot_fit_' + ci.comp + '.png'), dpi=400)
+        hf_fig.savefig(os.path.join(output_path, 'cross_hf_plot_fit_' + ci.comp + '.png'), dpi=400)
 
-        new_paz.save(os.path.join(output_path, ci.new_resp_filename_stem() + '.ipaz'))
+        new_fn = os.path.join(output_path, ci.new_resp_filename_stem() + '.ipaz')
+        new_paz.save(new_fn)
 
-        input('Hit enter to finish')
+        print('New response saved to file: {}'.format(new_fn))
+        print('Computing response deviation...')
+
+        # lets find "nice" number for resp length: i.e. a multiple of 20 * sample rate. So 0.05 and 1 hz in freqs exactly.
+        resp_len = ((hfinput.size * 2) // (20 * ci.opsr)) * (20 * ci.opsr)
+        freqs, _ = linspace(0, ci.opsr / 2, resp_len + 1, retstep=True)  # must start with 0hz
+
+        bl_resp, new_resp, adev, pdev, adev_max, pdev_max = \
+            compare_component_response(freqs, ci.fullpaz, new_paz,
+                                       norm_freq=0.05, mode='vel', phase_detrend=True)
+
+        print('Generating deviation plots...')
+        amp_fn = os.path.join(output_path, ci.lffile + '_AMP_Resp_' + ci.comp + '.png')
+        pha_fn = os.path.join(output_path, ci.lffile + '_PHA_Resp_' + ci.comp + '.png')
+
+        amp_fig, pha_fig = save_comp_response_comparison_plot(ci.sta, ci.chan, ci.loc,
+                                           amp_fn, pha_fn,
+                                           ci.sensor, lf_start_time, ci.opsr,
+                                           resp_len + 1, 1.0,
+                                           bl_resp, new_resp, adev, pdev)
+
+        amp_fig.savefig(amp_fn, dpi=400)
+        pha_fig.savefig(pha_fn, dpi=400)
+
+        print('Computing full system sensitivity @ 1Hz...')
+
+
+        bin_1hz_ndx = min([freq[0] for freq in enumerate(freqs) if freq[1] >= 1.0])
+        print('old resp @ 1hz:', abs(bl_resp[bin_1hz_ndx]))
+        print('new resp @ 1hz:', abs(new_resp[bin_1hz_ndx]))
+
+        #stage 1: Sensor
+        s1_sens = abs(new_resp[bin_1hz_ndx]) * \
+                  ci.chn_stages.iloc[0].gnom * \
+                  ci.chn_stages.iloc[0].gcalib
+        s3_sens = ci.chn_stages.iloc[2].gnom * \
+                  ci.chn_stages.iloc[2].gcalib
+        s4_sens = Q330_FIR_GAIN_1HZ[int(ci.opsr)]
+        sys_sens = s1_sens * s3_sens * s4_sens
+
+        # convert cts/(m/s) to cts/m to nm/ct
+        sys_sens = 1 / (sys_sens * (2 * pi) / 1e9)
+
+        print('sys sens (CALIB nm/ct):', sys_sens)
+
+        input("all done.")
+        #todo
+        #  print('Finding A0 at 1hz...')
+        # resp_1hz = compute_response(1.0, new_paz)
+        # v_a0 = 1 / abs(resp_1hz[0])
+        # print('Finding A0 at 1hz complete.')
