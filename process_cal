@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 
 import os
+import sys
 import argparse
 import shutil
-from subprocess import call
+import glob
+from pathlib import Path
 
-from numpy import pi, cos, sin, multiply, linspace
+from fabulous.color import bold, blue
+from numpy import pi, cos, sin, multiply, linspace, angle, complex128, polyval, polyfit, less_equal
 import matplotlib
 matplotlib.use('Qt4Agg')
 import matplotlib.pyplot as plt
@@ -14,11 +17,21 @@ import matplotlib.pyplot as plt
 # os.environ['IDA_RESPONSES_NOM_DIR'] = '/Users/dauerbach/dev/dcc/dcc-modules-py'
 
 from ida.tui import input_yn
-from ida.instruments import CALTYPE_RBLF, CALTYPE_RBHF, Q330_FIR_GAIN_1HZ
+from ida.instruments import CALTYPE_RBLF, CALTYPE_RBHF, \
+    Q330_FIR_GAIN_1HZ, \
+    Q330_FIR_FILTER_DELAY, \
+    Q330_FIR_COEFFS
 from ida.calibration.cal_info import CalInfo
 from ida.calibration.process import prepare_cal_data, analyze_cal_component, compare_component_response
 from ida.calibration.cross import cross_correlate
 from ida.calibration.plots import cross_tf_plot, save_comp_response_comparison_plot
+from ida.ctbto.messages import CTBTChannelResult, \
+    ims2_calibrate_result_msg_header, \
+    ims2_calibrate_result_msg_comp_info, \
+    ims2_PAZ2_msg, \
+    ims2_DIG2_msg, \
+    ims2_FIR2_msg
+from ida.signals.utils import compute_response, normalize_response
 
 version = '0.1'
 
@@ -40,7 +53,8 @@ args = parser.parse_args()
 
 ci = CalInfo(os.environ['IDA_CAL_RAW_DIR'], # getenv('IDA_CAL_RAW_DIR'),
              os.environ['IDA_RESPONSES_CUR_DIR'],
-             os.environ['IDA_RESPONSES_NOM_DIR']
+             os.environ['IDA_RESPONSES_NOM_DIR'],
+             os.environ['IDA_CAL_ANALYSIS_DIR']
              )
 
 if args.staloc:
@@ -58,8 +72,26 @@ if args.hfdate:
 
 # ci.print_info()
 
-if ci.collect():
+if ci.collect(ci.STARTING_GROUP):
 
+    output_path = os.path.join(os.environ['IDA_CAL_ANALYSIS_DIR'],
+                               ci.staloc,
+                               ci.lfdate)
+
+    if not os.path.exists(output_path):
+        os.makedirs(output_path, exist_ok=True)
+
+    print(bold('All analysis output to be saved in:'), bold(blue(output_path)))
+
+    # clean out output_path directory for current component
+    compfiles = glob.glob(os.path.join(output_path, '*_' + ci.comp + '.*'))
+    compfiles.extend(glob.glob(os.path.join(output_path, '*_' + ci.comp + '_*')))
+    if compfiles:
+        print('Cleaning out existing component [{}] results...'.format(ci.comp))
+        for fn in compfiles:
+            os.remove(fn)
+
+    print(bold('Computing TF with starting response [{}]...'.format(ci.comp)))
     samp_rate_lf, lf_start_time, lfinput, lfmeas, \
     samp_rate_hf, hf_start_time, hfinput, hfmeas, \
     freqs_lf, freqs_hf = prepare_cal_data(ci.lfpath, ci.lffile, ci.hfpath, ci.hffile,
@@ -68,28 +100,34 @@ if ci.collect():
     lftf_f, lftf_amp, lftf_pha, lftf_coh = cross_correlate(samp_rate_lf, lfinput, lfmeas)
     hftf_f, hftf_amp, hftf_pha, hftf_coh = cross_correlate(samp_rate_hf, hfinput, hfmeas)
 
+    ctbto_inspec = (lftf_amp.min() >= 0.95) and (lftf_amp.max() <= 1.05) and \
+                   (hftf_amp.min() >= 0.95) and (hftf_amp.max() <= 1.05) and \
+                   (lftf_pha.min() >= -5) and (lftf_pha.max() <= 5) and \
+                   (hftf_pha.min() >= -5) and (hftf_pha.max() <= 5)
+
+    print(bold('Plotting TF with starting response [{}]...'.format(ci.comp)))
+
     plt.ion()
-    tol_limits = (1.0, 1.0, 1.0)  # (amp_pcnt, pha_deg, coh)
+    green_tol_limits = (1.0, 1.0, 1.0)  # (amp_pcnt, pha_deg, coh)
+    grey_tol_limits = (5.0, 5.0, 5.0)  # (amp_pcnt, pha_deg, coh)
     lf_fig = cross_tf_plot(ci.sta, ci.loc, ci.chan, ci.sensor, ci.lfdate, CALTYPE_RBLF,
                            samp_rate_lf, lftf_f, lftf_amp, lftf_pha, lftf_coh,
-                           tolerance_limits=tol_limits)
+                           green_tol_lims=green_tol_limits, grey_tol_lims=grey_tol_limits)
     hf_fig = cross_tf_plot(ci.sta, ci.loc, ci.chan, ci.sensor, ci.hfdate, CALTYPE_RBHF,
                            ci.opsr, hftf_f, hftf_amp, hftf_pha, hftf_coh,
-                           tolerance_limits=tol_limits)
+                           green_tol_lims=green_tol_limits, grey_tol_lims=grey_tol_limits)
 
-    output_path = os.path.join(os.environ['IDA_CAL_ANALYSIS_DIR'],
-                               ci.staloc, ci.lfdate)
-
-    #todo: clean out output_path directory
-
-    if not os.path.exists(output_path):
-        os.makedirs(output_path, exist_ok=True)
-
-    shutil.copy2(ci.respfn, output_path)
+    aname = Path(ci.respfn).stem + '_{}_start'.format(ci.comp.upper()) + Path(ci.respfn).suffix
+    shutil.copy2(ci.respfn, os.path.join(output_path, aname))
     lf_fig.savefig(os.path.join(output_path, 'cross_lf_plot_start_' + ci.comp + '.png'), dpi=400)
     hf_fig.savefig(os.path.join(output_path, 'cross_hf_plot_start_' + ci.comp + '.png'), dpi=400)
 
-    if input_yn('Fit a new response (y/n):').upper() == 'Y':
+    need_fitting = input_yn('Fit a new response [{}] (y/n):'.format(ci.comp)).upper() == 'Y'
+    if need_fitting:
+
+        if not ci.collect(ci.FITTING_GROUP):
+            print(bold('User quit.'))
+            sys.exit(1)
 
         lftf_pha_rad = lftf_pha * pi / 180
         hftf_pha_rad = hftf_pha * pi / 180
@@ -98,81 +136,145 @@ if ci.collect():
         hftf = multiply(hftf_amp, (cos(hftf_pha_rad) + 1j * sin(hftf_pha_rad)))
         lftf = multiply(lftf_amp, (cos(lftf_pha_rad) + 1j * sin(lftf_pha_rad)))
 
-        new_paz = analyze_cal_component(ci.fullpaz, ci.lfpert, ci.hfpert, ci.opsr,
+        print(bold('\nFitting new reponse [{}]...'.format(ci.comp)))
+        fit_paz = analyze_cal_component(ci.fullpaz, ci.lfpert, ci.hfpert, ci.opsr,
                                         lftf_f, lftf, hftf_f, hftf,
                                         samp_rate_lf, lfinput, lfmeas,
                                         samp_rate_hf, hfinput, hfmeas)
 
+        print(bold('Recomputing TF with new fit response [{}]...'.format(ci.comp)))
         samp_rate_lf, lf_start_time, lfinput, lfmeas, \
         samp_rate_hf, hf_start_time, hfinput, hfmeas, \
         freqs_lf, freqs_hf = prepare_cal_data(ci.lfpath, ci.lffile, ci.hfpath, ci.hffile,
-                                          ci.sensor, ci.comp, new_paz)
+                                              ci.sensor, ci.comp, fit_paz)
 
         lftf_f, lftf_amp, lftf_pha, lftf_coh = cross_correlate(samp_rate_lf, lfinput, lfmeas)
         hftf_f, hftf_amp, hftf_pha, hftf_coh = cross_correlate(samp_rate_hf, hfinput, hfmeas)
 
-        plt.ion()
+        ctbto_inspec = (lftf_amp.min() >= 0.95) and (lftf_amp.max() <= 1.05) and \
+                       (hftf_amp.min() >= 0.95) and (hftf_amp.max() <= 1.05) and \
+                       (lftf_pha.min() >= -5) and (lftf_pha.max() <= 5) and \
+                       (hftf_pha.min() >= -5) and (hftf_pha.max() <= 5)
+
+        print(bold('Plotting TF with new fit response [{}]...'.format(ci.comp)))
+
+        # plt.ion()
         lf_fig = cross_tf_plot(ci.sta, ci.loc, ci.chan, ci.sensor, ci.lfdate, CALTYPE_RBLF,
                                samp_rate_lf, lftf_f, lftf_amp, lftf_pha, lftf_coh,
-                               tolerance_limits=tol_limits)
+                               green_tol_lims=green_tol_limits, grey_tol_lims=grey_tol_limits)
         hf_fig = cross_tf_plot(ci.sta, ci.loc, ci.chan, ci.sensor, ci.hfdate, CALTYPE_RBHF,
                                ci.opsr, hftf_f, hftf_amp, hftf_pha, hftf_coh,
-                               tolerance_limits=tol_limits)
+                               green_tol_lims=green_tol_limits, grey_tol_lims=grey_tol_limits)
 
         lf_fig.savefig(os.path.join(output_path, 'cross_lf_plot_fit_' + ci.comp + '.png'), dpi=400)
         hf_fig.savefig(os.path.join(output_path, 'cross_hf_plot_fit_' + ci.comp + '.png'), dpi=400)
+        print(bold('TF plots with new fit response have been saved [{}].'.format(ci.comp)))
 
         new_fn = os.path.join(output_path, ci.new_resp_filename_stem() + '.ipaz')
-        new_paz.save(new_fn)
+        fit_paz.save(new_fn)
 
-        print('New response saved to file: {}'.format(new_fn))
-        print('Computing response deviation...')
+        print(bold('\nNew response saved to file [{}]:'.format(ci.comp)), bold(blue(new_fn)))
+        print(bold('Computing response deviations [{}]...'.format(ci.comp)))
 
         # lets find "nice" number for resp length: i.e. a multiple of 20 * sample rate. So 0.05 and 1 hz in freqs exactly.
         resp_len = ((hfinput.size * 2) // (20 * ci.opsr)) * (20 * ci.opsr)
         freqs, _ = linspace(0, ci.opsr / 2, resp_len + 1, retstep=True)  # must start with 0hz
 
-        bl_resp, new_resp, adev, pdev, adev_max, pdev_max = \
-            compare_component_response(freqs, ci.fullpaz, new_paz,
+        bl_resp, final_resp, adev, pdev, adev_max, pdev_max = \
+            compare_component_response(freqs, ci.fullpaz, fit_paz,
                                        norm_freq=0.05, mode='vel', phase_detrend=True)
 
-        print('Generating deviation plots...')
+        print(bold('Generating Response and Deviation plots [{}]...'.format(ci.comp)))
         amp_fn = os.path.join(output_path, ci.lffile + '_AMP_Resp_' + ci.comp + '.png')
         pha_fn = os.path.join(output_path, ci.lffile + '_PHA_Resp_' + ci.comp + '.png')
 
-        amp_fig, pha_fig = save_comp_response_comparison_plot(ci.sta, ci.chan, ci.loc,
-                                           amp_fn, pha_fn,
-                                           ci.sensor, lf_start_time, ci.opsr,
-                                           resp_len + 1, 1.0,
-                                           bl_resp, new_resp, adev, pdev)
+        amp_fig, pha_fig = save_comp_response_comparison_plot(ci.sta.upper(), ci.chan.upper(), ci.loc,
+                                                              Path(ci.respfn).stem, Path(new_fn).stem,
+                                                              ci.sensor.upper(), lf_start_time, ci.opsr,
+                                                              resp_len + 1, 1.0,
+                                                              bl_resp, final_resp, adev, pdev)
 
         amp_fig.savefig(amp_fn, dpi=400)
         pha_fig.savefig(pha_fn, dpi=400)
+        print(bold('Response and Deviation plots saved [{}]\n'.format(ci.comp)))
 
-        print('Computing full system sensitivity @ 1Hz...')
+        final_paz = fit_paz
 
+    else:
+        final_paz = ci.fullpaz
 
-        bin_1hz_ndx = min([freq[0] for freq in enumerate(freqs) if freq[1] >= 1.0])
-        print('old resp @ 1hz:', abs(bl_resp[bin_1hz_ndx]))
-        print('new resp @ 1hz:', abs(new_resp[bin_1hz_ndx]))
+        # lets find "nice" number for resp length: i.e. a multiple of 20 * sample rate. So 0.05 and 1 hz in freqs exactly.
+        resp_len = ((hfinput.size * 2) // (20 * ci.opsr)) * (20 * ci.opsr)
+        freqs, _ = linspace(0, ci.opsr / 2, resp_len + 1, retstep=True)  # must start with 0hz
 
-        #stage 1: Sensor
-        s1_sens = abs(new_resp[bin_1hz_ndx]) * \
-                  ci.chn_stages.iloc[0].gnom * \
-                  ci.chn_stages.iloc[0].gcalib
-        s3_sens = ci.chn_stages.iloc[2].gnom * \
-                  ci.chn_stages.iloc[2].gcalib
-        s4_sens = Q330_FIR_GAIN_1HZ[int(ci.opsr)]
-        sys_sens = s1_sens * s3_sens * s4_sens
+        # compute response of starting paz and degtrend as done in compare_component_response when fitting
+        resp1 = compute_response(freqs, ci.fullpaz, mode='vel')
+        resp1_norm, _, _ = normalize_response(resp1, freqs, norm_freq=0.05)
 
-        # convert cts/(m/s) to cts/m to nm/ct
-        sys_sens = 1 / (sys_sens * (2 * pi) / 1e9)
+        freq_range = less_equal(freqs, 0.9 * freqs[-1])  # 90% of nyquist
+        lin_trend_coeff = polyfit(freqs[freq_range], angle(resp1_norm[freq_range]), 1)
+        trend_vals = polyval(lin_trend_coeff, freqs)
+        amp = abs(resp1_norm)
+        pha = angle(resp1_norm) - trend_vals
+        final_resp = amp * complex128(cos(pha) + 1j*sin(pha))
 
-        print('sys sens (CALIB nm/ct):', sys_sens)
+    if ci.is_ctbto():
 
-        input("all done.")
-        #todo
-        #  print('Finding A0 at 1hz...')
-        # resp_1hz = compute_response(1.0, new_paz)
-        # v_a0 = 1 / abs(resp_1hz[0])
-        # print('Finding A0 at 1hz complete.')
+        if not need_fitting:
+            make_msgs = input_yn('Generate CTBTO msgs with Starting Response? [{}] (y/n):'.format(ci.comp)).upper() == 'Y'
+        else:
+            make_msgs = True
+
+        if make_msgs:
+            print(bold('Computing full system sensitivity @ 1Hz [{}]...'.format(ci.comp)))
+
+            # compute new a0 (using pre-normalized response)
+            calper = 1.0
+            bin_1hz_ndx = min([freq[0] for freq in enumerate(freqs) if freq[1] >= (1/calper)])
+            resp_1hz = compute_response(1.0, final_paz)
+            a0 = 1 / abs(resp_1hz[0])
+            print(bold('A0 @ 1hz:'), bold(blue(a0)))
+
+            # system sens to compute calib
+            s1_sens = abs(final_resp[bin_1hz_ndx]) * \
+                      ci.chn_stages.iloc[0].gnom * \
+                      ci.chn_stages.iloc[0].gcalib
+            s3_sens = ci.chn_stages.iloc[2].gnom * \
+                      ci.chn_stages.iloc[2].gcalib
+            s4_sens = Q330_FIR_GAIN_1HZ[int(ci.opsr)]
+            sys_sens = s1_sens * s3_sens * s4_sens
+
+            # convert cts/(m/s) to cts/m to nm/ct
+            calib = 1 / (sys_sens * (2 * pi) / 1e9)
+
+            print(bold('sys sens (CALIB nm/ct) @ 1 sec [{}]:'.format(ci.comp)), bold(blue(calib)))
+            calib_res_fn = os.path.join(output_path, 'calib_result_' + ci.comp + '.txt')
+            print(bold('Saving CTBTO CALIB results to:'), bold(blue(calib_res_fn)))
+            with open(calib_res_fn, 'wt') as ofl:
+                ofl.write('calib {}'.format(ci.comp) + ':' + str(round(calib, 6)) + '\n')
+
+            ctbto_chan_res = CTBTChannelResult(channel=ci.chan, calib=calib, calper=1.0,
+                              sample_rate=ci.opsr,
+                              in_spec=ctbto_inspec, paz=final_paz, A0=a0)
+
+            ims2_header = ims2_calibrate_result_msg_header(hf_start_time)
+            comp_info = ims2_calibrate_result_msg_comp_info(ci.sta, ci.chan, ctbto_inspec, calib, calper)
+            sensor_info = ims2_PAZ2_msg(ci.sta, ci.loc, ci.chan, ci.sensor, hf_start_time,
+                                        ci.opsr, calib, calper, final_paz,
+                                        a0 * ci.chn_stages.iloc[0].gnom * ci.chn_stages.iloc[0].gcalib)
+            digi_info = ims2_DIG2_msg(2, ci.chn_stages.iloc[2].gnom * ci.chn_stages.iloc[2].gcalib,
+                                      ci.opsr, 'Q330') + \
+                        '\n' + \
+                        ims2_FIR2_msg(3, 1.0, 1, Q330_FIR_FILTER_DELAY[int(ci.opsr)], 'A',
+                                      'Q330 Fir filter @ {}Hz'.format(ci.opsr), Q330_FIR_COEFFS[int(ci.opsr)])
+
+            with open(os.path.join(output_path, 'IMS2_CALIBRATE_RESULT_HEADER'), 'wt') as ofl:
+                ofl.write(ims2_header + '\n')
+
+            with open(os.path.join(output_path, 'IMS2_CALIBRATE_RESULT_' + ci.comp), 'wt') as ofl:
+                ofl.write(comp_info + '\n')
+                ofl.write(sensor_info + '\n\n')
+                ofl.write(digi_info + '\n\n')
+
+    input('Hit ENTER/RETURN to close.')
+
