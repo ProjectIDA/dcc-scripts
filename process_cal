@@ -7,16 +7,13 @@ import shutil
 import glob
 from pathlib import Path
 
-from fabulous.color import bold, blue
+from fabulous.color import bold, blue, red
 from numpy import pi, cos, sin, multiply, linspace, angle, complex128, polyval, polyfit, less_equal
 import matplotlib
 matplotlib.use('Qt4Agg')
 import matplotlib.pyplot as plt
 
-# os.environ['IDA_CAL_RAW_DIR'] = '/Users/dauerbach/dev/dcc/dcc-scripts/testtree'
-# os.environ['IDA_RESPONSES_NOM_DIR'] = '/Users/dauerbach/dev/dcc/dcc-modules-py'
-
-from ida.tui import input_yn
+from ida.tui import input_yn, pick2, PickResult
 from ida.instruments import CALTYPE_RBLF, CALTYPE_RBHF, \
     Q330_FIR_GAIN_1HZ, \
     Q330_FIR_FILTER_DELAY, \
@@ -33,210 +30,250 @@ from ida.ctbto.messages import CTBTChannelResult, \
     ims2_FIR2_msg
 from ida.signals.utils import compute_response, normalize_response
 
-version = '0.1'
+version = '0.2'
 
 parser = argparse.ArgumentParser(description="Process random binary calibration data acquired by qcal.")
-parser.add_argument('-b', '--batch', help='run in batrch mode', action='store_true')
 parser.add_argument('-v', '--version', action='version', version=version)
-parser.add_argument('staloc', help="IDA Station + loc code (for example: pfo00)", nargs='?', default='')
-parser.add_argument('sensor', help="Sensor model", nargs='?', default='')
-parser.add_argument('comp', help="Component", nargs='?', default='')
-parser.add_argument('chan', help="Channel Code", nargs='?', default='')
-parser.add_argument('lfdate', help="Low Freq cal date (yyyy-mm-dd)", nargs='?', default='')
-parser.add_argument('hfdate', help="High Freq cal date (yyyy-mm-dd)", nargs='?', default='')
-
-# for non-idadcc execution
+parser.add_argument('sta', help="IDA Station code", default='')
+parser.add_argument('loc', help="IDA Location code", default='')
+args = parser.parse_args()
+# perhaps for non-idadcc execution
 # parser.add_argument('-d', '--datadir', help='Data Directory containing LF and HF idacal/qcal miniseed and log files.')
 # parser.add_argument('-r', '--response', help='IDA format poles/zeros sensor response file')
 
-args = parser.parse_args()
+raw_dir = os.path.join(os.environ['IDA_CAL_RAW_DIR'], args.sta, args.loc)
+if not os.path.exists(raw_dir):
+    print(bold(red('ERROR: Directory {} does not exist. Please check the number and dial again.'.format(raw_dir))))
+    sys.exit(1)
 
-ci = CalInfo(os.environ['IDA_CAL_RAW_DIR'], # getenv('IDA_CAL_RAW_DIR'),
+ci = CalInfo(os.environ['IDA_CAL_RAW_DIR'],
              os.environ['IDA_RESPONSES_CUR_DIR'],
              os.environ['IDA_RESPONSES_NOM_DIR'],
-             os.environ['IDA_CAL_ANALYSIS_DIR']
-             )
+             os.environ['IDA_CAL_ANALYSIS_DIR'])
+ci.sta = args.sta
+ci.loc = args.loc
+ndnt = ci.tui_indent + 1
 
-if args.staloc:
-    ci.staloc = args.staloc
-if args.sensor:
-    ci.sensor = args.sensor
-if args.comp:
-    ci.comp = args.comp
-if args.chan:
-    ci.chan = args.chan
-if args.lfdate:
-    ci.lfdate = args.lfdate
-if args.hfdate:
-    ci.hfdate = args.hfdate
+def clean_analysis_files(path, comp):
+    compfiles = glob.glob(os.path.join(path, '*_' + comp + '.*'))
+    compfiles.extend([newfn for newfn in glob.glob(os.path.join(path, '*_' + comp + '_*')) if newfn not in compfiles])
+    if compfiles:
+        for fn in compfiles:
+            os.remove(fn)
 
-# ci.print_info()
 
-if ci.collect(ci.STARTING_GROUP):
+def gen_tf_and_fig(samp_rate_lf, lfinput, lfmeas, cal_type, green_tol_limits, grey_tol_limits):
+    lftf_f, lftf_amp, lftf_pha, lftf_coh = cross_correlate(samp_rate_lf, lfinput, lfmeas)
+    lf_fig = cross_tf_plot(ci.sta, ci.loc, ci.chan, ci.sensor, ci.lfdate, cal_type,
+                           samp_rate_lf, lftf_f, lftf_amp, lftf_pha, lftf_coh,
+                           green_tol_lims=green_tol_limits, grey_tol_lims=grey_tol_limits)
 
-    output_path = os.path.join(os.environ['IDA_CAL_ANALYSIS_DIR'],
-                               ci.staloc,
-                               ci.lfdate)
+    return lftf_f, lftf_amp, lftf_pha, lftf_coh, lf_fig
+
+
+def fit_menu(choice_list):
+    result, choices, user_choice_groups, _ = pick2([choice_list],
+                                                   title='Select Action', prompt='Enter selection ("q" => quit): ',
+                                                   implicit_quit_q=True, menu_on_error=True,
+                                                   err_message='Invalid choice. Please try again')
+
+    return choices[0]
+
+def user_quit():
+    print(' ' * ndnt + bold(red('User quit.')))
+    sys.exit(0)
+
+# def message(indent, text):
+#     print(' ' * (indent + 1) + text)
+#
+if ci.collect_info():
+
+    output_path = os.path.join(os.environ['IDA_CAL_ANALYSIS_DIR'], ci.sta, ci.loc, ci.lfdate)
 
     if not os.path.exists(output_path):
         os.makedirs(output_path, exist_ok=True)
 
-    print(bold('All analysis output to be saved in:'), bold(blue(output_path)))
-
+    print(' '*ndnt + bold('All analysis output will be saved in:'), bold(blue(output_path)))
     # clean out output_path directory for current component
-    compfiles = glob.glob(os.path.join(output_path, '*_' + ci.comp + '.*'))
-    compfiles.extend(glob.glob(os.path.join(output_path, '*_' + ci.comp + '_*')))
-    if compfiles:
-        print('Cleaning out existing component [{}] results...'.format(ci.comp))
-        for fn in compfiles:
-            os.remove(fn)
+    clean_analysis_files(output_path, ci.comp)
+    # copy in starting reponse file
+    aname = Path(ci.respfn).stem + '_{}_start'.format(ci.comp) + Path(ci.respfn).suffix
+    shutil.copy2(ci.respfn, os.path.join(output_path, aname))
 
-    print(bold('Computing TF with starting response [{}]...'.format(ci.comp)))
-    samp_rate_lf, lf_start_time, lfinput, lfmeas, \
-    samp_rate_hf, hf_start_time, hfinput, hfmeas, \
-    freqs_lf, freqs_hf = prepare_cal_data(ci.lfpath, ci.lffile, ci.hfpath, ci.hffile,
-                                          ci.sensor, ci.comp, ci.fullpaz)
-
-    lftf_f, lftf_amp, lftf_pha, lftf_coh = cross_correlate(samp_rate_lf, lfinput, lfmeas)
-    hftf_f, hftf_amp, hftf_pha, hftf_coh = cross_correlate(samp_rate_hf, hfinput, hfmeas)
-
-    ctbto_inspec = (lftf_amp.min() >= 0.95) and (lftf_amp.max() <= 1.05) and \
-                   (hftf_amp.min() >= 0.95) and (hftf_amp.max() <= 1.05) and \
-                   (lftf_pha.min() >= -5) and (lftf_pha.max() <= 5) and \
-                   (hftf_pha.min() >= -5) and (hftf_pha.max() <= 5)
-
-    print(bold('Plotting TF with starting response [{}]...'.format(ci.comp)))
-
+    # set up for matplotlib and TF plots
     plt.ion()
     green_tol_limits = (1.0, 1.0, 1.0)  # (amp_pcnt, pha_deg, coh)
     grey_tol_limits = (5.0, 5.0, 5.0)  # (amp_pcnt, pha_deg, coh)
-    lf_fig = cross_tf_plot(ci.sta, ci.loc, ci.chan, ci.sensor, ci.lfdate, CALTYPE_RBLF,
-                           samp_rate_lf, lftf_f, lftf_amp, lftf_pha, lftf_coh,
-                           green_tol_lims=green_tol_limits, grey_tol_lims=grey_tol_limits)
-    hf_fig = cross_tf_plot(ci.sta, ci.loc, ci.chan, ci.sensor, ci.hfdate, CALTYPE_RBHF,
-                           ci.opsr, hftf_f, hftf_amp, hftf_pha, hftf_coh,
-                           green_tol_lims=green_tol_limits, grey_tol_lims=grey_tol_limits)
 
-    aname = Path(ci.respfn).stem + '_{}_start'.format(ci.comp.upper()) + Path(ci.respfn).suffix
-    shutil.copy2(ci.respfn, os.path.join(output_path, aname))
-    lf_fig.savefig(os.path.join(output_path, 'cross_lf_plot_start_' + ci.comp + '.png'), dpi=400)
-    hf_fig.savefig(os.path.join(output_path, 'cross_hf_plot_start_' + ci.comp + '.png'), dpi=400)
+    fit_paz = ci.fullpaz
+    new_paz = ci.fullpaz
+    cal_start_time = None
 
-    need_fitting = input_yn('Fit a new response [{}] (y/n):'.format(ci.comp)).upper() == 'Y'
-    if need_fitting:
+    if not ci.omit_lf:
 
-        if not ci.collect(ci.FITTING_GROUP):
-            print(bold('User quit.'))
-            sys.exit(1)
+        print(' '*ndnt + bold('Computing LOW FREQ TF with starting response [{}]...'.format(ci.comp)))
+        samp_rate_lf, lf_start_time, lfinput, lfmeas, _, _, _, _, \
+        freqs_lf, _, snr_lf, _= prepare_cal_data(ci.lfpath, ci.lffile, None, None,
+                                                 ci.sensor, ci.comp, ci.fullpaz)
+        cal_start_time = lf_start_time
 
-        lftf_pha_rad = lftf_pha * pi / 180
-        hftf_pha_rad = hftf_pha * pi / 180
+        # compute TF (and plot fig)
+        lftf_f, lftf_amp, lftf_pha, lftf_coh, lf_fig_start = gen_tf_and_fig(samp_rate_lf, lfinput, lfmeas, CALTYPE_RBLF,
+                                                                      green_tol_limits, grey_tol_limits)
+        lf_fig_start.savefig(os.path.join(output_path, 'TF_LF_plot_start_' + ci.comp + '.png'), dpi=400)
 
-        # create complex TF
-        hftf = multiply(hftf_amp, (cos(hftf_pha_rad) + 1j * sin(hftf_pha_rad)))
-        lftf = multiply(lftf_amp, (cos(lftf_pha_rad) + 1j * sin(lftf_pha_rad)))
+        action = fit_menu([('F', 'Fit New Response'), ('A', 'Accept Current Response')]).upper()
+        if action == 'Q':
+            user_quit()
 
-        print(bold('\nFitting new reponse [{}]...'.format(ci.comp)))
-        fit_paz = analyze_cal_component(ci.fullpaz, ci.lfpert, ci.hfpert, ci.opsr,
-                                        lftf_f, lftf, hftf_f, hftf,
-                                        samp_rate_lf, lfinput, lfmeas,
-                                        samp_rate_hf, hfinput, hfmeas)
+        while action == 'F':
 
-        print(bold('Recomputing TF with new fit response [{}]...'.format(ci.comp)))
-        samp_rate_lf, lf_start_time, lfinput, lfmeas, \
-        samp_rate_hf, hf_start_time, hfinput, hfmeas, \
-        freqs_lf, freqs_hf = prepare_cal_data(ci.lfpath, ci.lffile, ci.hfpath, ci.hffile,
-                                              ci.sensor, ci.comp, fit_paz)
+            res, err = ci.select_perturb_map(CALTYPE_RBLF)
+            if res == PickResult.collect_quit:
+                print(' '*ndnt + bold(red('User quit.')))
+                sys.exit(1)
 
-        lftf_f, lftf_amp, lftf_pha, lftf_coh = cross_correlate(samp_rate_lf, lfinput, lfmeas)
-        hftf_f, hftf_amp, hftf_pha, hftf_coh = cross_correlate(samp_rate_hf, hfinput, hfmeas)
+            ci.print_info()
 
-        ctbto_inspec = (lftf_amp.min() >= 0.95) and (lftf_amp.max() <= 1.05) and \
-                       (hftf_amp.min() >= 0.95) and (hftf_amp.max() <= 1.05) and \
-                       (lftf_pha.min() >= -5) and (lftf_pha.max() <= 5) and \
-                       (hftf_pha.min() >= -5) and (hftf_pha.max() <= 5)
+            print(' '*ndnt + bold('\nFitting new LOW FREQ reponse [{}]...'.format(ci.comp)))
+            lftf = multiply(lftf_amp, (cos(lftf_pha * pi / 180) + 1j * sin(lftf_pha * pi / 180)))
+            fit_paz = analyze_cal_component(ci.fullpaz, ci.lfpert, ci.hfpert, ci.opsr,
+                                            lftf_f, lftf, None, None, CALTYPE_RBLF)
+            fit_paz.h0 = 1
 
-        print(bold('Plotting TF with new fit response [{}]...'.format(ci.comp)))
+            print(' '*ndnt + bold('Recomputing LOW FREQ TF with new fit response [{}]...'.format(ci.comp)))
+            samp_rate_lf, lf_start_time, lfinput, lfmeas, _, _, _, _, \
+            freqs_lf, freqs_hf, snr_lf, snr_hf = prepare_cal_data(ci.lfpath, ci.lffile, None, None,
+                                                                  ci.sensor, ci.comp, fit_paz)
 
-        # plt.ion()
-        lf_fig = cross_tf_plot(ci.sta, ci.loc, ci.chan, ci.sensor, ci.lfdate, CALTYPE_RBLF,
-                               samp_rate_lf, lftf_f, lftf_amp, lftf_pha, lftf_coh,
-                               green_tol_lims=green_tol_limits, grey_tol_lims=grey_tol_limits)
-        hf_fig = cross_tf_plot(ci.sta, ci.loc, ci.chan, ci.sensor, ci.hfdate, CALTYPE_RBHF,
-                               ci.opsr, hftf_f, hftf_amp, hftf_pha, hftf_coh,
-                               green_tol_lims=green_tol_limits, grey_tol_lims=grey_tol_limits)
+            # comute TF (and plot fig)
+            lftf_f, lftf_amp, lftf_pha, lftf_coh, lf_fig_fit = gen_tf_and_fig(samp_rate_lf, lfinput, lfmeas, CALTYPE_RBLF,
+                                                                          green_tol_limits, grey_tol_limits)
 
-        lf_fig.savefig(os.path.join(output_path, 'cross_lf_plot_fit_' + ci.comp + '.png'), dpi=400)
-        hf_fig.savefig(os.path.join(output_path, 'cross_hf_plot_fit_' + ci.comp + '.png'), dpi=400)
-        print(bold('TF plots with new fit response have been saved [{}].'.format(ci.comp)))
+            action = fit_menu([('F', 'Fit New LOW FREQ Response'),
+                               ('A', 'Accept Current LOW FREQ Response'),
+                               ('S', 'Use Starting Response')]).upper()
+            if action == 'Q':
+                user_quit()
 
-        new_fn = os.path.join(output_path, ci.new_resp_filename_stem() + '.ipaz')
-        fit_paz.save(new_fn)
+            if action == 'A':
+                new_paz = fit_paz
+                lf_fig_fit.savefig(os.path.join(output_path, 'TF_LF_plot_fit_' + ci.comp + '.png'), dpi=400)
+                plt.close(lf_fig_fit)
+            elif action == 'S':
+                new_paz = ci.fullpaz
 
+        plt.close(lf_fig_start)
+
+    if not ci.omit_hf:
+
+        print(' '*ndnt + bold('Computing HIGH FREQ TF with starting response [{}]...'.format(ci.comp)))
+        _,_,_,_, samp_rate_hf, hf_start_time, hfinput, hfmeas, \
+        _, freqs_hf, _, snr_hf = prepare_cal_data(None, None, ci.hfpath, ci.hffile,
+                                                  ci.sensor, ci.comp, new_paz)
+        cal_start_time = min(cal_start_time, hf_start_time) if cal_start_time else hf_start_time
+
+        # compute TF (and plot fig)
+        hftf_f, hftf_amp, hftf_pha, hftf_coh, hf_fig_start = gen_tf_and_fig(samp_rate_hf, hfinput, hfmeas, CALTYPE_RBHF,
+                                                                      green_tol_limits, grey_tol_limits)
+        hf_fig_start.savefig(os.path.join(output_path, 'TF_HF_plot_start_' + ci.comp + '.png'), dpi=400)
+
+        action = fit_menu([('F', 'Fit New Response'), ('A', 'Accept Current Response')]).upper()
+        if action == 'Q':
+            user_quit()
+
+        while action == 'F':
+
+            res, err = ci.select_perturb_map(CALTYPE_RBHF, paz=new_paz)
+            if res == PickResult.collect_quit:
+                user_quit()
+
+            ci.print_info()
+
+            print(' '*ndnt + bold('\nFitting new HIGH FREQ reponse [{}]...'.format(ci.comp)))
+            hftf = multiply(hftf_amp, (cos(hftf_pha * pi / 180) + 1j * sin(hftf_pha * pi / 180)))
+            fit_paz = analyze_cal_component(new_paz, ci.lfpert, ci.hfpert, ci.opsr,
+                                            None, None, hftf_f, hftf, CALTYPE_RBHF)
+            fit_paz.h0 = 1
+
+            print(' '*ndnt + bold('Recomputing HIGH FREQ TF with new fit response [{}]...'.format(ci.comp)))
+            _, _, _, _, samp_rate_hf, hf_start_time, hfinput, hfmeas, \
+            _, freqs_hf, _, snr_hf = prepare_cal_data(None, None, ci.hfpath, ci.hffile,
+                                                      ci.sensor, ci.comp, fit_paz)
+
+            # comute TF (and plot fig)
+            hftf_f, hftf_amp, hftf_pha, hftf_coh, hf_fig_fit = gen_tf_and_fig(samp_rate_hf, hfinput, hfmeas, CALTYPE_RBHF,
+                                                                          green_tol_limits, grey_tol_limits)
+
+            action = fit_menu([('F', 'Fit New HIGH FREQ Response'),
+                               ('A', 'Accept Current HIGH FREQ Response'),
+                               ('S', 'Use Starting Response')]).upper()
+            if action == 'Q':
+                user_quit()
+
+            if action == 'A':
+                new_paz = fit_paz
+                hf_fig_fit.savefig(os.path.join(output_path, 'TF_HF_plot_fit_' + ci.comp + '.png'), dpi=400)
+                plt.close(hf_fig_fit)
+            elif action == 'S':
+                new_paz = new_paz
+
+        plt.close(hf_fig_start)
+
+    new_fn = os.path.join(output_path, ci.new_filename_stem() + '.ipaz')
+    if (new_paz != ci.fullpaz):
+        new_paz.save(new_fn)
         print(bold('\nNew response saved to file [{}]:'.format(ci.comp)), bold(blue(new_fn)))
-        print(bold('Computing response deviations [{}]...'.format(ci.comp)))
-
         # lets find "nice" number for resp length: i.e. a multiple of 20 * sample rate. So 0.05 and 1 hz in freqs exactly.
-        resp_len = ((hfinput.size * 2) // (20 * ci.opsr)) * (20 * ci.opsr)
-        freqs, _ = linspace(0, ci.opsr / 2, resp_len + 1, retstep=True)  # must start with 0hz
-
-        bl_resp, final_resp, adev, pdev, adev_max, pdev_max = \
-            compare_component_response(freqs, ci.fullpaz, fit_paz,
-                                       norm_freq=0.05, mode='vel', phase_detrend=True)
-
-        print(bold('Generating Response and Deviation plots [{}]...'.format(ci.comp)))
-        amp_fn = os.path.join(output_path, ci.lffile + '_AMP_Resp_' + ci.comp + '.png')
-        pha_fn = os.path.join(output_path, ci.lffile + '_PHA_Resp_' + ci.comp + '.png')
-
-        amp_fig, pha_fig = save_comp_response_comparison_plot(ci.sta.upper(), ci.chan.upper(), ci.loc,
-                                                              Path(ci.respfn).stem, Path(new_fn).stem,
-                                                              ci.sensor.upper(), lf_start_time, ci.opsr,
-                                                              resp_len + 1, 1.0,
-                                                              bl_resp, final_resp, adev, pdev)
-
-        amp_fig.savefig(amp_fn, dpi=400)
-        pha_fig.savefig(pha_fn, dpi=400)
-        print(bold('Response and Deviation plots saved [{}]\n'.format(ci.comp)))
-
-        final_paz = fit_paz
+        # typical HF timeseries is 180,000 samples, so doubling that for FFT computation
 
     else:
-        final_paz = ci.fullpaz
+        print(red(bold('Response UNCHANGED. No new response file or comparison plots will be saved.')))
 
+
+    if (new_paz != ci.fullpaz) or (ci.is_ctbto() and (not ci.omit_lf) and (not ci.omit_hf)):
+        # need to compute freq response for comparison plots (if response changed) or for ctbto regardless of change
+        print(bold('Computing frequency response...'.format(ci.comp)))
         # lets find "nice" number for resp length: i.e. a multiple of 20 * sample rate. So 0.05 and 1 hz in freqs exactly.
-        resp_len = ((hfinput.size * 2) // (20 * ci.opsr)) * (20 * ci.opsr)
+        resp_len = 360000
         freqs, _ = linspace(0, ci.opsr / 2, resp_len + 1, retstep=True)  # must start with 0hz
+        bl_resp, new_resp, adev, pdev, _, _ = compare_component_response(freqs, ci.fullpaz, new_paz,
+                                                                         norm_freq=0.05, mode='vel', phase_detrend=True)
 
-        # compute response of starting paz and degtrend as done in compare_component_response when fitting
-        resp1 = compute_response(freqs, ci.fullpaz, mode='vel')
-        resp1_norm, _, _ = normalize_response(resp1, freqs, norm_freq=0.05)
+        if (new_paz != ci.fullpaz):
+            # only do comparison plots if response changed
+            amp_fn = os.path.join(output_path, ci.new_filename_stem() + '_AMP_Resp_' + ci.comp + '.png')
+            pha_fn = os.path.join(output_path, ci.new_filename_stem() + '_PHA_Resp_' + ci.comp + '.png')
+            amp_fig, pha_fig = save_comp_response_comparison_plot(ci.sta.upper(), ci.chan.upper(), ci.loc,
+                                                                  Path(ci.respfn).stem, Path(new_fn).stem,
+                                                                  ci.sensor.upper(), cal_start_time, ci.opsr,
+                                                                  resp_len + 1, 1.0,
+                                                                  bl_resp, new_resp, adev, pdev)
+            print('comp amp fn:', amp_fn)
+            print('comp pha fn:', pha_fn)
+            amp_fig.savefig(amp_fn, dpi=400)
+            pha_fig.savefig(pha_fn, dpi=400)
 
-        freq_range = less_equal(freqs, 0.9 * freqs[-1])  # 90% of nyquist
-        lin_trend_coeff = polyfit(freqs[freq_range], angle(resp1_norm[freq_range]), 1)
-        trend_vals = polyval(lin_trend_coeff, freqs)
-        amp = abs(resp1_norm)
-        pha = angle(resp1_norm) - trend_vals
-        final_resp = amp * complex128(cos(pha) + 1j*sin(pha))
 
-    if ci.is_ctbto():
+        if ci.is_ctbto() and (not ci.omit_lf) and (not ci.omit_hf):
 
-        if not need_fitting:
-            make_msgs = input_yn('Generate CTBTO msgs with Starting Response? [{}] (y/n):'.format(ci.comp)).upper() == 'Y'
-        else:
-            make_msgs = True
+            # noinspection PyUnboundLocalVariable
+            ctbto_inspec = (lftf_amp.min() >= 0.95) and (lftf_amp.max() <= 1.05) and \
+                           (hftf_amp.min() >= 0.95) and (hftf_amp.max() <= 1.05) and \
+                           (lftf_pha.min() >= -5) and (lftf_pha.max() <= 5) and \
+                           (hftf_pha.min() >= -5) and (hftf_pha.max() <= 5)
 
-        if make_msgs:
             print(bold('Computing full system sensitivity @ 1Hz [{}]...'.format(ci.comp)))
 
             # compute new a0 (using pre-normalized response)
             calper = 1.0
             bin_1hz_ndx = min([freq[0] for freq in enumerate(freqs) if freq[1] >= (1/calper)])
-            resp_1hz = compute_response(1.0, final_paz)
+            resp_1hz = compute_response(1.0, new_paz)
             a0 = 1 / abs(resp_1hz[0])
             print(bold('A0 @ 1hz:'), bold(blue(a0)))
 
             # system sens to compute calib
-            s1_sens = abs(final_resp[bin_1hz_ndx]) * \
+            s1_sens = abs(new_resp[bin_1hz_ndx]) * \
                       ci.chn_stages.iloc[0].gnom * \
                       ci.chn_stages.iloc[0].gcalib
             s3_sens = ci.chn_stages.iloc[2].gnom * \
@@ -248,19 +285,19 @@ if ci.collect(ci.STARTING_GROUP):
             calib = 1 / (sys_sens * (2 * pi) / 1e9)
 
             print(bold('sys sens (CALIB nm/ct) @ 1 sec [{}]:'.format(ci.comp)), bold(blue(calib)))
-            calib_res_fn = os.path.join(output_path, 'calib_result_' + ci.comp + '.txt')
+            calib_res_fn = os.path.join(output_path, 'calib_' + ci.comp + '.txt')
             print(bold('Saving CTBTO CALIB results to:'), bold(blue(calib_res_fn)))
             with open(calib_res_fn, 'wt') as ofl:
                 ofl.write('calib {}'.format(ci.comp) + ':' + str(round(calib, 6)) + '\n')
 
             ctbto_chan_res = CTBTChannelResult(channel=ci.chan, calib=calib, calper=1.0,
-                              sample_rate=ci.opsr,
-                              in_spec=ctbto_inspec, paz=final_paz, A0=a0)
+                                               sample_rate=ci.opsr,
+                                               in_spec=ctbto_inspec, paz=new_paz, A0=a0)
 
-            ims2_header = ims2_calibrate_result_msg_header(hf_start_time)
+            ims2_header = ims2_calibrate_result_msg_header(cal_start_time)
             comp_info = ims2_calibrate_result_msg_comp_info(ci.sta, ci.chan, ctbto_inspec, calib, calper)
-            sensor_info = ims2_PAZ2_msg(ci.sta, ci.loc, ci.chan, ci.sensor, hf_start_time,
-                                        ci.opsr, calib, calper, final_paz,
+            sensor_info = ims2_PAZ2_msg(ci.sta, ci.loc, ci.chan, ci.sensor, cal_start_time,
+                                        ci.opsr, calib, calper, new_paz,
                                         a0 * ci.chn_stages.iloc[0].gnom * ci.chn_stages.iloc[0].gcalib)
             digi_info = ims2_DIG2_msg(2, ci.chn_stages.iloc[2].gnom * ci.chn_stages.iloc[2].gcalib,
                                       ci.opsr, 'Q330') + \
@@ -268,10 +305,10 @@ if ci.collect(ci.STARTING_GROUP):
                         ims2_FIR2_msg(3, 1.0, 1, Q330_FIR_FILTER_DELAY[int(ci.opsr)], 'A',
                                       'Q330 Fir filter @ {}Hz'.format(ci.opsr), Q330_FIR_COEFFS[int(ci.opsr)])
 
-            with open(os.path.join(output_path, 'IMS2_CALIBRATE_RESULT_HEADER'), 'wt') as ofl:
+            with open(os.path.join(output_path, 'IMS2_CALIBRATE_RESULT_HEADER.txt'), 'wt') as ofl:
                 ofl.write(ims2_header + '\n')
 
-            with open(os.path.join(output_path, 'IMS2_CALIBRATE_RESULT_' + ci.comp), 'wt') as ofl:
+            with open(os.path.join(output_path, 'IMS2_CALIBRATE_RESULT_' + ci.comp + '.txt'), 'wt') as ofl:
                 ofl.write(comp_info + '\n')
                 ofl.write(sensor_info + '\n\n')
                 ofl.write(digi_info + '\n\n')
