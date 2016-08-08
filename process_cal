@@ -136,8 +136,10 @@ if ci.collect_info():
         lftf_f, lftf_amp, lftf_pha, lftf_coh, lf_fig_start = gen_tf_and_fig(ci, samp_rate_lf, lfinput,
                                                                             lfmeas, CALTYPE_RBLF,
                                                                             green_tol_limits, grey_tol_limits)
-        lf_fig_start.savefig(os.path.join(cur_dir, 'TF_LF_plot_start_' + ci.comp + '.png'), dpi=400)
-        output_filename_list.append(os.path.join(cur_dir, 'TF_LF_plot_start_' + ci.comp + '.png'))
+        fn = '{}_{}_{}_tf_lf_start_{}.png'.format(ci.sensor.lower(), ci.sta.lower(), ci.loc, ci.comp)
+        fnpath = os.path.join(cur_dir, fn)
+        lf_fig_start.savefig(fnpath, dpi=400)
+        output_filename_list.append(fnpath)
 
         action = fit_menu([('F', 'Fit New LOW FREQ Response'), ('A', 'Accept Current LOW FREQ Response')]).upper()
         if action == 'Q':
@@ -178,8 +180,10 @@ if ci.collect_info():
 
             if action == 'A':
                 new_paz = fit_paz
-                lf_fig_fit.savefig(os.path.join(cur_dir, 'TF_LF_plot_fit_' + ci.comp + '.png'), dpi=400)
-                output_filename_list.append(os.path.join(cur_dir, 'TF_LF_plot_fit_' + ci.comp + '.png'))
+                fn = '{}_{}_{}_tf_lf_fit_{}.png'.format(ci.sensor.lower(), ci.sta.lower(), ci.loc, ci.comp)
+                fnpath = os.path.join(cur_dir, fn)
+                lf_fig_fit.savefig(fnpath, dpi=400)
+                output_filename_list.append(fnpath)
             elif action == 'S':
                 new_paz = ci.fullpaz
 
@@ -201,8 +205,10 @@ if ci.collect_info():
         hftf_f, hftf_amp, hftf_pha, hftf_coh, hf_fig_start = gen_tf_and_fig(ci, samp_rate_hf, hfinput,
                                                                             hfmeas, CALTYPE_RBHF,
                                                                             green_tol_limits, grey_tol_limits)
-        hf_fig_start.savefig(os.path.join(cur_dir, 'TF_HF_plot_start_' + ci.comp + '.png'), dpi=400)
-        output_filename_list.append(os.path.join(cur_dir, 'TF_HF_plot_start_' + ci.comp + '.png'))
+        fn = '{}_{}_{}_tf_hf_start_{}.png'.format(ci.sensor.lower(), ci.sta.lower(), ci.loc, ci.comp)
+        fnpath = os.path.join(cur_dir, fn)
+        hf_fig_start.savefig(fnpath, dpi=400)
+        output_filename_list.append(fnpath)
 
         action = fit_menu([('F', 'Fit New HIGH FREQ Response'), ('A', 'Accept Current HIGH FREQ Response')]).upper()
         if action == 'Q':
@@ -243,8 +249,10 @@ if ci.collect_info():
 
             if action == 'A':
                 new_paz = fit_paz
-                hf_fig_fit.savefig(os.path.join(cur_dir, 'TF_HF_plot_fit_' + ci.comp + '.png'), dpi=400)
-                output_filename_list.append(os.path.join(cur_dir, 'TF_HF_plot_fit_' + ci.comp + '.png'))
+                fn = '{}_{}_{}_tf_hf_fit_{}.png'.format(ci.sensor.lower(), ci.sta.lower(), ci.loc, ci.comp)
+                fnpath = os.path.join(cur_dir, fn)
+                hf_fig_fit.savefig(fnpath, dpi=400)
+                output_filename_list.append(fnpath)
             elif action == 'S':
                 pass  # new_paz is already output from LF analisys or initial ci.fullpaz
 
