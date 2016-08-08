@@ -64,13 +64,21 @@ def publish_files(target_dir, filelist):
         shutil.copy2(fn, os.path.join(target_dir, aname))
 
 
-def gen_tf_and_fig(samp_rate_lf, lfinput, lfmeas, cal_type, green_tol_limits, grey_tol_limits):
-    lftf_f, lftf_amp, lftf_pha, lftf_coh = cross_correlate(samp_rate_lf, lfinput, lfmeas)
-    lf_fig = cross_tf_plot(ci.sta, ci.loc, ci.chan, ci.sensor, ci.lfdate, cal_type,
-                           samp_rate_lf, lftf_f, lftf_amp, lftf_pha, lftf_coh,
-                           green_tol_lims=green_tol_limits, grey_tol_lims=grey_tol_limits)
+def gen_tf_and_fig(cal_info, data_samp_rate, input_data, meas_data, cal_type, green_tol_limits, grey_tol_limits):
 
-    return lftf_f, lftf_amp, lftf_pha, lftf_coh, lf_fig
+    if cal_type == CALTYPE_RBLF:
+        eff_max_freq =  data_samp_rate
+    elif cal_type == CALTYPE_RBHF:
+        eff_max_freq = ci.opsr
+    else:
+        raise ValueError('Invalid cal_type: {}'.format(cal_type))
+    tf_f, tf_amp, tf_pha, tf_coh = cross_correlate(data_samp_rate, input_data, meas_data)
+    fig = cross_tf_plot(cal_info.sta, cal_info.loc, cal_info.chan,
+                        cal_info.sensor, cal_info.lfdatestr, cal_type,
+                        eff_max_freq, tf_f, tf_amp, tf_pha, tf_coh,
+                        green_tol_lims=green_tol_limits, grey_tol_lims=grey_tol_limits)
+
+    return tf_f, tf_amp, tf_pha, tf_coh, fig
 
 
 def fit_menu(choice_list):
@@ -91,7 +99,7 @@ if ci.collect_info():
     cur_dir = os.getcwd()
     output_filename_list = []
 
-    analysis_date = ci.lfdate if ci.lfdate else ci.hfdate
+    analysis_date = ci.lfdatestr if ci.lfdatestr else ci.hfdatestr
     analysis_path = os.path.join(os.environ['IDA_CAL_ANALYSIS_DIR'], ci.sta, ci.loc, analysis_date)
     if not os.path.exists(analysis_path):
         os.makedirs(analysis_path, exist_ok=True)
@@ -100,6 +108,8 @@ if ci.collect_info():
 
     # copy in starting reponse file
     aname = Path(ci.respfn).stem + '_start_{}'.format(ci.comp) + Path(ci.respfn).suffix
+    if 'ipaz' not in aname:
+        aname = aname + '.ipaz'
     shutil.copy2(ci.respfn, os.path.join(cur_dir, aname))
     output_filename_list.append(os.path.join(cur_dir, aname))
 
@@ -123,8 +133,9 @@ if ci.collect_info():
         cal_start_time = lf_start_time
 
         # compute TF (and plot fig)
-        lftf_f, lftf_amp, lftf_pha, lftf_coh, lf_fig_start = gen_tf_and_fig(samp_rate_lf, lfinput, lfmeas, CALTYPE_RBLF,
-                                                                      green_tol_limits, grey_tol_limits)
+        lftf_f, lftf_amp, lftf_pha, lftf_coh, lf_fig_start = gen_tf_and_fig(ci, samp_rate_lf, lfinput,
+                                                                            lfmeas, CALTYPE_RBLF,
+                                                                            green_tol_limits, grey_tol_limits)
         lf_fig_start.savefig(os.path.join(cur_dir, 'TF_LF_plot_start_' + ci.comp + '.png'), dpi=400)
         output_filename_list.append(os.path.join(cur_dir, 'TF_LF_plot_start_' + ci.comp + '.png'))
 
@@ -154,8 +165,9 @@ if ci.collect_info():
                                                                   ci.sensor, ci.comp, fit_paz)
 
             # comute TF (and plot fig)
-            lftf_f, lftf_amp, lftf_pha, lftf_coh, lf_fig_fit = gen_tf_and_fig(samp_rate_lf, lfinput, lfmeas, CALTYPE_RBLF,
-                                                                          green_tol_limits, grey_tol_limits)
+            lftf_f, lftf_amp, lftf_pha, lftf_coh, lf_fig_fit = gen_tf_and_fig(ci, samp_rate_lf, lfinput,
+                                                                              lfmeas, CALTYPE_RBLF,
+                                                                              green_tol_limits, grey_tol_limits)
 
             action = fit_menu([('F', 'Fit New LOW FREQ Response'),
                                ('A', 'Accept Current LOW FREQ Response'),
@@ -168,9 +180,10 @@ if ci.collect_info():
                 new_paz = fit_paz
                 lf_fig_fit.savefig(os.path.join(cur_dir, 'TF_LF_plot_fit_' + ci.comp + '.png'), dpi=400)
                 output_filename_list.append(os.path.join(cur_dir, 'TF_LF_plot_fit_' + ci.comp + '.png'))
-                plt.close(lf_fig_fit)
             elif action == 'S':
                 new_paz = ci.fullpaz
+
+            plt.close(lf_fig_fit)
 
         plt.close(lf_fig_start)
 
@@ -185,8 +198,9 @@ if ci.collect_info():
         cal_start_time = min(cal_start_time, hf_start_time) if cal_start_time else hf_start_time
 
         # compute TF (and plot fig)
-        hftf_f, hftf_amp, hftf_pha, hftf_coh, hf_fig_start = gen_tf_and_fig(samp_rate_hf, hfinput, hfmeas, CALTYPE_RBHF,
-                                                                      green_tol_limits, grey_tol_limits)
+        hftf_f, hftf_amp, hftf_pha, hftf_coh, hf_fig_start = gen_tf_and_fig(ci, samp_rate_hf, hfinput,
+                                                                            hfmeas, CALTYPE_RBHF,
+                                                                            green_tol_limits, grey_tol_limits)
         hf_fig_start.savefig(os.path.join(cur_dir, 'TF_HF_plot_start_' + ci.comp + '.png'), dpi=400)
         output_filename_list.append(os.path.join(cur_dir, 'TF_HF_plot_start_' + ci.comp + '.png'))
 
@@ -216,8 +230,9 @@ if ci.collect_info():
                                                       ci.sensor, ci.comp, fit_paz)
 
             # comute TF (and plot fig)
-            hftf_f, hftf_amp, hftf_pha, hftf_coh, hf_fig_fit = gen_tf_and_fig(samp_rate_hf, hfinput, hfmeas, CALTYPE_RBHF,
-                                                                          green_tol_limits, grey_tol_limits)
+            hftf_f, hftf_amp, hftf_pha, hftf_coh, hf_fig_fit = gen_tf_and_fig(ci, samp_rate_hf, hfinput,
+                                                                              hfmeas, CALTYPE_RBHF,
+                                                                              green_tol_limits, grey_tol_limits)
 
             action = fit_menu([('F', 'Fit New HIGH FREQ Response'),
                                ('A', 'Accept Current HIGH FREQ Response'),
@@ -230,9 +245,10 @@ if ci.collect_info():
                 new_paz = fit_paz
                 hf_fig_fit.savefig(os.path.join(cur_dir, 'TF_HF_plot_fit_' + ci.comp + '.png'), dpi=400)
                 output_filename_list.append(os.path.join(cur_dir, 'TF_HF_plot_fit_' + ci.comp + '.png'))
-                plt.close(hf_fig_fit)
             elif action == 'S':
                 pass  # new_paz is already output from LF analisys or initial ci.fullpaz
+
+            plt.close(hf_fig_fit)
 
         plt.close(hf_fig_start)
 
