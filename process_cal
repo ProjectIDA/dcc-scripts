@@ -1,36 +1,48 @@
 #!/usr/bin/env python3
-
+#######################################################################################################################
+# Copyright (C) 2016  Regents of the University of California
+#
+# This is free software: you can redistribute it and/or modify it under the terms of the
+# GNU General Public License (GNU GPL) as published by the Free Software Foundation, either version 3 of the License,
+# or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+# without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details.
+#
+# A copy of the GNU General Public License can be found in LICENSE.TXT in the root of the source code repository.
+# Additionally, it can be found at http://www.gnu.org/licenses/.
+#
+# NOTES: Per GNU GPLv3 terms:
+#   * This notice must be kept in this source file
+#   * Changes to the source must be clearly noted with date & time of change
+#
+# If you use this software in a product, an explicit acknowledgment in the product documentation of the contribution
+# by Project IDA, Institute of Geophysics and Planetary Physics, UCSD would be appreciated but is not required.
+#######################################################################################################################
 import os
 import sys
 import argparse
 import shutil
-import glob
 from pathlib import Path
 
-from fabulous.color import bold, blue, red
-from numpy import pi, cos, sin, multiply, linspace  #, angle, complex128, polyval, polyfit, less_equal
 import matplotlib
 matplotlib.use('Qt4Agg')
 import matplotlib.pyplot as plt
+from fabulous.color import bold, blue, red
+from numpy import pi, cos, sin, multiply, linspace, ndarray
 
-from ida.tui import input_yn, pick2, PickResult
-from ida.instruments import CALTYPE_RBLF, CALTYPE_RBHF, \
-    Q330_FIR_GAIN_1HZ, \
-    Q330_FIR_FILTER_DELAY, \
-    Q330_FIR_COEFFS
+from ida.tui import input_yn, select, SelectResult
+from ida.instruments import CALTYPE_RBLF, CALTYPE_RBHF, Q330_FIR_GAIN_1HZ, Q330_FIR_FILTER_DELAY, Q330_FIR_COEFFS
 from ida.calibration.cal_info import CalInfo
 from ida.calibration.process import prepare_cal_data, analyze_cal_component, compare_component_response
 from ida.calibration.cross import cross_correlate
 from ida.calibration.plots import cross_tf_plot, save_comp_response_comparison_plot
-from ida.ctbto.messages import CTBTChannelResult, \
-    ims2_calibrate_result_msg_header, \
-    ims2_calibrate_result_msg_comp_info, \
-    ims2_PAZ2_msg, \
-    ims2_DIG2_msg, \
-    ims2_FIR2_msg
+from ida.ctbto.messages import ims2_calibrate_result_msg_header, ims2_calibrate_result_msg_comp_info, \
+    ims2_paz2_msg, ims2_dig2_msg, ims2_fir2_msg
 from ida.signals.utils import compute_response
 
-version = '0.3'
+version = '0.9'
 
 parser = argparse.ArgumentParser(description="Process random binary calibration data acquired by qcal.")
 parser.add_argument('-v', '--version', action='version', version=version)
@@ -54,17 +66,48 @@ ci.sta = args.sta
 ci.loc = args.loc
 ndnt = ci.tui_indent + 1
 
+
 def clean_analysis_files(filelist):
-    for fn in filelist:
-        os.remove(fn)
+    """Deletes specific list of files form current directory.
+
+    Args:
+        filelist (iterable): List of files to remove from current directory
+    """
+    for filename in filelist:
+        os.remove(filename)
 
 def publish_files(target_dir, filelist):
-    for fn in filelist:
-        aname = Path(fn).name
-        shutil.copy2(fn, os.path.join(target_dir, aname))
+    """Copies files to 'output' directory
 
+    Args:
+        target_dir (str): Path of target directory
+        filelist (iterable): List of files to copy from current directory to target_dir
+    """
+
+    for filename in filelist:
+        aname = Path(filename).name
+        shutil.copy2(filename, os.path.join(target_dir, aname))
 
 def gen_tf_and_fig(cal_info, data_samp_rate, input_data, meas_data, cal_type, green_tol_limits, grey_tol_limits):
+    """Run cross correlation and generate Transfer Function (TF) plot.
+
+    Args:
+        cal_info (CalInfo): Instance of CalInfo containing information on calibration being processed
+        data_samp_rate (float or int): Sample rate of calibration data
+        input_data (ndarray): Input calibration timeseries convolved with response
+        meas_data (ndarray):  Output (measured) calibration timeseries
+        cal_type (CalType): Either CALTYPE_RBLF or CALTYPE_RBHF
+        green_tol_limits ((float, float)): Tuple of amplitude 'green range' in %, phase 'green range' in degrees
+        grey_tol_limits ((float, float)): Tuple of amplitude 'grey range' in %, phase 'grey range' in degrees
+
+    Returns:
+        tf_f (ndarray): Array of transfer function frequencies
+        tf_amp (ndarray): Array of transsfer function amplitudes
+        tf_pha (ndarray): Array of tranfer function phases
+        tf_coh (ndarray): Array of timeseries coherence
+        fig (pyplot.figure): Matplotlib containing figure with TF and Coherence plots
+
+    """
 
     if cal_type == CALTYPE_RBLF:
         eff_max_freq =  data_samp_rate
@@ -80,12 +123,11 @@ def gen_tf_and_fig(cal_info, data_samp_rate, input_data, meas_data, cal_type, gr
 
     return tf_f, tf_amp, tf_pha, tf_coh, fig
 
-
 def fit_menu(choice_list):
-    result, choices, user_choice_groups, _ = pick2([choice_list],
-                                                   title='Select Action', prompt='Enter selection ("q" => quit): ',
-                                                   implicit_quit_q=True, menu_on_error=True,
-                                                   err_message='Invalid choice. Please try again')
+    result, choices, user_choice_groups, _ = select([choice_list],
+                                                    title='Select Action', prompt='Enter selection ("q" => quit): ',
+                                                    implicit_quit_q=True, menu_on_error=True,
+                                                    err_message='Invalid choice. Please try again')
 
     return choices[0]
 
@@ -115,8 +157,8 @@ if ci.collect_info():
 
     # set up for matplotlib and TF plots
     plt.ion()
-    green_tol_limits = (1.0, 1.0, 1.0)  # (amp_pcnt, pha_deg, coh)
-    grey_tol_limits = (5.0, 5.0, 5.0)  # (amp_pcnt, pha_deg, coh)
+    green_tol_limits = (1.0, 1.0)  # (amp_pcnt, pha_deg, coh)
+    grey_tol_limits = (5.0, 5.0)  # (amp_pcnt, pha_deg, coh)
 
     fit_paz = ci.fullpaz
     new_paz = ci.fullpaz
@@ -149,7 +191,7 @@ if ci.collect_info():
         while action == 'F':
 
             res, err = ci.select_perturb_map(CALTYPE_RBLF)
-            if res == PickResult.collect_quit:
+            if res == SelectResult.quit:
                 print(' '*ndnt + bold(red('User quit.')))
                 sys.exit(1)
 
@@ -218,7 +260,7 @@ if ci.collect_info():
         while action == 'F':
 
             res, err = ci.select_perturb_map(CALTYPE_RBHF, paz=new_paz)
-            if res == PickResult.collect_quit:
+            if res == SelectResult.quit:
                 clean_analysis_files(output_filename_list)
                 user_quit()
 
@@ -265,7 +307,6 @@ if ci.collect_info():
     output_filename_list.append(new_fn)
     print('\n' + ' '*ndnt + bold('Response saved to file for: {}'.format(ci.comp)), bold(blue(new_fn)))
 
-
     if (new_paz != ci.fullpaz) or (ci.is_ctbto() and (not ci.omit_lf) and (not ci.omit_hf)):
         # need to compute freq response for comparison plots (if response changed) or for ctbto regardless of change
         print(' '*ndnt + bold('Computing frequency response for: {}'.format(ci.comp)))
@@ -292,12 +333,10 @@ if ci.collect_info():
         if ci.is_ctbto() and (not ci.omit_lf) and (not ci.omit_hf):
 
             # noinspection PyUnboundLocalVariable
-            ctbto_inspec = (lftf_amp.min() >= 0.95) and (lftf_amp.max() <= 1.05) and \
+            ctbto_inspec = 'YES' if (lftf_amp.min() >= 0.95) and (lftf_amp.max() <= 1.05) and \
                            (hftf_amp.min() >= 0.95) and (hftf_amp.max() <= 1.05) and \
                            (lftf_pha.min() >= -5) and (lftf_pha.max() <= 5) and \
-                           (hftf_pha.min() >= -5) and (hftf_pha.max() <= 5)
-
-            print(' '*ndnt + bold('Computing full system sensitivity @ 1Hz for: {}'.format(ci.comp)))
+                           (hftf_pha.min() >= -5) and (hftf_pha.max() <= 5) else 'NO'
 
             # compute new a0 (using pre-normalized response)
             calper = 1.0
@@ -317,21 +356,16 @@ if ci.collect_info():
 
             # convert cts/(m/s) to cts/m to nm/ct
             calib = 1 / (sys_sens * (2 * pi) / 1e9)
-            print(' '*ndnt + bold('sys sens (CALIB nm/ct) @ 1 sec for {}: '.format(ci.comp)), bold(blue(calib)))
-
-            ctbto_chan_res = CTBTChannelResult(channel=ci.chan, calib=calib, calper=1.0,
-                                               sample_rate=ci.opsr,
-                                               in_spec=ctbto_inspec, paz=new_paz, A0=a0)
 
             ims2_header = ims2_calibrate_result_msg_header(cal_start_time)
-            comp_info = ims2_calibrate_result_msg_comp_info(ci.sta, ci.chan, ctbto_inspec, calib, calper)
-            sensor_info = ims2_PAZ2_msg(ci.sta, ci.loc, ci.chan, ci.sensor, cal_start_time,
+            comp_info = ims2_calibrate_result_msg_comp_info(ci.sta.upper(), ci.chan, ctbto_inspec, calib, calper)
+            sensor_info = ims2_paz2_msg(ci.sta.upper(), ci.loc, ci.chan, ci.sensor.upper(), cal_start_time,
                                         ci.opsr, calib, calper, new_paz,
                                         a0 * ci.chn_stages.iloc[0].gnom * ci.chn_stages.iloc[0].gcalib)
-            digi_info = ims2_DIG2_msg(2, ci.chn_stages.iloc[2].gnom * ci.chn_stages.iloc[2].gcalib,
+            digi_info = ims2_dig2_msg(2, ci.chn_stages.iloc[2].gnom * ci.chn_stages.iloc[2].gcalib,
                                       ci.opsr, 'Q330') + \
                         '\n' + \
-                        ims2_FIR2_msg(3, 1.0, 1, Q330_FIR_FILTER_DELAY[int(ci.opsr)], 'A',
+                        ims2_fir2_msg(3, 1.0, 1, Q330_FIR_FILTER_DELAY[int(ci.opsr)], 'A',
                                       'Q330 Fir filter @ {}Hz'.format(ci.opsr), Q330_FIR_COEFFS[int(ci.opsr)])
 
             ims_msg_hdr_fn = os.path.join(cur_dir, 'IMS2_CR_{}_{}_{}_HDR.txt'.format(ci.sta.upper(),
@@ -350,6 +384,14 @@ if ci.collect_info():
                 ofl.write(sensor_info + '\n')
                 ofl.write(digi_info + '\n')
                 output_filename_list.append(ims_msg_comp_fn)
+
+            ims_msg_footer_fn = os.path.join(cur_dir, 'IMS2_CR_{}_{}_{}_FOOT.txt'.format(ci.sta.upper(),
+                                                                                         ci.sensor.upper(),
+                                                                                         analysis_date.replace('-', '')))
+            with open(ims_msg_footer_fn, 'wt') as ofl:
+                ofl.write('STOP\n')
+                output_filename_list.append(ims_msg_footer_fn)
+
 
     elif ci.is_ctbto() and (ci.omit_lf or ci.omit_hf):
         print(' '*ndnt + bold(red('WARNING: Can not produce CTBTO results without both LF and HF analysis')))
