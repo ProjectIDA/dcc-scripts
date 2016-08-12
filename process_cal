@@ -30,10 +30,11 @@ import matplotlib
 matplotlib.use('Qt4Agg')
 import matplotlib.pyplot as plt
 from fabulous.color import bold, blue, red
-from numpy import pi, cos, sin, multiply, linspace, ndarray
+from numpy import pi, cos, sin, multiply, linspace, ndarray, less_equal, extract
 
 from ida.tui import input_yn, select, SelectResult
-from ida.instruments import CALTYPE_RBLF, CALTYPE_RBHF, Q330_FIR_GAIN_1HZ, Q330_FIR_FILTER_DELAY, Q330_FIR_COEFFS
+from ida.instruments import CALTYPE_RBLF, CALTYPE_RBHF, CALTYPE_RBLF_SAMPLERATE, CALTYPE_RBHF_SAMPLERATE, \
+    Q330_FIR_GAIN_1HZ, Q330_FIR_FILTER_DELAY, Q330_FIR_COEFFS
 from ida.calibration.cal_info import CalInfo
 from ida.calibration.process import prepare_cal_data, analyze_cal_component, compare_component_response
 from ida.calibration.cross import cross_correlate
@@ -42,7 +43,7 @@ from ida.ctbto.messages import ims2_calibrate_result_msg_header, ims2_calibrate_
     ims2_paz2_msg, ims2_dig2_msg, ims2_fir2_msg
 from ida.signals.utils import compute_response
 
-version = '0.9'
+version = '0.9.1'
 
 parser = argparse.ArgumentParser(description="Process random binary calibration data acquired by qcal.")
 parser.add_argument('-v', '--version', action='version', version=version)
@@ -110,16 +111,21 @@ def gen_tf_and_fig(cal_info, data_samp_rate, input_data, meas_data, cal_type, gr
     """
 
     if cal_type == CALTYPE_RBLF:
-        eff_max_freq =  data_samp_rate
+        eff_samplerate_freq =  data_samp_rate
+        thedate = cal_info.lfdatestr
     elif cal_type == CALTYPE_RBHF:
-        eff_max_freq = ci.opsr
+        eff_samplerate_freq = ci.opsr
+        # eff_samplerate_freq = 100
+        thedate = cal_info.hfdatestr
     else:
         raise ValueError('Invalid cal_type: {}'.format(cal_type))
+
     tf_f, tf_amp, tf_pha, tf_coh = cross_correlate(data_samp_rate, input_data, meas_data)
     fig = cross_tf_plot(cal_info.sta, cal_info.loc, cal_info.chan,
-                        cal_info.sensor, cal_info.lfdatestr, cal_type,
-                        eff_max_freq, tf_f, tf_amp, tf_pha, tf_coh,
-                        green_tol_lims=green_tol_limits, grey_tol_lims=grey_tol_limits)
+                        cal_info.sensor, thedate, cal_type,
+                        eff_samplerate_freq, tf_f, tf_amp, tf_pha, tf_coh,
+                        green_tol_lims=green_tol_limits, grey_tol_lims=grey_tol_limits,
+                        plot_band_limit=0.9)  # plot to 90% of nyquist
 
     return tf_f, tf_amp, tf_pha, tf_coh, fig
 
@@ -332,18 +338,27 @@ if ci.collect_info():
 
         if ci.is_ctbto() and (not ci.omit_lf) and (not ci.omit_hf):
 
+            hf_freqs_in_band = less_equal(hftf_f, 0.9 * 0.5 * ci.opsr)
+            lf_freqs_in_band = less_equal(lftf_f, 0.9 * 0.5 * CALTYPE_RBLF_SAMPLERATE)
+
             # noinspection PyUnboundLocalVariable
-            ctbto_inspec = 'YES' if (lftf_amp.min() >= 0.95) and (lftf_amp.max() <= 1.05) and \
-                           (hftf_amp.min() >= 0.95) and (hftf_amp.max() <= 1.05) and \
-                           (lftf_pha.min() >= -5) and (lftf_pha.max() <= 5) and \
-                           (hftf_pha.min() >= -5) and (hftf_pha.max() <= 5) else 'NO'
+            ctbto_inspec = 'YES' if (lftf_amp[lf_freqs_in_band].min() >= 0.95) and \
+                                    (lftf_amp[lf_freqs_in_band].max() <= 1.05) and \
+                                    (lftf_pha[lf_freqs_in_band].min() >= -5) and \
+                                    (lftf_pha[lf_freqs_in_band].max() <= 5) and \
+                                    (hftf_amp[hf_freqs_in_band].min() >= 0.95) and \
+                                    (hftf_amp[hf_freqs_in_band].max() <= 1.05) and \
+                                    (hftf_pha[hf_freqs_in_band].min() >= -5) and \
+                                    (hftf_pha[hf_freqs_in_band].max() <= 5) else 'NO'
+
+            if ctbto_inspec == 'NO':
+                print('\n', ' '*ndnt + bold(red('HEADS UP: Does not meet CTBTO IN_SPEC Criteria!')), '\n')
 
             # compute new a0 (using pre-normalized response)
             calper = 1.0
             bin_1hz_ndx = min([freq[0] for freq in enumerate(freqs) if freq[1] >= (1/calper)])
             resp_1hz = compute_response(1.0, new_paz)
             a0 = 1 / abs(resp_1hz[0])
-            print(' '*ndnt + bold('A0 @ 1hz:'), bold(blue(a0)))
 
             # system sens to compute calib
             s1_sens = abs(new_resp[bin_1hz_ndx]) * \
