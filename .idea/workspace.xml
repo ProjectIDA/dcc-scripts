@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="d46fd071-561f-4584-afd0-4f85343fddb1" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/process_cal" afterPath="$PROJECT_DIR$/process_cal" />
-    </list>
+    <list default="true" id="d46fd071-561f-4584-afd0-4f85343fddb1" name="Default" comment="" />
     <ignored path="dcc-scripts.iws" />
     <ignored path=".idea/workspace.xml" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
