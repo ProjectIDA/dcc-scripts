@@ -120,7 +120,7 @@ def gen_tf_and_fig(cal_info, data_samp_rate, input_data, meas_data, cal_type, gr
     else:
         raise ValueError('Invalid cal_type: {}'.format(cal_type))
 
-    tf_f, tf_amp, tf_pha, tf_coh = cross_correlate(data_samp_rate, input_data, meas_data)
+    tf_f, tf_amp, tf_pha, tf_coh, _, _, _, _, _ = cross_correlate(data_samp_rate, input_data, meas_data)
     fig = cross_tf_plot(cal_info.sta, cal_info.loc, cal_info.chan,
                         cal_info.sensor, thedate, cal_type,
                         eff_samplerate_freq, tf_f, tf_amp, tf_pha, tf_coh,
