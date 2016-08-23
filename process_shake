@@ -1,0 +1,120 @@
+#!/usr/bin/env python3
+#######################################################################################################################
+# Copyright (C) 2016  Regents of the University of California
+#
+# This is free software: you can redistribute it and/or modify it under the terms of the
+# GNU General Public License (GNU GPL) as published by the Free Software Foundation, either version 3 of the License,
+# or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+# without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details.
+#
+# A copy of the GNU General Public License can be found in LICENSE.TXT in the root of the source code repository.
+# Additionally, it can be found at http://www.gnu.org/licenses/.
+#
+# NOTES: Per GNU GPLv3 terms:
+#   * This notice must be kept in this source file
+#   * Changes to the source must be clearly noted with date & time of change
+#
+# If you use this software in a product, an explicit acknowledgment in the product documentation of the contribution
+# by Project IDA, Institute of Geophysics and Planetary Physics, UCSD would be appreciated but is not required.
+#######################################################################################################################
+
+import os
+from os.path import exists, abspath, join, split, isfile, isdir
+import argparse
+import glob
+import sys
+from fabulous.color import red, green, bold
+from pprint import PrettyPrinter
+import matplotlib
+matplotlib.use('Qt4Agg')
+import matplotlib.pyplot as plt
+from obspy import Stream
+
+from ida.calibration.shaketable import *
+# read_intimes, prepare_traces, save_chan_traces, ShakeConfig, shake_table_meters_per_volt
+
+pp = PrettyPrinter()
+plt.ion()
+
+version = '0.1.0'
+parser = argparse.ArgumentParser(description="Process compact Trillium shake table data.")
+parser.add_argument('data_dir_list', action="store", default='',
+                    help="File containing list of data directories to process.")
+parser.add_argument('-t', '--intimes_filename', action="store", default="intimes",
+                    help="Filename containing start/end times for each channel.")
+parser.add_argument('-c', '--config_filename', action="store", default="config.yaml",
+                    help="Shaketable analysis configuration yaml file.")
+parser.add_argument('-v', '--version', action='version', version=version)
+parser.add_argument('-d', '--debug', action='store_true', help='Enabled debug mode for verbose output.')
+
+args = parser.parse_args()
+
+config = ShakeConfig(join(os.environ['IDA_CAL_SHAKETABLE_DIR'], args.config_filename))
+indirlist = join(os.environ['IDA_CAL_SHAKETABLE_DIR'], args.data_dir_list)
+
+if exists(indirlist) and isfile(indirlist):
+    fdir = split(indirlist)[0]
+    with open(indirlist, 'rt') as ifl:
+        for subdir in ifl:
+            subdir = subdir.strip()
+            fpath = abspath(os.path.join(fdir, subdir))
+            if exists(fpath) and isdir(fpath):
+                if args.debug: print(green('Abspath: {}'.format(fpath)))
+                intimesfile = join(fpath, args.intimes_filename)
+            else:
+                print(red(bold('Directory not found: {}'.format(fpath))))
+                print(red('Skipping directory.'))
+                continue
+
+            if exists(intimesfile) and isfile(intimesfile):
+                msfiles = glob.glob(join(fpath, '*.seed'))
+                if len(msfiles) == 0:
+                    print(red(bold('Error: No miniseed (*.seed) files found.')))
+                    print(red('Skipping directory.'))
+                    continue
+                elif len(msfiles) > 1:
+                    print(red(bold('Error: Multiple miniseed (*.seed) files found. Should be 1 per directory')))
+                    print(red('Skipping directory.'))
+                    continue
+                elif args.debug:
+                    print(green('Found miniseed data: {}'.format(msfiles[0])))
+
+                if args.debug: print(green('Reading intimes file: {}.'.format(intimesfile)))
+                meta = read_intimes(intimesfile)
+                if args.debug: pp.pprint(meta)
+
+                good_meta = prepare_traces(meta, msfiles[0])
+                if good_meta:
+                    if args.debug:
+                        print(green('Channel metadata for processing:'))
+                        pp.pprint(good_meta)
+
+                    for chancode, val in good_meta.items():
+
+
+                            strm = Stream([val['wf'], val['wf_ref']])
+                            if args.debug: print(chancode + ': ', end='')
+                            if args.debug: print(strm)
+                            fn = os.path.join(fpath, chancode + '_shaketable_data_py.ms')
+                            if not save_chan_traces(chancode, fn, strm):
+                                print(red(bold('Error writing shaketable traces for channel: {} to file: {}.'.format(chancode, fn))))
+                                print(red('Quitting.'))
+                                sys.exit(1)
+
+                            cross_res = correlate_channel_traces(val['wf'], val['wf_ref'], 40.0, config)
+                            fig1, fig2, fig3 = shake_table_chan_plots(subdir, chancode, cross_res)
+                            fig1.savefig(os.path.join(fpath, '{}_fig1_py.png'.format(chancode)), dpi=400)
+                            fig2.savefig(os.path.join(fpath, '{}_fig2_py.png'.format(chancode)), dpi=400)
+                            fig3.savefig(os.path.join(fpath, '{}_fig3_py.png'.format(chancode)), dpi=400)
+
+                    yn = input('are you done yet? ')
+            else:
+                print(red(bold('Error reading intimes file: ' + intimesfile)))
+                print(red('Skipping directory: {}.'.format(fpath)))
+
+else:
+    print(red(bold('\nFile not found: {}. Please check the number and dial again.\n'.format(indirlist))))
+    parser.print_help()
