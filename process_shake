@@ -47,17 +47,26 @@ parser.add_argument('-t', '--intimes_filename', action="store", default="intimes
                     help="Filename containing start/end times for each channel.")
 parser.add_argument('-c', '--config_filename', action="store", default="config.yaml",
                     help="Shaketable analysis configuration yaml file.")
+parser.add_argument('-r', '--results_filename', action="store", default="results-py.txt",
+                    help="Name of shaketable analysis results file. Located in $IDA_CAL_SHAKETABLE_DIR.")
 parser.add_argument('-v', '--version', action='version', version=version)
 parser.add_argument('-d', '--debug', action='store_true', help='Enabled debug mode for verbose output.')
 
 args = parser.parse_args()
 
-config = ShakeConfig(join(os.environ['IDA_CAL_SHAKETABLE_DIR'], args.config_filename))
-indirlist = join(os.environ['IDA_CAL_SHAKETABLE_DIR'], args.data_dir_list)
+if not os.environ.get('IDA_CAL_SHAKETABLE_DIR'):
+    print(red(bold('The env var IDA_CAL_SHAKETABLE_DIR must be set to the root directory of the shaketable data.')))
+    sys.exit(1)
+
+shake_table_dir = os.environ['IDA_CAL_SHAKETABLE_DIR']
+config = ShakeConfig(join(shake_table_dir, args.config_filename))
+results_file = join(shake_table_dir, args.results_filename)
+indirlist = join(shake_table_dir, args.data_dir_list)
 
 if exists(indirlist) and isfile(indirlist):
     fdir = split(indirlist)[0]
     with open(indirlist, 'rt') as ifl:
+        fignum = 0  # index figs so they don't overwrite each other
         for subdir in ifl:
             subdir = subdir.strip()
             fpath = abspath(os.path.join(fdir, subdir))
@@ -93,24 +102,78 @@ if exists(indirlist) and isfile(indirlist):
                         pp.pprint(good_meta)
 
                     for chancode, val in good_meta.items():
+                        strm = Stream([val['wf'], val['wf_ref']])
+                        if args.debug: print(chancode + ': ', end='')
+                        if args.debug: print(strm)
+                        fn = os.path.join(fpath, chancode + '_' + subdir + '_shaketable_data_py.ms')
+                        if not save_chan_traces(chancode, fn, strm):
+                            print(red(bold('Error writing shaketable traces for channel: {} to file: {}.'.format(chancode, fn))))
+                            print(red('Quitting.'))
+                            sys.exit(1)
 
 
-                            strm = Stream([val['wf'], val['wf_ref']])
-                            if args.debug: print(chancode + ': ', end='')
-                            if args.debug: print(strm)
-                            fn = os.path.join(fpath, chancode + '_shaketable_data_py.ms')
-                            if not save_chan_traces(chancode, fn, strm):
-                                print(red(bold('Error writing shaketable traces for channel: {} to file: {}.'.format(chancode, fn))))
-                                print(red('Quitting.'))
-                                sys.exit(1)
+                        cross_res = correlate_channel_traces(val['wf'],
+                                                             val['wf_ref'],
+                                                             config.sample_rate(),
+                                                             config.shake_table_meters_per_volt(chancode[2],
+                                                                                                val['starttime']),
+                                                             config.digi_cnts_per_volt(),
+                                                             smoothing_factor=config.analysis_smoothing_factor())
 
-                            cross_res = correlate_channel_traces(val['wf'], val['wf_ref'], 40.0, config)
-                            fig1, fig2, fig3 = shake_table_chan_plots(subdir, chancode, cross_res)
-                            fig1.savefig(os.path.join(fpath, '{}_fig1_py.png'.format(chancode)), dpi=400)
-                            fig2.savefig(os.path.join(fpath, '{}_fig2_py.png'.format(chancode)), dpi=400)
-                            fig3.savefig(os.path.join(fpath, '{}_fig3_py.png'.format(chancode)), dpi=400)
+                        # get ndxs of good coh in freq_band
+                        min_freq = config.plot_min_freq()
+                        max_freq = config.plot_max_freq()
+                        use_freqs = logical_and(less_equal(cross_res['freqs'], max_freq),
+                                                greater_equal(cross_res['freqs'], min_freq))
 
-                    yn = input('are you done yet? ')
+                        fr = cross_res['freqs'][use_freqs]
+                        co = cross_res['coh'][use_freqs]
+                        ps1 = cross_res['psd1'][use_freqs]
+                        ps2 = cross_res['psd2'][use_freqs]
+                        am = cross_res['amp'][use_freqs]
+                        ph = cross_res['pha'][use_freqs]
+
+                        fignum += 1
+                        psd_fig = shake_table_psd_plot(fignum, subdir, chancode, fr, ps1, ps2, co)
+                        psd_fig.savefig(os.path.join(fpath, '{}_{}_psd_fig.png'.format(chancode, subdir)), dpi=400)
+
+                        fignum += 1
+                        tf_fig_1 = shake_table_tf_plot(fignum, subdir, chancode, fr, am, ph, co)
+                        tf_fig_1.savefig(os.path.join(fpath, '{}_{}_tf_fig1.png'.format(chancode, subdir)), dpi=400)
+
+                        # detrend and take only "good" coh points
+                        # now just coh >= coh_min
+                        coh_min = config.plot_coh_min()
+                        good_coh = greater(co, coh_min)
+                        fr = fr[good_coh]
+                        am = am[good_coh]
+                        ph = ph[good_coh]
+                        co = co[good_coh]
+
+                        # and remove trend/time shift from phase
+                        coeffs = polyfit(fr, ph, 1)
+                        coeffs = (coeffs[0], 0)  # set y-intercept to 0
+                        correction = polyval(coeffs, fr)
+                        ph = subtract(ph, correction)
+
+                        # construct plot with only good coh points
+                        fignum += 1
+                        tf_fig_2 = shake_table_tf_plot(fignum, subdir, chancode, fr, am, ph, co, '\n(coh**2 > {}; Phase de-trended)'.format(coh_min))
+                        tf_fig_2.savefig(os.path.join(fpath, '{}_{}_tf_fig2.png'.format(chancode, subdir)), dpi=400)
+
+                        # calculate overall values to save
+                        amp_mean = am.mean()
+                        amp_std = am.std()
+                        pha_mean = ph.mean()
+                        pha_std = ph.std()
+                        res_txt = '{} {} amp_mean {}  amp_std {}  pha_mean {}  pha_std {}  coh_cut {}'.format(
+                            chancode[2], subdir, amp_mean, amp_std, pha_mean, pha_std, coh_min)
+
+                        with open(results_file, 'at') as rfl:
+                            rfl.write(res_txt + '\n')
+                        if args.debug: print(res_txt)
+
+                    input('Figures have been saved. Hit ENTER to quit: ')
             else:
                 print(red(bold('Error reading intimes file: ' + intimesfile)))
                 print(red('Skipping directory: {}.'.format(fpath)))
