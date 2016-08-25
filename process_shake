@@ -47,7 +47,7 @@ parser.add_argument('-t', '--intimes_filename', action="store", default="intimes
                     help="Filename containing start/end times for each channel.")
 parser.add_argument('-c', '--config_filename', action="store", default="config.yaml",
                     help="Shaketable analysis configuration yaml file.")
-parser.add_argument('-r', '--results_filename', action="store", default="results-py.txt",
+parser.add_argument('-r', '--results_filename', action="store", default="results.txt",
                     help="Name of shaketable analysis results file. Located in $IDA_CAL_SHAKETABLE_DIR.")
 parser.add_argument('-v', '--version', action='version', version=version)
 parser.add_argument('-d', '--debug', action='store_true', help='Enabled debug mode for verbose output.')
@@ -70,7 +70,7 @@ if exists(indirlist) and isfile(indirlist):
         for subdir in ifl:
             subdir = subdir.strip()
             fpath = abspath(os.path.join(fdir, subdir))
-            print(green('Processing directory: {}'.format(fpath)))
+            print('\nProcessing directory: {}'.format(fpath))
             if exists(fpath) and isdir(fpath):
                 if args.debug: print(green('Abspath: {}'.format(fpath)))
                 intimesfile = join(fpath, args.intimes_filename)
@@ -174,7 +174,7 @@ if exists(indirlist) and isfile(indirlist):
                             rfl.write(res_txt + '\n')
                         if args.debug: print(res_txt)
 
-                    input('Figures for {} have been saved. Hit ENTER to continue:'.format(subdir))
+                    input(green('Figures for {} have been saved. Hit ENTER to continue:'.format(subdir)))
             else:
                 print(red(bold('Error reading intimes file: ' + intimesfile)))
                 print(red('Skipping directory: {}.'.format(fpath)))
