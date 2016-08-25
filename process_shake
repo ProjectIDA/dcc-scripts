@@ -70,6 +70,7 @@ if exists(indirlist) and isfile(indirlist):
         for subdir in ifl:
             subdir = subdir.strip()
             fpath = abspath(os.path.join(fdir, subdir))
+            print(green('Processing directory: {}'.format(fpath)))
             if exists(fpath) and isdir(fpath):
                 if args.debug: print(green('Abspath: {}'.format(fpath)))
                 intimesfile = join(fpath, args.intimes_filename)
@@ -173,7 +174,7 @@ if exists(indirlist) and isfile(indirlist):
                             rfl.write(res_txt + '\n')
                         if args.debug: print(res_txt)
 
-                    input('Figures have been saved. Hit ENTER to quit: ')
+                    input('Figures for {} have been saved. Hit ENTER to continue:'.format(subdir))
             else:
                 print(red(bold('Error reading intimes file: ' + intimesfile)))
                 print(red('Skipping directory: {}.'.format(fpath)))
