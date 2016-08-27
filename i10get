@@ -30,7 +30,7 @@ parser = argparse.ArgumentParser(description="Retrieve IDA10 raw data for arbitr
                                              "'ms' or 'css'.")
 parser.add_argument('station', action="store", default='',
                     help="Station code for which data should be retrieved (case insensitive).")
-parser.add_argument('chanlist', action='store', help="Comma saperated list of CHANLOC codes (e.g. bhz00) " +
+parser.add_argument('chanloc_list', action='store', help="Comma saperated list of CHANLOC codes (e.g. bhz00) " +
                                                      "as expected by idagrep (case insensitive).", default = '')
 parser.add_argument('start', action="store", default='',
                     help="START time in either  YYYY-JJJ:HH:MM:SS  or  YYYY-MM-DDTHH:MM:SS formats (UTC assumed). " + \
@@ -46,7 +46,7 @@ parser.add_argument('-q', '--quiet', action='store_true', help='Nothing written 
 args = parser.parse_args()
 
 sta_list = args.station.lower()
-chan_list = args.chanlist.lower()
+chan_list = args.chanloc_list.lower()
 gen_css = args.css
 debug = args.debug
 quiet = args.quiet and not debug
@@ -89,6 +89,13 @@ if not (gunzip_path):
 if not (arcrawdir and imseed_path and msdmx_path and idagrep_path and gunzip_path):
     sys.exit(1)
 
+
+# validate chan_list
+for chn in chan_list.strip(','):
+    if (len(chn) != 5):
+        print(red(bold('FATAL ERROR: Invalid channel-loc list {}. Each channel must be specified with the location code, e.g. bhz00.'.format(chan_list))),
+              file = sys.stderr)
+        sys.exit(1)
 
 # check date param formats. Allow date without times
 start_t = args.start
@@ -178,6 +185,22 @@ for sta in sta_list.split(','):
     if not os.path.exists(mssubdir):
         os.mkdir(mssubdir)
 
+    # cleanout old files (thought they shouldn't exist)
+    sta_gz_file = os.path.join(mssubdir, '{}.gz'.format(sta))
+    if os.path.exists(sta_gz_file): os.remove(sta_gz_file)
+    sta_ms_tempfile = os.path.join(mssubdir, '{}_temp.ms'.format(sta))
+    if os.path.exists(sta_ms_tempfile): os.remove(sta_ms_tempfile)
+    sta_ms_filtered_file = os.path.join(mssubdir, '{}_{}-{}.ms'.format(sta,
+                                                                       start_datetime.strftime('%Y%m%d'),
+                                                                       end_datetime.strftime('%Y%m%d')))
+    if os.path.exists(sta_ms_filtered_file):
+        print(red('WARNING: Overwriting existing file: ' + sta_ms_filtered_file))
+        yn = input_yn('Do you wish to continue? (y/n): ')
+        if yn == 'Y':
+            os.remove(sta_ms_filtered_file)
+        else:
+            sys.exit(1)
+
     # make sure dir does NOT exist for css data. msdmx needs to create it
     if gen_css:
         csssubdir = '{}_css'.format(sta)
@@ -189,18 +212,11 @@ for sta in sta_list.split(','):
             else:
                 sys.exit(1)
 
-
-    # kee track of gz files across days for each station to remove dupes
+    # keep track of gz files across days for each station to remove dupes
     gz_files_processed = set()
 
     # get list of raw yr/day dirs for sta within tart/end dates
     gz_dirs = raw_dirs(arcrawdir, sta, start_datetime, end_datetime)
-
-    sta_gz_file = os.path.join(mssubdir, '{}.gz'.format(sta))
-    sta_ms_tempfile = os.path.join(mssubdir, '{}_temp.ms'.format(sta))
-    sta_ms_filtered_file = os.path.join(mssubdir, '{}_{}-{}.ms'.format(sta,
-                                                                       start_datetime.strftime('%Y%m%d'),
-                                                                       end_datetime.strftime('%Y%m%d')))
 
     for gz_dir in gz_dirs:
         if debug: print('processing:', gz_dir)
@@ -246,11 +262,6 @@ for sta in sta_list.split(','):
             strm.trim(starttime=start_datetime, endtime=end_datetime)
             strm.merge(fill_value=0)    # gaps filled with value of 0
             strm.sort()
-
-            if os.path.exists(sta_ms_filtered_file):
-                print(red('WARNING: Overwriting existing file: ' + sta_ms_filtered_file))
-                os.remove(sta_ms_filtered_file)
-
             strm.write(sta_ms_filtered_file, format='MSEED')
 
             del strm
