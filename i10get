@@ -1,0 +1,274 @@
+#!/usr/bin/env python3
+#######################################################################################################################
+# Copyright (C) 2016  Regents of the University of California
+#
+# This is free software: you can redistribute it and/or modify it under the terms of the
+# GNU General Public License (GNU GPL) as published by the Free Software Foundation, either version 3 of the License,
+# or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+# without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details.
+#
+# A copy of the GNU General Public License can be found in LICENSE.TXT in the root of the source code repository.
+# Additionally, it can be found at http://www.gnu.org/licenses/.
+#
+# NOTES: Per GNU GPLv3 terms:
+#   * This notice must be kept in this source file
+#   * Changes to the source must be clearly noted with date & time of change
+#
+# If you use this software in a product, an explicit acknowledgment in the product documentation of the contribution
+# by Project IDA, Institute of Geophysics and Planetary Physics, UCSD would be appreciated but is not required.
+#######################################################################################################################
+import argparse
+
+version = '1.0.0'
+parser = argparse.ArgumentParser(description="Retrieve IDA10 raw data for arbitrary time period and " + \
+                                             "convert to miniseed and (optionally) CSS formats.\n" +
+                                             "Converted data is saved in a subdirectory named:" +
+                                             "<stacode>_<data-type> where <data-type> is either" +
+                                             "'ms' or 'css'.")
+parser.add_argument('station', action="store", default='',
+                    help="Station code for which data should be retrieved (case insensitive).")
+parser.add_argument('chanlist', action='store', help="Comma saperated list of CHANLOC codes (e.g. bhz00) " +
+                                                     "as expected by idagrep (case insensitive).", default = '')
+parser.add_argument('start', action="store", default='',
+                    help="START time in either  YYYY-JJJ:HH:MM:SS  or  YYYY-MM-DDTHH:MM:SS formats (UTC assumed). " + \
+                         "Time is optional. 00:00:00 assumed if not supplied")
+parser.add_argument('end', action="store", default='',
+                    help="END time in either  YYYY-JJJ:HH:MM:SS  or  YYYY-MM-DDTHH:MM:SS formats (UTC assumed). " + \
+                         "Time is optional. 23:59:99.999 assumed if not supplied")
+parser.add_argument('--css', action='store_true', help="Convert to CSS in addition to miniseed.", default = '')
+parser.add_argument('-v', '--version', action='version', version=version)
+parser.add_argument('-d', '--debug', action='store_true', help='Enable debug mode for verbose output.')
+parser.add_argument('-q', '--quiet', action='store_true', help='Nothing written to stdout. Errors still go to stderr. ' + \
+                                                               'If DEBUG is set, this option is ignored.')
+args = parser.parse_args()
+
+sta_list = args.station.lower()
+chan_list = args.chanlist.lower()
+gen_css = args.css
+debug = args.debug
+quiet = args.quiet and not debug
+
+import shutil
+import os
+from pathlib import Path
+import sys
+import datetime, calendar
+import subprocess
+import glob
+
+from obspy import UTCDateTime, read
+from fabulous.color import red, green, bold
+
+from ida.tui import input_yn
+
+# check environment for external apps and env vars
+msdmx_path = shutil.which('msdmx')
+imseed_path = shutil.which('imseed')
+idagrep_path = shutil.which('idagrep')
+gunzip_path = shutil.which('gunzip')
+arcrawdir = os.getenv('IDA_ARCHIVE_RAW_DIR')
+
+if not (arcrawdir):
+    print(red(bold('FATAL ERROR: IDA_ARCHIVE_RAW_DIR env var not set. Please check your environment and dial again.')),
+          file=sys.stderr)
+if not (imseed_path):
+    print(red(bold('FATAL ERROR: imseed not found. Please check your PATH and dial again.')),
+          file = sys.stderr)
+if not (msdmx_path):
+    print(red(bold('FATAL ERROR: msdmx not found. Please check your PATH and dial again.')),
+          file = sys.stderr)
+if not (idagrep_path):
+    print(red(bold('FATAL ERROR: idagrep not found. Please check your PATH and dial again.')),
+          file = sys.stderr)
+if not (gunzip_path):
+    print(red(bold('FATAL ERROR: gunzip not found. Please check your PATH and dial again.')),
+          file = sys.stderr)
+if not (arcrawdir and imseed_path and msdmx_path and idagrep_path and gunzip_path):
+    sys.exit(1)
+
+
+# check date param formats. Allow date without times
+start_t = args.start
+if len(start_t) in [8, 10]:
+    start_t = start_t + ":00:00:00"
+try:
+    start_datetime = UTCDateTime(start_t)
+except:
+    print(red(bold('FATAL ERROR parsing START time: {}. '.format(args.start) + \
+                   'It must be in YYYY-JJJ:HH:MM:SS or YYYY-MM-DDTHH:MM:SS format.')),
+          file = sys.stderr)
+    sys.exit(1)
+
+end_t = args.end
+if len(end_t) in [8, 10]:
+    end_t = end_t + ":23:59:59.999"
+try:
+    end_datetime = UTCDateTime(end_t)
+except:
+    print(red(bold('FATAL Error parsing END time: {}. '.format(args.end) + \
+                   'It must be in YYYY-JJJ:HH:MM:SS or YYYY-MM-DDTHH:MM:SS format.')),
+          file = sys.stderr)
+    sys.exit(1)
+
+if start_datetime > UTCDateTime(datetime.datetime.utcnow()):
+    print(red(bold("FATAL ERROR: START time can not be in the future. Maybe tomorrow you'll have better luck.")),
+          file = sys.stderr)
+    sys.exit(1)
+
+if end_datetime > UTCDateTime(datetime.datetime.utcnow()):
+    print(red(bold('WARNING: END time can not be in the future. Time travel not yet implemented. Setting END to NOW.')),
+          file = sys.stderr)
+    end_datetime = UTCDateTime(datetime.datetime.utcnow())
+
+if start_datetime > end_datetime:
+    print(red(bold("FATAL ERROR: START time can not be after the END time. That's just whacky.")),
+          file = sys.stderr)
+    sys.exit(1)
+
+
+def raw_dirs(raw_root_dir, sta, start_dt, end_dt, debug=False):
+    """ Returns a list of fully qualified gz sta/year/day dir names having data between start_t and end_t inclusive"""
+
+    start_year = start_dt.year
+    start_jday = int(start_dt.strftime('%j'))
+    end_year = end_dt.year
+    end_jday = int(end_dt.strftime('%j'))
+
+    gz_filelist = []
+
+    sta_dir = os.path.join(raw_root_dir, sta)
+    if os.path.exists(sta_dir) and os.path.isdir(sta_dir):
+
+        for yr in range(start_year, end_year + 1):
+
+            if yr == start_year:
+                start_day = start_jday
+            else:
+                start_day = 1
+            if yr == end_year:
+                end_day = end_jday
+            else:
+                end_day = 365
+                if calendar.isleap(yr): end_day += 1
+
+            for dy in range(start_day, end_day + 1):
+                gz_dir = os.path.join(arcrawdir, sta, str(yr), '{:0>3}'.format(dy))
+                if os.path.exists(gz_dir) and os.path.isdir(gz_dir):
+                    gz_filelist.append(os.path.join(gz_dir))
+                else:
+                    if debug: print(red("WARNING: RAW GZ DIR not found:", gz_dir))
+
+    else:
+        print(red(bold("ERROR: Station directory not found:", sta_dir)),
+              file=sys.stderr)
+
+    return gz_filelist
+
+
+for sta in sta_list.split(','):
+
+    if not args.quiet:
+        print('Retrieving STA={}, CHN={} from {} through {}:'.format(sta, chan_list, start_datetime, end_datetime))
+
+    # make station subdir for ms data
+    mssubdir = '{}_ms'.format(sta)
+    if not os.path.exists(mssubdir):
+        os.mkdir(mssubdir)
+
+    # make sure dir does NOT exist for css data. msdmx needs to create it
+    if gen_css:
+        csssubdir = '{}_css'.format(sta)
+        if os.path.exists(csssubdir):
+            print(red('WARNING: Overwriting existing css: ' + csssubdir))
+            yn = input_yn('Do you wish to continue? (y/n): ')
+            if yn == 'Y':
+                shutil.rmtree(csssubdir, ignore_errors=True)
+            else:
+                sys.exit(1)
+
+
+    # kee track of gz files across days for each station to remove dupes
+    gz_files_processed = set()
+
+    # get list of raw yr/day dirs for sta within tart/end dates
+    gz_dirs = raw_dirs(arcrawdir, sta, start_datetime, end_datetime)
+
+    sta_gz_file = os.path.join(mssubdir, '{}.gz'.format(sta))
+    sta_ms_tempfile = os.path.join(mssubdir, '{}_temp.ms'.format(sta))
+    sta_ms_filtered_file = os.path.join(mssubdir, '{}_{}-{}.ms'.format(sta,
+                                                                       start_datetime.strftime('%Y%m%d'),
+                                                                       end_datetime.strftime('%Y%m%d')))
+
+    for gz_dir in gz_dirs:
+        if debug: print('processing:', gz_dir)
+
+        gz_files = set([Path(gz_file).name for gz_file in glob.glob(os.path.join(gz_dir, '*.gz'))])
+
+        gz_dupes = gz_files & gz_files_processed
+        if gz_dupes:
+            for gz_dupe in gz_dupes:
+                if debug: print('Ignoring duplicate GZ file {}.'.format(os.path.join(gz_dir, gz_dupe)))
+            gz_files -= gz_files_processed
+        gz_files_processed |= gz_files
+
+        gz_file_paths = [os.path.join(gz_dir, gz_file) for gz_file in gz_files]
+
+        if gz_file_paths:
+            if debug: print(green('Retrieving raw gz files from: ' + gz_dir))
+
+            cmdstr = 'cat {} | {} | {} rev=10 keep={} >> {} '.format(' '.join(gz_file_paths), gunzip_path, idagrep_path, chan_list, sta_gz_file)
+            if debug: print('spawning:', cmdstr)
+            res = subprocess.run(cmdstr, shell=True, stdout=subprocess.PIPE)
+            if res.returncode != 0:
+                print(red(bold('FATAL ERROR processing GZ files from: ' + cmdstr)),
+                      file=sys.stderr)
+                sys.exit(1)
+        else:
+            if debug: print(red('No new gz files found in '+gz_dir+'. Skipping.'))
+
+    # lets convert to ms, if we got anything
+    if os.path.exists(sta_gz_file):
+        cmdstr = '{} sta={} < {} > {} >> /dev/null'.format(imseed_path, sta, sta_gz_file, sta_ms_tempfile)
+        if debug: print('spawning:', cmdstr)
+        res = subprocess.run(imseed_path + ' sta=' + sta + ' < ' + sta_gz_file + ' > ' + sta_ms_tempfile,
+                             shell=True)
+                             # stdout=subprocess.PIPE)
+        if res.returncode != 0:
+            print(red(bold('FATAL ERROR while converting GZ file to miniseed (imseed): ' + cmdstr)),
+                  file=sys.stderr)
+            sys.exit(1)
+        else:
+            # lets merge multiple traces, trim and sort stream
+            strm = read(sta_ms_tempfile, format='MSEED')
+            strm.trim(starttime=start_datetime, endtime=end_datetime)
+            strm.merge(fill_value=0)    # gaps filled with value of 0
+            strm.sort()
+
+            if os.path.exists(sta_ms_filtered_file):
+                print(red('WARNING: Overwriting existing file: ' + sta_ms_filtered_file))
+                os.remove(sta_ms_filtered_file)
+
+            strm.write(sta_ms_filtered_file, format='MSEED')
+
+            del strm
+            if not debug:
+                os.remove(sta_gz_file)
+                os.remove(sta_ms_tempfile)
+
+            if gen_css:
+                # noinspection PyUnboundLocalVariable
+                cmdstr = '{} outdir={} < {}'.format(msdmx_path, csssubdir, sta_ms_filtered_file)
+                if debug: print('spawning:', cmdstr)
+                res = subprocess.run(cmdstr,
+                                     shell=True,
+                                     stdout=subprocess.PIPE)
+                if res.returncode != 0:
+                    print(red(bold('FATAL ERROR while converting miniseed to CSS (msdmx): ' + cmdstr)),
+                          file=sys.stderr)
+                    sys.exit(1)
+    else:
+        print('No gz data for:', sta)
+
