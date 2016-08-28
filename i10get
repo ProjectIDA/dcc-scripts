@@ -91,7 +91,8 @@ if not (arcrawdir and imseed_path and msdmx_path and idagrep_path and gunzip_pat
 
 
 # validate chan_list
-for chn in chan_list.strip(','):
+for chn in chan_list.split(','):
+    # print(chn)
     if (len(chn) != 5):
         print(red(bold('FATAL ERROR: Invalid channel-loc list {}. Each channel must be specified with the location code, e.g. bhz00.'.format(chan_list))),
               file = sys.stderr)
