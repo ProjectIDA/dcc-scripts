@@ -30,7 +30,7 @@ import matplotlib
 matplotlib.use('Qt4Agg')
 import matplotlib.pyplot as plt
 from fabulous.color import bold, blue, red
-from numpy import pi, cos, sin, multiply, linspace, ndarray, less_equal, logical_and
+from numpy import pi, cos, sin, multiply, divide, median, linspace, ndarray, less_equal, logical_and
 
 from ida.tui import input_yn, select, SelectResult
 from ida.instruments import CALTYPE_RBLF, CALTYPE_RBHF, CALTYPE_RBLF_SAMPLERATE, CALTYPE_RBHF_SAMPLERATE, \
@@ -128,8 +128,8 @@ def gen_tf_and_fig(cal_info, data_samp_rate, input_data, meas_data, cal_type, gr
     else:
         raise ValueError('Invalid cal_type: {}'.format(cal_type))
 
-    tf_amp_band_median = tf_amp[freq_normband].median()
-    tf_amp /= tf_amp_band_median
+    tf_amp_band_median = median(tf_amp[freq_normband])
+    tf_amp = divide(tf_amp, tf_amp_band_median)
 
     fig = cross_tf_plot(cal_info.sta, cal_info.loc, cal_info.chan,
                         cal_info.sensor, thedate, cal_type,
