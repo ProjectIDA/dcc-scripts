@@ -21,7 +21,6 @@
 # by Project IDA, Institute of Geophysics and Planetary Physics, UCSD would be appreciated but is not required.
 #######################################################################################################################
 import argparse
-import os
 import sys
 import datetime
 
