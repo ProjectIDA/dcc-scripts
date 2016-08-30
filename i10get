@@ -102,18 +102,10 @@ if start_datetime > end_datetime:
           file = sys.stderr)
     sys.exit(1)
 
-print('Retrieving STA={}, CHN={} from {} through {}:'.format(sta, chan_list, start_datetime, end_datetime),
-      file=sys.stderr)
+# print('Retrieving STA={}, CHN={} from {} through {}:'.format(sta, chan_list, start_datetime.strftime('%Y-%m-%d'), end_datetime.strftime('%Y-%m-%d')),
+#       file=sys.stderr)
 
-
-sta_ms_filtered_file = os.path.join('{}_{}-{}.ms'.format(sta,
-                                                         start_datetime.strftime('%Y%m%d'),
-                                                         end_datetime.strftime('%Y%m%d')))
-if os.path.exists(sta_ms_filtered_file):
-    print(red('ERROR: output file {} already exists'.format(sta_ms_filtered_file)), file=sys.stderr)
-    sys.exit(1)
-
-
+# now lets get to business...
 # FINALLY, lets get i10 data
 i10get(sta, chan_list, start_datetime, end_datetime)
 
