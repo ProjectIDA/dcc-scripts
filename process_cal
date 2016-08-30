@@ -30,7 +30,7 @@ import matplotlib
 matplotlib.use('Qt4Agg')
 import matplotlib.pyplot as plt
 from fabulous.color import bold, blue, red
-from numpy import pi, cos, sin, multiply, linspace, ndarray, less_equal, extract
+from numpy import pi, cos, sin, multiply, linspace, ndarray, less_equal, logical_and
 
 from ida.tui import input_yn, select, SelectResult
 from ida.instruments import CALTYPE_RBLF, CALTYPE_RBHF, CALTYPE_RBLF_SAMPLERATE, CALTYPE_RBHF_SAMPLERATE, \
@@ -110,17 +110,27 @@ def gen_tf_and_fig(cal_info, data_samp_rate, input_data, meas_data, cal_type, gr
 
     """
 
+    tf_f, tf_amp, tf_pha, tf_coh, _, _, _, _, _ = cross_correlate(data_samp_rate, input_data, meas_data)
+
     if cal_type == CALTYPE_RBLF:
         eff_samplerate_freq =  data_samp_rate
         thedate = cal_info.lfdatestr
+
+        freq_normband = less_equal(tf_f, 0.04 * eff_samplerate_freq)
+        # modelled after matlab go_parker.m code:  <=8% of 1hz cal sample rate for LF
+
     elif cal_type == CALTYPE_RBHF:
         eff_samplerate_freq = ci.opsr
-        # eff_samplerate_freq = 100
         thedate = cal_info.hfdatestr
+
+        freq_normband = logical_and(tf_f > 0.5, tf_f < (0.35 * eff_samplerate_freq))
+        # modelled after matlab go_parker.m code: 5% < freq < 35% of channel samplerate
     else:
         raise ValueError('Invalid cal_type: {}'.format(cal_type))
 
-    tf_f, tf_amp, tf_pha, tf_coh, _, _, _, _, _ = cross_correlate(data_samp_rate, input_data, meas_data)
+    tf_amp_band_median = tf_amp[freq_normband].median()
+    tf_amp /= tf_amp_band_median
+
     fig = cross_tf_plot(cal_info.sta, cal_info.loc, cal_info.chan,
                         cal_info.sensor, thedate, cal_type,
                         eff_samplerate_freq, tf_f, tf_amp, tf_pha, tf_coh,
