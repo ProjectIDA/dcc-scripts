@@ -63,27 +63,27 @@ try:
     elif len(start_t) == 10:
         start_datetime = datetime.datetime.strptime(start_t, '%Y-%m-%d')
     else:
-        print(red(bold('FATAL ERROR parsing START time: {}. '.format(args.start))), file=sys.stderr)
+        print(red(bold('FATAL ERROR parsing START time: {}. '.format(start_t))), file=sys.stderr)
         args.print_help()
         sys.exit(1)
 except:
-    print(red(bold('FATAL ERROR parsing START time: {}. '.format(args.start))), file=sys.stderr)
+    print(red(bold('FATAL ERROR parsing START time: {}. '.format(start_t))), file=sys.stderr)
     args.print_help()
     sys.exit(1)
 
 end_t = args.end
 try:
-    if len(start_t) == 8:
+    if len(end_t) == 8:
         end_datetime = datetime.datetime.strptime(end_t, '%Y-%j')
-    elif len(start_t) == 10:
+    elif len(end_t) == 10:
         end_datetime = datetime.datetime.strptime(end_t, '%Y-%m-%d')
     else:
-        print(red(bold('FATAL Error parsing END time: {}. '.format(args.end))), file=sys.stderr)
+        print(red(bold('FATAL Error parsing END time: {}. '.format(end_t))), file=sys.stderr)
         args.print_help()
         sys.exit(1)
 
 except:
-    print(red(bold('FATAL Error parsing END time: {}. '.format(args.end))), file=sys.stderr)
+    print(red(bold('FATAL Error parsing END time: {}. '.format(end_t))), file=sys.stderr)
     args.print_help()
     sys.exit(1)
 
