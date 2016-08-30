@@ -43,7 +43,7 @@ from ida.ctbto.messages import ims2_calibrate_result_msg_header, ims2_calibrate_
     ims2_paz2_msg, ims2_dig2_msg, ims2_fir2_msg
 from ida.signals.utils import compute_response
 
-version = '0.9.1'
+version = '1.0.1'
 
 parser = argparse.ArgumentParser(description="Process random binary calibration data acquired by qcal.")
 parser.add_argument('-v', '--version', action='version', version=version)
