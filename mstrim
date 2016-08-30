@@ -13,10 +13,10 @@ import ida.utils
 version = '1.0.0'
 parser = argparse.ArgumentParser(description="Trim miniseed data from stdin to starttime and endtime.")
 parser.add_argument('starttime', action="store", default='',
-                    help="START time in either  YYYY-JJJ:HH:MM:SS  or  YYYY-MM-DDTHH:MM:SS formats (UTC assumed). " + \
+                    help="START time in either  YYYY-JJJ:HH:MM:SS[.sss]  or  YYYY-MM-DD:HH:MM:SS[.sss] formats (UTC assumed). " + \
                          "Time is optional. 00:00:00 assumed if not supplied")
 parser.add_argument('endtime', action="store", default='',
-                    help="END time in either  YYYY-JJJ:HH:MM:SS  or  YYYY-MM-DDTHH:MM:SS formats (UTC assumed). " + \
+                    help="END time in either  YYYY-JJJ:HH:MM:SS[.sss]  or  YYYY-MM-DD:HH:MM:SS[.sss] formats (UTC assumed). " + \
                          "Time is optional. 23:59:99.999 assumed if not supplied")
 parser.add_argument('-v', '--version', action='version', version=version)
 
@@ -24,43 +24,53 @@ args = parser.parse_args()
 
 # check date param formats. Allow date without times
 start_t = args.starttime
-if len(start_t) in [8, 10]:
-    start_t = start_t + ":00:00:00"
+dpart = start_t.split(':')[0]
+if len(start_t) in [8, 10]:  # date only supplied
+    start_t = start_t + ":00:00:00.000"
 
 try:
-    if len(start_t) == 17:
-        start_datetime = datetime.datetime.strptime(start_t, '%Y-%j:%H:%M:%S')
-    elif len(start_t) == 19:
-        start_datetime = datetime.datetime.strptime(start_t, '%Y-%m-%dT%H:%M:%S')
+    if len(dpart) == 8:
+        if len(start_t) == 17:  # DOY format w/o fractions of second
+            start_t = start_t + '.000'
+        start_datetime = datetime.datetime.strptime(start_t, '%Y-%j:%H:%M:%S.%f')
+
+    elif len(dpart) == 10:
+        if len(start_t) == 19:  # y-m-d format w/o fractions of second
+            start_t = start_t + '.000'
+        start_datetime = datetime.datetime.strptime(start_t, '%Y-%m-%d:%H:%M:%S.%f')
     else:
-        print(red(bold('FATAL ERROR parsing START time: {}. '.format(args.start) + \
-                       'It must be in YYYY-JJJ:HH:MM:SS or YYYY-MM-DDTHH:MM:SS format.')),
-              file=sys.stderr)
+        print(red(bold('FATAL Error: Invalid START time: {}. '.format(start_t))), file=sys.stderr)
+        args.print_help()
         sys.exit(1)
+
 except:
-    print(red(bold('FATAL ERROR parsing START time: {}. '.format(args.start) + \
-                   'It must be in YYYY-JJJ:HH:MM:SS or YYYY-MM-DDTHH:MM:SS format.')),
-          file = sys.stderr)
+    print(red(bold('FATAL ERROR: Invalid START time: {}. '.format(start_t))), file = sys.stderr)
+    args.print_help()
     sys.exit(1)
 
 end_t = args.endtime
-if len(end_t) in [8, 10]:
+dpart = end_t.split(':')[0]
+if len(end_t) in [8, 10]:  # date only supplied
     end_t = end_t + ":23:59:59.999"
 try:
-    if len(start_t) == 17:
-        end_datetime = datetime.datetime.strptime(end_t, '%Y-%j:%H:%M:%S')
-    elif len(start_t) == 19:
-        end_datetime = datetime.datetime.strptime(end_t, '%Y-%m-%dT%H:%M:%S')
+    if len(dpart) == 8:  # DOY format
+        if len(end_t) == 17:
+            end_t = end_t + ".000"  # entered time, but no fractional seconds, set to 0
+        end_datetime = datetime.datetime.strptime(end_t, '%Y-%j:%H:%M:%S.%f')
+
+    elif len(dpart) == 10:  # y-m-d format
+        if len(end_t) == 19:
+            end_t = end_t + ".000"  # entered time, but no fractional seconds, set to 0
+        end_datetime = datetime.datetime.strptime(end_t, '%Y-%m-%d:%H:%M:%S.%f')
+
     else:
-        print(red(bold('FATAL Error parsing END time: {}. '.format(args.end) + \
-                       'It must be in YYYY-JJJ:HH:MM:SS or YYYY-MM-DDTHH:MM:SS format.')),
-              file=sys.stderr)
+        print(red(bold('FATAL Error: Invalid END time: {}. '.format(end_t))), file=sys.stderr)
+        args.print_help()
         sys.exit(1)
 
 except:
-    print(red(bold('FATAL Error parsing END time: {}. '.format(args.end) + \
-                   'It must be in YYYY-JJJ:HH:MM:SS or YYYY-MM-DDTHH:MM:SS format.')),
-          file = sys.stderr)
+    print(red(bold('FATAL Error: Invalid END time: {}. '.format(end_t))), file=sys.stderr)
+    args.print_help()
     sys.exit(1)
 
 if start_datetime > datetime.datetime.utcnow():
