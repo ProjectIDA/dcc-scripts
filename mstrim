@@ -27,7 +27,7 @@ import sys
 from fabulous.color import red, green, bold
 
 version = '1.0.0'
-parser = argparse.ArgumentParser(description="Trim miniseed data from stdin to starttime and endtime.")
+parser = argparse.ArgumentParser(description="Trim miniseed data to starttime and endtime. Data read from STDIN and written to STDOUT")
 parser.add_argument('starttime', action="store", default='',
                     help="START time in either  YYYY-JJJ:HH:MM:SS[.sss]  or  YYYY-MM-DD:HH:MM:SS[.sss] formats (UTC assumed). " + \
                          "Time is optional. 00:00:00 assumed if not supplied")
