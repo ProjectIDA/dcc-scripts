@@ -48,6 +48,8 @@ coverage.xml
 *,cover
 .hypothesis/
 
+TEST/
+
 # Translations
 *.mo
 *.pot
