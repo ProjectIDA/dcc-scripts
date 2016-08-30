@@ -31,7 +31,8 @@ from ida.utils import i10get
 
 
 version = '1.1.0'
-parser = argparse.ArgumentParser(description="Retrieve IDA10 raw data from IDA archives for arbitrary range of days.")
+parser = argparse.ArgumentParser(description="Retrieve IDA10 raw data from IDA archives for arbitrary range of days. " +
+                                             "Output is sent to STDOUT.")
 parser.add_argument('station', action="store", default='',
                     help="Station code for which data should be retrieved (case insensitive).")
 parser.add_argument('chanloc_list', action='store', help="Comma saperated list of CHANLOC codes (e.g. bhz00) " +
