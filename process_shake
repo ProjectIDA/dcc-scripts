@@ -117,7 +117,7 @@ if exists(indirlist) and isfile(indirlist):
                                                              val['wf_ref'],
                                                              config.sample_rate(),
                                                              config.shake_table_meters_per_volt(chancode[2],
-                                                                                                val['starttime']),
+                                                                                                val['starttime'].datetime),
                                                              config.digi_cnts_per_volt(),
                                                              smoothing_factor=config.analysis_smoothing_factor())
 
