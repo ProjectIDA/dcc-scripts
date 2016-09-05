@@ -1,0 +1,72 @@
+#!/usr/bin/env python3
+#######################################################################################################################
+# Copyright (C) 2016  Regents of the University of California
+#
+# This is free software: you can redistribute it and/or modify it under the terms of the
+# GNU General Public License (GNU GPL) as published by the Free Software Foundation, either version 3 of the License,
+# or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+# without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details.
+#
+# A copy of the GNU General Public License can be found in LICENSE.TXT in the root of the source code repository.
+# Additionally, it can be found at http://www.gnu.org/licenses/.
+#
+# NOTES: Per GNU GPLv3 terms:
+#   * This notice must be kept in this source file
+#   * Changes to the source must be clearly noted with date & time of change
+#
+# If you use this software in a product, an explicit acknowledgment in the product documentation of the contribution
+# by Project IDA, Institute of Geophysics and Planetary Physics, UCSD would be appreciated but is not required.
+#######################################################################################################################
+
+import os
+from os.path import exists, abspath, join, split, isfile, isdir
+import argparse
+import glob
+import sys
+from pprint import PrettyPrinter
+
+from fabulous.color import red, bold
+
+# plt.ion()
+from ida.calibration.absolute import *
+
+pp = PrettyPrinter()
+
+version = '0.1.0'
+parser = argparse.ArgumentParser(description="Process onsite absolute calibration data.")
+# parser.add_argument('data_dir_list', action="store", default='',
+#                     help="File containing list of data directories to process.")
+# parser.add_argument('-t', '--intimes_filename', action="store", default="intimes",
+#                     help="Filename containing start/end times for each channel.")
+parser.add_argument('-c', '--config_filename', action="store", default="process_onsite.yaml",
+                    help="configuration file (yaml).")
+# parser.add_argument('-r', '--results_filename', action="store", default="results.txt",
+#                     help="Name of shaketable analysis results file. Located in $IDA_CAL_SHAKETABLE_DIR.")
+parser.add_argument('-v', '--version', action='version', version=version)
+parser.add_argument('-d', '--debug', action='store_true', help='Enabled debug mode for verbose output.')
+
+args = parser.parse_args()
+
+cfg_fn = args.config_filename
+
+if not os.environ.get('IDA_CAL_ABS_SITEDATA_DIR'):
+    print(red(bold('The env var IDA_CAL_ABS_SITEDATA_DIR must be set to the root directory of the shaketable data.')))
+    sys.exit(1)
+
+onsite_dir = os.environ['IDA_CAL_ABS_SITEDATA_DIR']
+
+config = AbsOnsiteConfig(cfg_fn)
+
+from obspy import read, UTCDateTime
+
+pp.pprint(config._config)
+
+if config.ref_azi_seed_file:
+    azi_strm = read(config.ref_azi_seed_file, format='MSEED')
+    print(azi_strm)
+if config.ref_abs_seed_file:
+    abs_strm = read(config.ref_abs_seed_file, format='MSEED')
+    print(abs_strm)

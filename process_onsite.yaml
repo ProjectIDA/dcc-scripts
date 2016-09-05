@@ -1,0 +1,11 @@
+---
+segment_sample_size: 1024
+minimum_segment_cnt: 50
+ref_azi_seed_file: NNA.2015237/NNAAzimuth_test_20150825_121000.seed # relative to $IDA_CAL_ABS_SITEDATA_DIR
+ref_abs_seed_file: NNA.2015236/NNA_Sens_20150824_010000.seed # relative to $IDA_CAL_ABS_SITEDATA_DIR
+site_settings: {
+    perform_site_sensor_compare: True,
+    primary_sensor_loc: 00,
+    secondary_sensor_loc: 10,
+}
+

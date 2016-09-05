@@ -34,7 +34,6 @@ import matplotlib.pyplot as plt
 from obspy import Stream
 
 from ida.calibration.shaketable import *
-# read_intimes, prepare_traces, save_chan_traces, ShakeConfig, shake_table_meters_per_volt
 
 pp = PrettyPrinter()
 plt.ion()
