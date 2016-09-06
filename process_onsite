@@ -65,8 +65,8 @@ from obspy import read, UTCDateTime
 pp.pprint(config._config)
 
 if config.ref_azi_seed_file:
-    azi_strm = read(config.ref_azi_seed_file, format='MSEED')
+    azi_strm = read(os.path.join(onsite_dir, config.ref_azi_seed_file), format='MSEED')
     print(azi_strm)
 if config.ref_abs_seed_file:
-    abs_strm = read(config.ref_abs_seed_file, format='MSEED')
+    abs_strm = read(os.path.join(onsite_dir, config.ref_abs_seed_file), format='MSEED')
     print(abs_strm)
