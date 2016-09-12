@@ -7,7 +7,7 @@ analysis_bandpass: [0.1, 1.0] #hz
 
 process_azimuth: False
 azimuth_ref_data: {
-  ms_file: 'NNA.2015237/NNAAzimuth_test_20150825_121000.Xseed', # abs path
+  ms_file: '', # abs path
   starttime_iso: '2015-08-25T00:00', #
   endtime_iso: '2015-08-25T14:00',
 }

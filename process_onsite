@@ -31,7 +31,7 @@ from pprint import PrettyPrinter
 from fabulous.color import red, bold
 
 # plt.ion()
-from ida.calibration.absolute import *
+from ida.calibration.absolute import AbsOnsiteConfig
 
 pp = PrettyPrinter()
 
@@ -62,13 +62,18 @@ config = AbsOnsiteConfig(cfg_fn)
 # pp.pprint(config._config)
 # print('Errors:\n' + '\n'.join(config.errs))
 config.read_ref_data()
-config.trim_data()
 print('stream:', config._ref_abs_strm)
 
-config.get_sensor_data()
-# if config.ref_azi_seed_file:
-#     azi_strm = read(os.path.join(onsite_dir, config.ref_azi_seed_file), format='MSEED')
-#     print(azi_strm)
-# if config.ref_abs_seed_file:
-#     abs_strm = read(os.path.join(onsite_dir, config.ref_abs_seed_file), format='MSEED')
-#     print(abs_strm)
+config.read_sensor_data()
+print('_pri_abs_strm stream:', config._pri_abs_strm)
+print('_sec_abs_strm stream:', config._sec_abs_strm)
+print('_pri_azi_strm stream:', config._pri_azi_strm)
+print('_sec_azi_strm stream:', config._sec_azi_strm)
+
+# find ref abs time offset
+pri_abs_z = config._pri_abs_strm.select(channel='BHZ').copy()
+sec_abs_z = config._sec_abs_strm.select(channel='BHZ').copy()
+ref_abs_z = config._ref_abs_strm.select(channel='BHZ').copy()
+
+offset, cval, cfunc, emsg = config.correct_ref_abs_time()
+
