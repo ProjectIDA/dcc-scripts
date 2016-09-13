@@ -77,3 +77,6 @@ ref_abs_z = config._ref_abs_strm.select(channel='BHZ').copy()
 
 offset, cval, cfunc, emsg = config.correct_ref_abs_time()
 
+print('_pri_abs_strm stream:', config._pri_abs_strm)
+print('_sec_abs_strm stream:', config._sec_abs_strm)
+print('_ref_abs_strm stream:', config._ref_abs_strm)
