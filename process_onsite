@@ -22,9 +22,9 @@
 #######################################################################################################################
 
 import os
-from os.path import exists, abspath, join, split, isfile, isdir
+#from os.path import exists, abspath, join, split, isfile, isdir
 import argparse
-import glob
+#import glob
 import sys
 from pprint import PrettyPrinter
 
@@ -62,13 +62,13 @@ config = AbsOnsiteConfig(cfg_fn)
 # pp.pprint(config._config)
 # print('Errors:\n' + '\n'.join(config.errs))
 config.read_ref_data()
-print('stream:', config._ref_abs_strm)
+#print('stream:', config._ref_abs_strm)
 
 config.read_sensor_data()
-print('_pri_abs_strm stream:', config._pri_abs_strm)
-print('_sec_abs_strm stream:', config._sec_abs_strm)
-print('_pri_azi_strm stream:', config._pri_azi_strm)
-print('_sec_azi_strm stream:', config._sec_azi_strm)
+#print('_pri_abs_strm stream:', config._pri_abs_strm)
+#print('_sec_abs_strm stream:', config._sec_abs_strm)
+#print('_pri_azi_strm stream:', config._pri_azi_strm)
+#print('_sec_azi_strm stream:', config._sec_azi_strm)
 
 # find ref abs time offset
 pri_abs_z = config._pri_abs_strm.select(channel='BHZ').copy()
@@ -76,7 +76,14 @@ sec_abs_z = config._sec_abs_strm.select(channel='BHZ').copy()
 ref_abs_z = config._ref_abs_strm.select(channel='BHZ').copy()
 
 offset, cval, cfunc, emsg = config.correct_ref_abs_time()
+print('offset:', offset)
+#print('_pri_abs_strm stream:', config._pri_abs_strm)
+#print('_sec_abs_strm stream:', config._sec_abs_strm)
+#print('_ref_abs_strm stream:', config._ref_abs_strm)
 
-print('_pri_abs_strm stream:', config._pri_abs_strm)
-print('_sec_abs_strm stream:', config._sec_abs_strm)
-print('_ref_abs_strm stream:', config._ref_abs_strm)
+
+#config.compare_streams(config._ref_abs_strm, config._sec_abs_strm)
+#config.compare_streams(config._ref_abs_strm, config._pri_abs_strm)
+#config.compare_streams(config._pri_abs_strm, config._sec_abs_strm)
+dupestrm = config._sec_abs_strm.copy()
+config.compare_streams(config._ref_abs_strm, config._sec_abs_strm)
