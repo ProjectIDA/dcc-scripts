@@ -22,162 +22,48 @@
 #######################################################################################################################
 
 import os
-from os.path import exists, abspath, join, split, isfile, isdir
+from os.path import join  #, split, isfile
 import argparse
-import glob
+#import glob
 import sys
-from fabulous.color import red, green, bold
-from pprint import PrettyPrinter
-import matplotlib
-matplotlib.use('Qt4Agg')
-import matplotlib.pyplot as plt
-from obspy import Stream
+from fabulous.color import red, bold
 
-from ida.calibration.shaketable import *
+from ida.calibration.shaketable import ShakeConfig
 
-pp = PrettyPrinter()
-plt.ion()
 
 version = '0.1.0'
 parser = argparse.ArgumentParser(description="Process compact Trillium shake table data.")
-parser.add_argument('data_dir_list', action="store", default='',
-                    help="File containing list of data directories to process.")
-parser.add_argument('-t', '--intimes_filename', action="store", default="intimes",
-                    help="Filename containing start/end times for each channel.")
-parser.add_argument('-c', '--config_filename', action="store", default="config.yaml",
-                    help="Shaketable analysis configuration yaml file.")
-parser.add_argument('-r', '--results_filename', action="store", default="results.txt",
-                    help="Name of shaketable analysis results file. Located in $IDA_CAL_SHAKETABLE_DIR.")
+parser.add_argument('config', action="store", default='config',
+                    help=__file__ +
+                    " configuration file in $IDA_CAL_RAW_DIR/shaketable")
 parser.add_argument('-v', '--version', action='version', version=version)
 parser.add_argument('-d', '--debug', action='store_true', help='Enabled debug mode for verbose output.')
 
 args = parser.parse_args()
 
-if not os.environ.get('IDA_CAL_SHAKETABLE_DIR'):
-    print(red(bold('The env var IDA_CAL_SHAKETABLE_DIR must be set to the root directory of the shaketable data.')))
+config_name = args.config
+if not '.yaml' in args.config:
+   config_name = args.config + '.yaml'
+
+subdir = 'shaketable'
+
+if not os.environ.get('IDA_CAL_RAW_DIR'):
+    print(red(bold('The env var IDA_CAL_RAW_DIR must be set to the root directory of the raw calibration data.')))
     sys.exit(1)
 
-shake_table_dir = os.environ['IDA_CAL_SHAKETABLE_DIR']
-config = ShakeConfig(join(shake_table_dir, args.config_filename))
-results_file = join(shake_table_dir, args.results_filename)
-indirlist = join(shake_table_dir, args.data_dir_list)
+cfg_dir = join(os.environ['IDA_CAL_RAW_DIR'], subdir)
+cfg_fn = join(cfg_dir, config_name)
 
-if exists(indirlist) and isfile(indirlist):
-    fdir = split(indirlist)[0]
-    with open(indirlist, 'rt') as ifl:
-        fignum = 0  # index figs so they don't overwrite each other
-        for subdir in ifl:
-            subdir = subdir.strip()
-            fpath = abspath(os.path.join(fdir, subdir))
-            print('\nProcessing directory: {}'.format(fpath))
-            if exists(fpath) and isdir(fpath):
-                if args.debug: print(green('Abspath: {}'.format(fpath)))
-                intimesfile = join(fpath, args.intimes_filename)
-            else:
-                print(red(bold('Directory not found: {}'.format(fpath))))
-                print(red('Skipping directory.'))
-                continue
+config = ShakeConfig(cfg_fn, shaketable_subdir=subdir)
+if config.ok:
+     if not config.read_msfile():
+        print(red('Error reading miniseed file: ' + config.ms_filename))
+        sys.exit(1)
 
-            if exists(intimesfile) and isfile(intimesfile):
-                msfiles = glob.glob(join(fpath, '*.seed'))
-                if len(msfiles) == 0:
-                    print(red(bold('Error: No miniseed (*.seed) files found.')))
-                    print(red('Skipping directory.'))
-                    continue
-                elif len(msfiles) > 1:
-                    print(red(bold('Error: Multiple miniseed (*.seed) files found. Should be 1 per directory')))
-                    print(red('Skipping directory.'))
-                    continue
-                elif args.debug:
-                    print(green('Found miniseed data: {}'.format(msfiles[0])))
+     if not config.prepare_traces():
+        print(red('Could not prepare traces. Quitting.'))
+        sys.exit(1)
 
-                if args.debug: print(green('Reading intimes file: {}.'.format(intimesfile)))
-                meta = read_intimes(intimesfile)
-                if args.debug: pp.pprint(meta)
+     config.analyze()
 
-                good_meta = prepare_traces(meta, msfiles[0])
-                if good_meta:
-                    if args.debug:
-                        print(green('Channel metadata for processing:'))
-                        pp.pprint(good_meta)
-
-                    for chancode, val in good_meta.items():
-                        strm = Stream([val['wf'], val['wf_ref']])
-                        if args.debug: print(chancode + ': ', end='')
-                        if args.debug: print(strm)
-                        fn = os.path.join(fpath, chancode + '_' + subdir + '_shaketable_data_py.ms')
-                        if not save_chan_traces(chancode, fn, strm):
-                            print(red(bold('Error writing shaketable traces for channel: {} to file: {}.'.format(chancode, fn))))
-                            print(red('Quitting.'))
-                            sys.exit(1)
-
-
-                        cross_res = correlate_channel_traces(val['wf'],
-                                                             val['wf_ref'],
-                                                             config.sample_rate(),
-                                                             config.shake_table_meters_per_volt(chancode[2],
-                                                                                                val['starttime'].datetime),
-                                                             config.digi_cnts_per_volt(),
-                                                             smoothing_factor=config.analysis_smoothing_factor())
-
-                        # get ndxs of good coh in freq_band
-                        min_freq = config.plot_min_freq()
-                        max_freq = config.plot_max_freq()
-                        use_freqs = logical_and(less_equal(cross_res['freqs'], max_freq),
-                                                greater_equal(cross_res['freqs'], min_freq))
-
-                        fr = cross_res['freqs'][use_freqs]
-                        co = cross_res['coh'][use_freqs]
-                        ps1 = cross_res['psd1'][use_freqs]
-                        ps2 = cross_res['psd2'][use_freqs]
-                        am = cross_res['amp'][use_freqs]
-                        ph = cross_res['pha'][use_freqs]
-
-                        fignum += 1
-                        psd_fig = shake_table_psd_plot(fignum, subdir, chancode, fr, ps1, ps2, co)
-                        psd_fig.savefig(os.path.join(fpath, '{}_{}_psd_fig.png'.format(chancode, subdir)), dpi=400)
-
-                        fignum += 1
-                        tf_fig_1 = shake_table_tf_plot(fignum, subdir, chancode, fr, am, ph, co)
-                        tf_fig_1.savefig(os.path.join(fpath, '{}_{}_tf_fig1.png'.format(chancode, subdir)), dpi=400)
-
-                        # detrend and take only "good" coh points
-                        # now just coh >= coh_min
-                        coh_min = config.plot_coh_min()
-                        good_coh = greater(co, coh_min)
-                        fr = fr[good_coh]
-                        am = am[good_coh]
-                        ph = ph[good_coh]
-                        co = co[good_coh]
-
-                        # and remove trend/time shift from phase
-                        coeffs = polyfit(fr, ph, 1)
-                        coeffs = (coeffs[0], 0)  # set y-intercept to 0
-                        correction = polyval(coeffs, fr)
-                        ph = subtract(ph, correction)
-
-                        # construct plot with only good coh points
-                        fignum += 1
-                        tf_fig_2 = shake_table_tf_plot(fignum, subdir, chancode, fr, am, ph, co, '\n(coh**2 > {}; Phase de-trended)'.format(coh_min))
-                        tf_fig_2.savefig(os.path.join(fpath, '{}_{}_tf_fig2.png'.format(chancode, subdir)), dpi=400)
-
-                        # calculate overall values to save
-                        amp_mean = am.mean()
-                        amp_std = am.std()
-                        pha_mean = ph.mean()
-                        pha_std = ph.std()
-                        res_txt = '{} {} amp_mean {}  amp_std {}  pha_mean {}  pha_std {}  coh_cut {}'.format(
-                            chancode[2], subdir, amp_mean, amp_std, pha_mean, pha_std, coh_min)
-
-                        with open(results_file, 'at') as rfl:
-                            rfl.write(res_txt + '\n')
-                        if args.debug: print(res_txt)
-
-                    input(green('Figures for {} have been saved. Hit ENTER to continue:'.format(subdir)))
-            else:
-                print(red(bold('Error reading intimes file: ' + intimesfile)))
-                print(red('Skipping directory: {}.'.format(fpath)))
-
-else:
-    print(red(bold('\nFile not found: {}. Please check the number and dial again.\n'.format(indirlist))))
-    parser.print_help()
+     done = input('Hit enter to exit.')
