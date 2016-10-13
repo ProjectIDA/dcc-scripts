@@ -9,6 +9,12 @@ testtree/*
 # C extensions
 *.so
 
+
+# no data lying around
+*.i10
+*.ms
+*.seed
+
 # Distribution / packaging
 .Python
 env/
