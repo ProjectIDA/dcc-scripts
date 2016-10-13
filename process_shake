@@ -20,50 +20,104 @@
 # If you use this software in a product, an explicit acknowledgment in the product documentation of the contribution
 # by Project IDA, Institute of Geophysics and Planetary Physics, UCSD would be appreciated but is not required.
 #######################################################################################################################
-
 import os
-from os.path import join  #, split, isfile
+from os.path import join
 import argparse
-#import glob
 import sys
-from fabulous.color import red, bold
+import logging
+import datetime
 
-from ida.calibration.shaketable import ShakeConfig
+from fabulous.color import red, green, bold
 
 
 version = '0.1.0'
-parser = argparse.ArgumentParser(description="Process compact Trillium shake table data.")
+parser = argparse.ArgumentParser(description="Analyze Compact Trillium shake table data.")
 parser.add_argument('config', action="store", default='config',
-                    help=__file__ +
-                    " configuration file in $IDA_CAL_RAW_DIR/shaketable")
+                    help="Configuration file (located in $IDA_CAL_RAW_DIR/shaketable)")
 parser.add_argument('-v', '--version', action='version', version=version)
 parser.add_argument('-d', '--debug', action='store_true', help='Enabled debug mode for verbose output.')
 
 args = parser.parse_args()
-
+debug = args.debug
 config_name = args.config
+
 if not '.yaml' in args.config:
    config_name = args.config + '.yaml'
 
-subdir = 'shaketable'
-
 if not os.environ.get('IDA_CAL_RAW_DIR'):
-    print(red(bold('The env var IDA_CAL_RAW_DIR must be set to the root directory of the raw calibration data.')))
+    print(red(bold('The env var IDA_CAL_RAW_DIR must be set to the root directory ' + \
+                   'of the raw calibration data.')))
     sys.exit(1)
 
+# set up logging
+class ConsoleLogFilter(logging.Filter):
+
+   def filter(self, record):
+      if record.levelno == logging.WARN:
+         record.msg = red(record.msg)
+      elif record.levelno == logging.DEBUG:
+         record.msg = green(bold(record.msg))
+      elif record.levelno >= logging.ERROR:
+         record.msg = red(bold(record.msg))
+      return True
+
+
+logfile = os.path.abspath(__file__ + '.log')
+# set up logging to file - see previous section for more details
+logging.basicConfig(level=logging.DEBUG, 
+                    format='%(asctime)s %(name)s %(levelname)s %(message)s',
+                    datefmt='%m-%d %H:%M:%S',
+                    filename=logfile,
+                    filemode='w')
+
+chndlr = logging.StreamHandler()
+if debug:
+    chndlr.setLevel(logging.DEBUG)
+else:
+    chndlr.setLevel(logging.WARN)
+confmtr = logging.Formatter('%(levelname)s: %(message)s')
+chndlr.setFormatter(confmtr)
+chndlr.addFilter(ConsoleLogFilter())
+
+logging.getLogger('').addHandler(chndlr)
+logger = logging.getLogger('SHAKETABLE')
+
+#   logger.setLevel(logging.DEBUG)  # allow control via handler(s)
+#   fhndlr = logging.FileHandler(logfile)
+#   fhndlr.setLevel(logging.DEBUG)
+#   filefmtr = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s: %(message)s')
+#   fhndlr.setFormatter(filefmtr)
+#   logger.addHandler(fhndlr)
+#   logger.addHandler(chndlr)
+
+logger.info('='*72)
+logger.info('Starting Shaketable analysis: ' + \
+            datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+
+from ida.calibration.shaketable import ShakeConfig
+
+subdir = 'shaketable'
 cfg_dir = join(os.environ['IDA_CAL_RAW_DIR'], subdir)
 cfg_fn = join(cfg_dir, config_name)
 
-config = ShakeConfig(cfg_fn, shaketable_subdir=subdir)
+config = ShakeConfig(cfg_fn, shaketable_subdir=subdir, debug=debug, logger=logger)
+
 if config.ok:
      if not config.read_msfile():
-        print(red('Error reading miniseed file: ' + config.ms_filename))
+        logger.critical('Error reading miniseed file: ' + config.ms_filename)
         sys.exit(1)
 
      if not config.prepare_traces():
-        print(red('Could not prepare traces. Quitting.'))
+        logger.critical('Could not prepare traces. Quitting.')
         sys.exit(1)
 
-     config.analyze()
+     plot_fns, ms_fns, resfn = config.analyze()
 
-     done = input('Hit enter to exit.')
+     done = input('Hit enter to exit...')
+
+else:
+   logger.critical('Quitting due to problems with configuration or environment.')
+
+logger.info('Exiting: ' + datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+logger.info('='*72)
+
