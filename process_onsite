@@ -1,89 +1,106 @@
 #!/usr/bin/env python3
-#######################################################################################################################
+#######################################################################################
 # Copyright (C) 2016  Regents of the University of California
 #
-# This is free software: you can redistribute it and/or modify it under the terms of the
-# GNU General Public License (GNU GPL) as published by the Free Software Foundation, either version 3 of the License,
-# or (at your option) any later version.
+# This is free software: you can redistribute it and/or modify it under the terms of
+# the GNU General Public License (GNU GPL) as published by the Free Software Foundation,
+# either version 3 of the License, or (at your option) any later version.
 #
-# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
-# without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-# See the GNU General Public License for more details.
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
 #
-# A copy of the GNU General Public License can be found in LICENSE.TXT in the root of the source code repository.
-# Additionally, it can be found at http://www.gnu.org/licenses/.
+# A copy of the GNU General Public License can be found in LICENSE.TXT in the root of
+# the source code repository. It can also be found at http://www.gnu.org/licenses/
 #
 # NOTES: Per GNU GPLv3 terms:
 #   * This notice must be kept in this source file
 #   * Changes to the source must be clearly noted with date & time of change
 #
-# If you use this software in a product, an explicit acknowledgment in the product documentation of the contribution
-# by Project IDA, Institute of Geophysics and Planetary Physics, UCSD would be appreciated but is not required.
-#######################################################################################################################
-
-import os
-#from os.path import exists, abspath, join, split, isfile, isdir
+# If you use this software in a product, an explicit acknowledgment in the product
+# documentation of the contribution by Project IDA, Institute of Geophysics and
+# Planetary Physics, UCSD would be appreciated but is not required.
+#######################################################################################
 import argparse
-#import glob
-import sys
-from pprint import PrettyPrinter
+#import sys
+import logging
+import datetime
+import os.path
 
-from fabulous.color import red, bold
-
-# plt.ion()
-from ida.calibration.absolute import AbsOnsiteConfig
-
-pp = PrettyPrinter()
+from fabulous.color import red, bold, blue
 
 version = '0.1.0'
-parser = argparse.ArgumentParser(description="Process onsite absolute calibration data.")
-# parser.add_argument('data_dir_list', action="store", default='',
-#                     help="File containing list of data directories to process.")
-# parser.add_argument('-t', '--intimes_filename', action="store", default="intimes",
-#                     help="Filename containing start/end times for each channel.")
-parser.add_argument('-c', '--config_filename', action="store", default="process_onsite.yaml",
+parser = argparse.ArgumentParser(description="Process APSurvey calibration data.")
+parser.add_argument('dataset', action="store", default='', choices=['azi', 'abs'],
+                     help="Dataset to analyze. Must be set up in configuration file.")
+parser.add_argument('-c', '--config_file', action="store", default="process_onsite.yaml",
                     help="configuration file (yaml).")
-# parser.add_argument('-r', '--results_filename', action="store", default="results.txt",
-#                     help="Name of shaketable analysis results file. Located in $IDA_CAL_SHAKETABLE_DIR.")
+parser.add_argument('-r', '--resp-file', action="store", default="",
+                    help="RESP filename for reference sensor located in $SEEDRESP directory.")
 parser.add_argument('-v', '--version', action='version', version=version)
-parser.add_argument('-d', '--debug', action='store_true', help='Enabled debug mode for verbose output.')
+parser.add_argument('-d', '--debug', action='store_true', help='Enable DEBUG mode for verbose output.')
 
 args = parser.parse_args()
 
-cfg_fn = args.config_filename
+cfg_fn = args.config_file
+dataset = args.dataset
+debug = args.debug
 
-if not os.environ.get('IDA_CAL_ABS_SITEDATA_DIR'):
-    print(red(bold('The env var IDA_CAL_ABS_SITEDATA_DIR must be set to the root directory of the shaketable data.')))
-    sys.exit(1)
+from ida.calibration.absolute import APSurvey
 
-onsite_dir = os.environ['IDA_CAL_ABS_SITEDATA_DIR']
+# TODO: TEST bad response behavior
+# TODO: Add ref_respfile to APSurvey to accept CLI respfile name
+#       and check for respfile before constructing from trace metadata
 
-config = AbsOnsiteConfig(cfg_fn)
-# pp.pprint(config._config)
-# print('Errors:\n' + '\n'.join(config.errs))
-config.read_ref_data()
-#print('stream:', config._ref_abs_strm)
+# set up logging
+class ConsoleLogFilter(logging.Filter):
 
-config.read_sensor_data()
-#print('_pri_abs_strm stream:', config._pri_abs_strm)
-#print('_sec_abs_strm stream:', config._sec_abs_strm)
-#print('_pri_azi_strm stream:', config._pri_azi_strm)
-#print('_sec_azi_strm stream:', config._sec_azi_strm)
+   def filter(self, record):
+      if record.levelno == logging.WARN:
+         record.msg = red(record.msg)
+      elif record.levelno >= logging.ERROR:
+         record.msg = red(bold(record.msg))
+      return True
 
-# find ref abs time offset
-pri_abs_z = config._pri_abs_strm.select(channel='BHZ').copy()
-sec_abs_z = config._sec_abs_strm.select(channel='BHZ').copy()
-ref_abs_z = config._ref_abs_strm.select(channel='BHZ').copy()
+logger = logging.getLogger('APSurvey')
+logger.setLevel(logging.DEBUG)  # allow control via handler(s)
+confmtr = logging.Formatter('%(levelname)s: %(message)s')
+hndlr = logging.StreamHandler()
+hndlr.setFormatter(confmtr)
+if debug:
+    hndlr.setLevel(logging.DEBUG)
+else:
+    hndlr.setLevel(logging.WARN)
 
-offset, cval, cfunc, emsg = config.correct_ref_abs_time()
-print('offset:', offset)
-#print('_pri_abs_strm stream:', config._pri_abs_strm)
-#print('_sec_abs_strm stream:', config._sec_abs_strm)
-#print('_ref_abs_strm stream:', config._ref_abs_strm)
+filefmtr = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s: %(message)s')
+logfile = os.path.abspath(__file__ + '.log')
+fhndlr = logging.FileHandler(logfile)
+fhndlr.setFormatter(filefmtr)
+fhndlr.setLevel(logging.DEBUG)
+logger.addHandler(fhndlr)
 
+logger.addHandler(hndlr)
+hndlr.addFilter(ConsoleLogFilter())
 
-#config.compare_streams(config._ref_abs_strm, config._sec_abs_strm)
-#config.compare_streams(config._ref_abs_strm, config._pri_abs_strm)
-#config.compare_streams(config._pri_abs_strm, config._sec_abs_strm)
-dupestrm = config._sec_abs_strm.copy()
-config.compare_streams(config._ref_abs_strm, config._sec_abs_strm)
+logger.info('='*72)
+logger.info('Starting APSurvey analysis: ' + datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+
+config = APSurvey(cfg_fn, logger=logger)
+if not config.ok:
+   logger.critical('Quitting due to configuration or environment errors.')
+else:
+   #ref_resp_file = args.resp_file
+   #print(ref_resp_file)
+   sumfn, detfn = config.analyze(dataset)
+   if sumfn:
+      if not debug:
+         print(blue('Summary results written to file:  ' + os.path.abspath(sumfn)))
+         print(blue('Detailed results written to file: ' + os.path.abspath(detfn)))
+         print(blue('Log file: ' + logfile))
+      else:
+         logger.info('Summary results written to file:  ' + os.path.abspath(sumfn))
+         logger.info('Detailed results written to file: ' + os.path.abspath(detfn))
+         logger.info('Log file: ' + logfile)
+
+logger.info('Exiting: ' + datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+logger.info('='*72)
