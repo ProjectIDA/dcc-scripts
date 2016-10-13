@@ -30,10 +30,10 @@ import matplotlib
 matplotlib.use('Qt4Agg')
 import matplotlib.pyplot as plt
 from fabulous.color import bold, blue, red
-from numpy import pi, cos, sin, multiply, divide, median, linspace, ndarray, less_equal, logical_and
+from numpy import pi, cos, sin, multiply, divide, median, linspace, less_equal, logical_and
 
 from ida.tui import input_yn, select, SelectResult
-from ida.instruments import CALTYPE_RBLF, CALTYPE_RBHF, CALTYPE_RBLF_SAMPLERATE, CALTYPE_RBHF_SAMPLERATE, \
+from ida.instruments import CALTYPE_RBLF, CALTYPE_RBHF, CALTYPE_RBLF_SAMPLERATE, \
     Q330_FIR_GAIN_1HZ, Q330_FIR_FILTER_DELAY, Q330_FIR_COEFFS
 from ida.calibration.cal_info import CalInfo
 from ida.calibration.process import prepare_cal_data, analyze_cal_component, compare_component_response
