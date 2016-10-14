@@ -64,6 +64,15 @@ def setup_logging(logger_name='', log_file=(__file__ + '.log'), debug=False):
 
     return logger
 
+def check_env(envvars):
+    """Checks list of env vars toi see if set"""
+
+    vars_stat = []
+    for var in envvars:
+        okay = os.environ.get(var) != None
+        vars_stat.append((var, okay))
+    return vars_stat
+
 def main():
     """Script main function"""
 
@@ -93,29 +102,51 @@ def main():
     logfile = os.path.abspath(__file__ + '.log')
     logger = setup_logging('APSurvey', log_file=logfile, debug=debug)
 
-    from ida.calibration.absolute import APSurvey
+    # check env for required vars
+    env_ok = True
+    vars_stat = check_env(['IDA_CAL_RAW_DIR',
+                           'IDA_ARCHVIE_RAW_DIR',
+                           'SEEDRESP'])
+    for avar, isset in vars_stat:
+        if not isset:
+            env_ok = False
+            print(red('The env var [{}] must be set.'.format(avar)))
+            if logger:
+                logger.error('The env var [{}] must be set.'.format(avar))
 
-    logger.info('='*72)
-    logger.info('Starting APSurvey analysis: ' +
-                datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-
-    config = APSurvey(cfg_fn, logger=logger)
-    if not config.ok:
-        logger.critical('Quitting due to configuration or environment errors.')
+    if not env_ok:
+        logger.critical('Quitting due to missing environment variables.')
+        print(red('Quitting due to missing environment variables.'))
     else:
-        sumfn, detfn = config.analyze(dataset)
-    if sumfn:
-        if not debug:
-            print(blue(' Summary results: ' + os.path.abspath(sumfn)))
-            print(blue('Detailed results: ' + os.path.abspath(detfn)))
-            print(blue('        Log file: ' + logfile))
-        else:
-            logger.info(' Summary results: ' + os.path.abspath(sumfn))
-            logger.info('Detailed results: ' + os.path.abspath(detfn))
-            logger.info('        Log file: ' + logfile)
 
-    logger.info('Exiting: ' + datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-    logger.info('='*72)
+        from ida.calibration.absolute import APSurvey
+
+        logger.info('='*72)
+        logger.info('Starting APSurvey analysis: ' +
+                    datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+
+        config = APSurvey(cfg_fn,
+                          os.environ['IDA_CAL_RAW_DIR'],
+                          os.environ['SEEDRESP'],
+                          logger=logger)
+
+        if not config.ok:
+            logger.critical('Quitting due to error in configuration.')
+        else:
+            sumfn, detfn = config.analyze(dataset)
+            if sumfn:
+                print(bold(blue('Saved in current working directory:')), '\n')
+                print(blue('    Summary results: ' + os.path.abspath(sumfn)))
+                print(blue('   Detailed results: ' + os.path.abspath(detfn)))
+                print(blue('           Log file: ' + logfile))
+                logger.info('    Summary results: ' + os.path.abspath(sumfn))
+                logger.info('   Detailed results: ' + os.path.abspath(detfn))
+                logger.info('           Log file: ' + logfile)
+            else:
+                logger.error('Error performing analysis. No results returned.')
+
+        logger.info('Exiting: ' + datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        logger.info('='*72)
 
 if __name__ == '__main__':
     main()

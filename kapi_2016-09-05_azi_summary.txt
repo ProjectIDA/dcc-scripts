@@ -1,0 +1,31 @@
+################################################################################################################################################
+# ANALYSIS PARAMETERS
+# ===================
+# analysis at: 2016-10-05 17:12:30
+#     dataset: AZI
+# ref ms file: /ida/cal/raw/kapi/APSurvey/2016-0905/STN01_centaur-3_0829_20160905_005452.seed
+#  start time: 2016-09-05T13:20:20.000000Z
+#    end time: 2016-09-05T21:00:00.000000Z
+#    seg size: 1024 secs
+#    seg trim: 128 secs
+#  coh cutoff: 0.98
+# analysis sr: 5 hz
+# analysis bp: [0.1, 0.3] hz
+#     station: KAPI
+#  pri sensor: True
+#   pri chans: bhz,bh1,bh2
+#     pri loc: 00
+#  sec sensor: True
+#   sec chans: bhz,bh1,bh2
+#     sec loc: 10
+#
+KAPI REF/PRI Z: amp: 1.0118/0.003; ang:   0.000/0.000; lrms: 1.451; var: 0.078; coh-cutoff: 0.980; segs-used: 25/26; analyzed: 2016-10-05; STN01_centaur-3_0829_20160905_005452.seed kapi_00_azi.ms
+KAPI REF/PRI 1: amp: 1.0386/0.019; ang:  98.291/0.010; lrms: 1.361; var: 0.143; coh-cutoff: 0.980; segs-used: 16/26; analyzed: 2016-10-05; STN01_centaur-3_0829_20160905_005452.seed kapi_00_azi.ms
+KAPI REF/PRI 2: amp: 1.0414/0.015; ang: 190.912/0.017; lrms: 1.360; var: 0.160; coh-cutoff: 0.980; segs-used: 23/26; analyzed: 2016-10-05; STN01_centaur-3_0829_20160905_005452.seed kapi_00_azi.ms
+KAPI REF/SEC Z: amp: 1.0090/0.003; ang:   0.000/0.000; lrms: 1.450; var: 0.032; coh-cutoff: 0.980; segs-used: 25/26; analyzed: 2016-10-05; STN01_centaur-3_0829_20160905_005452.seed kapi_10_azi.ms
+KAPI REF/SEC 1: amp: 1.0195/0.018; ang: 104.435/0.013; lrms: 1.358; var: 0.133; coh-cutoff: 0.980; segs-used: 17/26; analyzed: 2016-10-05; STN01_centaur-3_0829_20160905_005452.seed kapi_10_azi.ms
+KAPI REF/SEC 2: amp: 1.0079/0.015; ang: 194.868/0.014; lrms: 1.334; var: 0.148; coh-cutoff: 0.980; segs-used: 25/26; analyzed: 2016-10-05; STN01_centaur-3_0829_20160905_005452.seed kapi_10_azi.ms
+KAPI SEC/PRI Z: amp: 1.0028/0.001; ang:   0.000/0.000; lrms: 2.274; var: 0.007; coh-cutoff: 0.980; segs-used: 26/26; analyzed: 2016-10-05; kapi_10_azi.ms kapi_00_azi.ms
+KAPI SEC/PRI 1: amp: 1.0202/0.002; ang: 354.028/0.002; lrms: 2.164; var: 0.014; coh-cutoff: 0.980; segs-used: 26/26; analyzed: 2016-10-05; kapi_10_azi.ms kapi_00_azi.ms
+KAPI SEC/PRI 2: amp: 1.0350/0.001; ang:  86.343/0.001; lrms: 2.159; var: 0.013; coh-cutoff: 0.980; segs-used: 26/26; analyzed: 2016-10-05; kapi_10_azi.ms kapi_00_azi.ms
+################################################################################################################################################
