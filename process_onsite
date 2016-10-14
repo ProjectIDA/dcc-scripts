@@ -23,7 +23,7 @@
 # Planetary Physics, UCSD would be appreciated but is not required.
 #######################################################################################
 import argparse
-#import sys
+from pathlib import Path
 import logging
 import datetime
 import os.path
@@ -133,15 +133,21 @@ def main():
         if not config.ok:
             logger.critical('Quitting due to error in configuration.')
         else:
-            sumfn, detfn = config.analyze(dataset)
+            sumfn, detfn, wf_files = config.analyze(dataset)
             if sumfn:
-                print(bold(blue('Saved in current working directory:')), '\n')
-                print(blue('    Summary results: ' + os.path.abspath(sumfn)))
-                print(blue('   Detailed results: ' + os.path.abspath(detfn)))
-                print(blue('           Log file: ' + logfile))
+                print(bold('Saved in current working directory:'), '\n')
+                print(blue('    Summary results: ' + Path(os.path.abspath(sumfn)).name))
+                print(blue('   Detailed results: ' + Path(os.path.abspath(detfn)).name))
+                print(blue('           Log file: ' + Path(logfile).name))
+                print(blue('Station sensor data: '))
+                for fname in config.waveform_files:
+                    print(blue('   ' + Path(fname).name))
                 logger.info('    Summary results: ' + os.path.abspath(sumfn))
                 logger.info('   Detailed results: ' + os.path.abspath(detfn))
                 logger.info('           Log file: ' + logfile)
+                logger.info('Station sensor data: ')
+                for fname in wf_files:
+                    logger.info('   ' + Path(fname).name)
             else:
                 logger.error('Error performing analysis. No results returned.')
 
