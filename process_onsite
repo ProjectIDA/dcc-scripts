@@ -105,7 +105,7 @@ def main():
     # check env for required vars
     env_ok = True
     vars_stat = check_env(['IDA_CAL_RAW_DIR',
-                           'IDA_ARCHVIE_RAW_DIR',
+                           'IDA_ARCHIVE_RAW_DIR',
                            'SEEDRESP'])
     for avar, isset in vars_stat:
         if not isset:
