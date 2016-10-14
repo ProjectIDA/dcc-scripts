@@ -33,7 +33,6 @@ from fabulous.color import red, bold, blue
 # set up logging
 class ConsoleLogFilter(logging.Filter):
     """Custom console log filter to add colors to msgs"""
-
     def filter(self, record):
         if record.levelno == logging.WARN:
             record.msg = red(record.msg)
@@ -71,6 +70,7 @@ def main():
     # TODO: TEST bad response behavior
     # TODO: Add ref_respfile to APSurvey to accept CLI respfile name
     #       and check for respfile before constructing from trace metadata
+    # TODO: Dpcument ENV VARS REQUIRED here
 
     version = '0.1.0'
     parser = argparse.ArgumentParser(description="Process APSurvey calibration data.")
@@ -106,13 +106,13 @@ def main():
         sumfn, detfn = config.analyze(dataset)
     if sumfn:
         if not debug:
-            print(blue('Summary results written to file:  ' + os.path.abspath(sumfn)))
-            print(blue('Detailed results written to file: ' + os.path.abspath(detfn)))
-            print(blue('Log file: ' + logfile))
+            print(blue(' Summary results: ' + os.path.abspath(sumfn)))
+            print(blue('Detailed results: ' + os.path.abspath(detfn)))
+            print(blue('        Log file: ' + logfile))
         else:
-            logger.info('Summary results written to file:  ' + os.path.abspath(sumfn))
-            logger.info('Detailed results written to file: ' + os.path.abspath(detfn))
-            logger.info('Log file: ' + logfile)
+            logger.info(' Summary results: ' + os.path.abspath(sumfn))
+            logger.info('Detailed results: ' + os.path.abspath(detfn))
+            logger.info('        Log file: ' + logfile)
 
     logger.info('Exiting: ' + datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
     logger.info('='*72)
