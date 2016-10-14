@@ -139,9 +139,9 @@ def main():
                 print(blue('    Summary results: ' + Path(os.path.abspath(sumfn)).name))
                 print(blue('   Detailed results: ' + Path(os.path.abspath(detfn)).name))
                 print(blue('           Log file: ' + Path(logfile).name))
-                print(blue('Station sensor data: '))
+                print(blue(bold('   Station sensor data files: ')))
                 for fname in config.waveform_files:
-                    print(blue('   ' + Path(fname).name))
+                    print(blue('                     ' + Path(fname).name))
                 logger.info('    Summary results: ' + os.path.abspath(sumfn))
                 logger.info('   Detailed results: ' + os.path.abspath(detfn))
                 logger.info('           Log file: ' + logfile)
