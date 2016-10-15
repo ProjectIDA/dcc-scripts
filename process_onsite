@@ -53,14 +53,14 @@ def setup_logging(logger_name='', log_file=(__file__ + '.log'), debug=False):
     else:
         hndlr.setLevel(logging.WARN)
 
-    # filefmtr = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s: %(message)s')
-    # fhndlr = logging.FileHandler(log_file)
-    # fhndlr.setFormatter(filefmtr)
-    # fhndlr.setLevel(logging.DEBUG)
-    # logger.addHandler(fhndlr)
+    filefmtr = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s: %(message)s')
+    fhndlr = logging.FileHandler(log_file)
+    fhndlr.setFormatter(filefmtr)
+    fhndlr.setLevel(logging.DEBUG)
+    logger.addHandler(fhndlr)
 
-    # logger.addHandler(hndlr)
-    # hndlr.addFilter(ConsoleLogFilter())
+    logger.addHandler(hndlr)
+    hndlr.addFilter(ConsoleLogFilter())
 
     return logger
 
@@ -113,12 +113,10 @@ def main():
         print(red('Quitting due to missing environment variables.'))
     else:
 
-
-
-
         from ida.calibration.absolute import APSurvey
 
-        logger = setup_logging('APSurvey', log_file='abc.log', debug=debug)
+        logfile = __file__ + '.log'
+        logger = setup_logging('APSurvey', log_file=logfile, debug=debug)
         logger.info('='*72)
         logger.info('Starting APSurvey analysis: ' +
                     datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
