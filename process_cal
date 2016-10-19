@@ -38,140 +38,14 @@ from numpy import linspace, less, greater_equal, less_equal, logical_and
 from ida.tui import select, SelectResult
 from ida.instruments import CALTYPE_RBLF, CALTYPE_RBHF, CALTYPE_RBLF_SAMPLERATE, \
     Q330_FIR_GAIN_1HZ, Q330_FIR_FILTER_DELAY, Q330_FIR_COEFFS
-from ida.calibration.cal_info import CalInfo
-from ida.calibration.process import prepare_cal_data, analyze_cal_component, \
-    compare_component_response
-from ida.calibration.cross import cross_correlate
-from ida.calibration.plots import cross_tf_plot, save_comp_response_comparison_plot
 from ida.ctbto.messages import ims2_calibrate_result_msg_header, \
     ims2_calibrate_result_msg_comp_info, ims2_paz2_msg, ims2_dig2_msg, ims2_fir2_msg
 from ida.signals.utils import compute_response
-
-
-def clean_analysis_files(filelist):
-    """Deletes specific list of files form current directory.
-
-    Args:
-        filelist (iterable): List of files to remove from current directory
-    """
-    for filename in filelist:
-        os.remove(filename)
-
-
- #def publish_files(target_dir, filelist):
- #    """Copies files to 'output' directory
- #
- #    Args:
- #        target_dir (str): Path of target directory
- #        filelist (iterable): List of files to copy from current directory to target_dir
- #    """
- #
- #    for filename in filelist:
- #        aname = Path(filename).name
- #        shutil.copy2(filename, os.path.join(target_dir, aname))
-
-
-def gen_tf_and_fig(cal_info, data_samp_rate, input_data, meas_data, cal_type,
-                   green_tol_limits, grey_tol_limits):
-    """Run cross correlation and generate Transfer Function (TF) plot.
-
-    Args:
-        cal_info (CalInfo): Instance of CalInfo containing information
-                            on calibration being processed
-        data_samp_rate (float or int): Sample rate of calibration data
-        input_data (ndarray): Input calibration timeseries convolved with response
-        meas_data (ndarray):  Output (measured) calibration timeseries
-        cal_type (CalType): Either CALTYPE_RBLF or CALTYPE_RBHF
-        green_tol_limits ((float, float)): Tuple of amplitude 'green range'
-                                           in %, phase 'green range' in degrees
-        grey_tol_limits ((float, float)): Tuple of amplitude 'grey range'
-                                          in %, phase 'grey range' in degrees
-
-    Returns:
-        tf_f (ndarray): Array of transfer function frequencies
-        tf_amp (ndarray): Array of transsfer function amplitudes
-        tf_pha (ndarray): Array of tranfer function phases
-        tf_coh (ndarray): Array of timeseries coherence
-        fig (pyplot.figure): Matplotlib containing figure with TF and Coherence plots
-
-    """
-
-    if not cal_type in [CALTYPE_RBLF, CALTYPE_RBHF]:
-       raise ValueError('cal_type must be CALTYPE_RBLF or CALTYPE_RBHF. [' + cal_type + ']')
-
-    tf_f, tf_amp, tf_pha, tf_coh, _, _, _, _, _ = cross_correlate(
-        data_samp_rate, input_data, meas_data)
-
-    if cal_type == CALTYPE_RBLF:
-        eff_samplerate_freq = data_samp_rate
-        thedate = cal_info.lfdatestr
-
-        freq_normband = less_equal(tf_f, 0.04 * eff_samplerate_freq)
-        # modelled after matlab go_parker.m code:  <=8% of 1hz cal sample rate for LF
-
-    elif cal_type == CALTYPE_RBHF:
-        eff_samplerate_freq = cal_info.opsr
-        thedate = cal_info.hfdatestr
-
-        freq_normband = logical_and(tf_f > 0.5, tf_f <
-                                    (0.35 * eff_samplerate_freq))
-        # modelled after matlab go_parker.m code: 5% < freq < 35% of channel samplerate
-
-    # normalize tf_amp
-    tf_amp_band_median = median(tf_amp[freq_normband])
-    tf_amp = divide(tf_amp, tf_amp_band_median)
-
-    # detrend pha using median coh up to 75% of nyquist
-    tf_pha_detrnd = tf_pha.copy()
-
-    # fit trend line to phase over band with "good or better coh", which is
-    # defined as median coh at freqs below 75% ofactual sample rate
-    median_coh = median(tf_coh[less(tf_f, 0.5 * .75 * data_samp_rate)])
-    good_cohs_ndxs = greater_equal(tf_coh, median_coh)
-    # fit to straight line
-    pha_trend_coeffs = polyfit(tf_f[good_cohs_ndxs], tf_pha[good_cohs_ndxs], 1)
-    ph_corr_vals = polyval(pha_trend_coeffs, tf_f)
-    # correct pha for trend
-    tf_pha_detrnd -= ph_corr_vals
-
-
-    fig = cross_tf_plot(
-        cal_info.sta,
-        cal_info.loc,
-        cal_info.chan,
-        cal_info.sensor,
-        thedate,
-        cal_type,
-        eff_samplerate_freq,
-        tf_f,
-        tf_amp,
-        tf_pha_detrnd,
-        tf_coh,
-        green_tol_lims=green_tol_limits,
-        grey_tol_lims=grey_tol_limits,
-        plot_band_limit=0.9)  # plot to 90% of nyquist
-
-    return tf_f, tf_amp, tf_pha, tf_pha_detrnd, tf_coh, fig
-
-
-def fit_menu(choice_list):
-    """Display and accept user choice of poles/zeros to fit"""
-    _, choices, _, _ = select(
-        [choice_list],
-        title='Select Action',
-        prompt='Enter selection ("q" => quit): ',
-        implicit_quit_q=True,
-        menu_on_error=True,
-        err_message='Invalid choice. Please try again')
-
-    return choices[0]
-
-
-def user_quit():
-    """User decided to quit. Print msg and exit"""
-
-    print(bold(red('User quit.')))
-    sys.exit(0)
+from ida.calibration.cross import cross_correlate
+from ida.calibration.plots import cross_tf_plot, save_comp_response_comparison_plot
+from ida.calibration.cal_info import CalInfo
+from ida.calibration.process import prepare_cal_data, analyze_cal_component, \
+   compare_component_response
 
 
 def main():
@@ -192,10 +66,9 @@ def main():
 
     raw_dir = os.path.join(os.environ['IDA_CAL_RAW_DIR'], args.sta, args.loc)
     if not os.path.exists(raw_dir):
-        print(
-            bold(
-                red('ERROR: Directory {} does not exist. " + \
-                       "Please check the number and dial again.'
+        print(bold(
+                red('ERROR: Directory {} does not exist. ' + \
+                       'Please check the number and dial again.'
                     .format(raw_dir))))
         sys.exit(1)
 
@@ -558,6 +431,117 @@ def main():
             print(bold(' ' * (ndnt * 2) + fname))
 
         input(bold('\nHit ENTER/RETURN to exit...'))
+
+def clean_analysis_files(filelist):
+    """Deletes specific list of files form current directory.
+
+    Args:
+        filelist (iterable): List of files to remove from current directory
+    """
+    for filename in filelist:
+        os.remove(filename)
+
+def gen_tf_and_fig(cal_info, data_samp_rate, input_data, meas_data, cal_type,
+                   green_tol_limits, grey_tol_limits):
+    """Run cross correlation and generate Transfer Function (TF) plot.
+
+    Args:
+        cal_info (CalInfo): Instance of CalInfo containing information
+                            on calibration being processed
+        data_samp_rate (float or int): Sample rate of calibration data
+        input_data (ndarray): Input calibration timeseries convolved with response
+        meas_data (ndarray):  Output (measured) calibration timeseries
+        cal_type (CalType): Either CALTYPE_RBLF or CALTYPE_RBHF
+        green_tol_limits ((float, float)): Tuple of amplitude 'green range'
+                                           in %, phase 'green range' in degrees
+        grey_tol_limits ((float, float)): Tuple of amplitude 'grey range'
+                                          in %, phase 'grey range' in degrees
+
+    Returns:
+        tf_f (ndarray): Array of transfer function frequencies
+        tf_amp (ndarray): Array of transsfer function amplitudes
+        tf_pha (ndarray): Array of tranfer function phases
+        tf_coh (ndarray): Array of timeseries coherence
+        fig (pyplot.figure): Matplotlib containing figure with TF and Coherence plots
+
+    """
+
+    if not cal_type in [CALTYPE_RBLF, CALTYPE_RBHF]:
+       raise ValueError('cal_type must be CALTYPE_RBLF or CALTYPE_RBHF. [' + cal_type + ']')
+
+    tf_f, tf_amp, tf_pha, tf_coh, _, _, _, _, _ = cross_correlate(
+        data_samp_rate, input_data, meas_data)
+
+    if cal_type == CALTYPE_RBLF:
+        eff_samplerate_freq = data_samp_rate
+        thedate = cal_info.lfdatestr
+
+        freq_normband = less_equal(tf_f, 0.04 * eff_samplerate_freq)
+        # modelled after matlab go_parker.m code:  <=8% of 1hz cal sample rate for LF
+
+    elif cal_type == CALTYPE_RBHF:
+        eff_samplerate_freq = cal_info.opsr
+        thedate = cal_info.hfdatestr
+
+        freq_normband = logical_and(tf_f > 0.5, tf_f <
+                                    (0.35 * eff_samplerate_freq))
+        # modelled after matlab go_parker.m code: 5% < freq < 35% of channel samplerate
+
+    # normalize tf_amp
+    tf_amp_band_median = median(tf_amp[freq_normband])
+    tf_amp = divide(tf_amp, tf_amp_band_median)
+
+    # detrend pha using median coh up to 75% of nyquist
+    tf_pha_detrnd = tf_pha.copy()
+
+    # fit trend line to phase over band with "good or better coh", which is
+    # defined as median coh at freqs below 75% ofactual sample rate
+    median_coh = median(tf_coh[less(tf_f, 0.5 * .75 * data_samp_rate)])
+    good_cohs_ndxs = greater_equal(tf_coh, median_coh)
+    # fit to straight line
+    pha_trend_coeffs = polyfit(tf_f[good_cohs_ndxs], tf_pha[good_cohs_ndxs], 1)
+    ph_corr_vals = polyval(pha_trend_coeffs, tf_f)
+    # correct pha for trend
+    tf_pha_detrnd -= ph_corr_vals
+
+
+    fig = cross_tf_plot(
+        cal_info.sta,
+        cal_info.loc,
+        cal_info.chan,
+        cal_info.sensor,
+        thedate,
+        cal_type,
+        eff_samplerate_freq,
+        tf_f,
+        tf_amp,
+        tf_pha_detrnd,
+        tf_coh,
+        green_tol_lims=green_tol_limits,
+        grey_tol_lims=grey_tol_limits,
+        plot_band_limit=0.9)  # plot to 90% of nyquist
+
+    return tf_f, tf_amp, tf_pha, tf_pha_detrnd, tf_coh, fig
+
+
+def fit_menu(choice_list):
+    """Display and accept user choice of poles/zeros to fit"""
+    _, choices, _, _ = select(
+        [choice_list],
+        title='Select Action',
+        prompt='Enter selection ("q" => quit): ',
+        implicit_quit_q=True,
+        menu_on_error=True,
+        err_message='Invalid choice. Please try again')
+
+    return choices[0]
+
+
+def user_quit():
+    """User decided to quit. Print msg and exit"""
+
+    print(bold(red('User quit.')))
+    sys.exit(0)
 
 
 if __name__ == '__main__':
