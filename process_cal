@@ -32,10 +32,10 @@ import matplotlib
 matplotlib.use('Qt4Agg')
 import matplotlib.pyplot as plt
 from fabulous.color import bold, blue, red
-from numpy import pi, cos, sin, multiply, divide, median
-from numpy import linspace, less_equal, logical_and
+from numpy import pi, cos, sin, multiply, divide, median, polyfit, polyval
+from numpy import linspace, less, greater_equal, less_equal, logical_and
 
-from ida.tui import input_yn, select, SelectResult
+from ida.tui import select, SelectResult
 from ida.instruments import CALTYPE_RBLF, CALTYPE_RBHF, CALTYPE_RBLF_SAMPLERATE, \
     Q330_FIR_GAIN_1HZ, Q330_FIR_FILTER_DELAY, Q330_FIR_COEFFS
 from ida.calibration.cal_info import CalInfo
@@ -58,17 +58,17 @@ def clean_analysis_files(filelist):
         os.remove(filename)
 
 
-def publish_files(target_dir, filelist):
-    """Copies files to 'output' directory
-
-    Args:
-        target_dir (str): Path of target directory
-        filelist (iterable): List of files to copy from current directory to target_dir
-    """
-
-    for filename in filelist:
-        aname = Path(filename).name
-        shutil.copy2(filename, os.path.join(target_dir, aname))
+ #def publish_files(target_dir, filelist):
+ #    """Copies files to 'output' directory
+ #
+ #    Args:
+ #        target_dir (str): Path of target directory
+ #        filelist (iterable): List of files to copy from current directory to target_dir
+ #    """
+ #
+ #    for filename in filelist:
+ #        aname = Path(filename).name
+ #        shutil.copy2(filename, os.path.join(target_dir, aname))
 
 
 def gen_tf_and_fig(cal_info, data_samp_rate, input_data, meas_data, cal_type,
@@ -96,6 +96,9 @@ def gen_tf_and_fig(cal_info, data_samp_rate, input_data, meas_data, cal_type,
 
     """
 
+    if not cal_type in [CALTYPE_RBLF, CALTYPE_RBHF]:
+       raise ValueError('cal_type must be CALTYPE_RBLF or CALTYPE_RBHF. [' + cal_type + ']')
+
     tf_f, tf_amp, tf_pha, tf_coh, _, _, _, _, _ = cross_correlate(
         data_samp_rate, input_data, meas_data)
 
@@ -113,11 +116,24 @@ def gen_tf_and_fig(cal_info, data_samp_rate, input_data, meas_data, cal_type,
         freq_normband = logical_and(tf_f > 0.5, tf_f <
                                     (0.35 * eff_samplerate_freq))
         # modelled after matlab go_parker.m code: 5% < freq < 35% of channel samplerate
-    else:
-        raise ValueError('Invalid cal_type: {}'.format(cal_type))
 
+    # normalize tf_amp
     tf_amp_band_median = median(tf_amp[freq_normband])
     tf_amp = divide(tf_amp, tf_amp_band_median)
+
+    # detrend pha using median coh up to 75% of nyquist
+    tf_pha_detrnd = tf_pha.copy()
+
+    # fit trend line to phase over band with "good or better coh", which is
+    # defined as median coh at freqs below 75% ofactual sample rate
+    median_coh = median(tf_coh[less(tf_f, 0.5 * .75 * data_samp_rate)])
+    good_cohs_ndxs = greater_equal(tf_coh, median_coh)
+    # fit to straight line
+    pha_trend_coeffs = polyfit(tf_f[good_cohs_ndxs], tf_pha[good_cohs_ndxs], 1)
+    ph_corr_vals = polyval(pha_trend_coeffs, tf_f)
+    # correct pha for trend
+    tf_pha_detrnd -= ph_corr_vals
+
 
     fig = cross_tf_plot(
         cal_info.sta,
@@ -129,13 +145,13 @@ def gen_tf_and_fig(cal_info, data_samp_rate, input_data, meas_data, cal_type,
         eff_samplerate_freq,
         tf_f,
         tf_amp,
-        tf_pha,
+        tf_pha_detrnd,
         tf_coh,
         green_tol_lims=green_tol_limits,
         grey_tol_lims=grey_tol_limits,
         plot_band_limit=0.9)  # plot to 90% of nyquist
 
-    return tf_f, tf_amp, tf_pha, tf_coh, fig
+    return tf_f, tf_amp, tf_pha, tf_pha_detrnd, tf_coh, fig
 
 
 def fit_menu(choice_list):
@@ -236,7 +252,7 @@ def main():
             cal_start_time = lf_start_time
 
             # compute TF (and plot fig)
-            lftf_f, lftf_amp, lftf_pha, \
+            lftf_f, lftf_amp, lftf_pha, lftf_pha_detrnd, \
             _, lf_fig_start = gen_tf_and_fig(ci, samp_rate_lf,
                                              lfinput,
                                              lfmeas, CALTYPE_RBLF,
@@ -265,27 +281,28 @@ def main():
 
                 ci.print_info()
 
-                print(' ' * ndnt + bold(
-                    '\nFitting new LOW FREQ reponse for: {}'.format(ci.comp)))
+                print(' '*ndnt + bold('\nFitting new LOW FREQ reponse for: {}'.format(ci.comp)))
+                # contruct complex TF to minimize when for fitting
                 lftf = multiply(lftf_amp, (
                     cos(lftf_pha * pi / 180) + 1j * sin(lftf_pha * pi / 180)))
+                # fit new poles and zeros
                 fit_paz = analyze_cal_component(ci.fullpaz, ci.lfpert,
                                                 ci.hfpert, ci.opsr, lftf_f,
                                                 lftf, None, None, CALTYPE_RBLF)
                 fit_paz.h0 = 1
 
-                print(' ' * ndnt + bold(
-                    'Recomputing LOW FREQ TF with new fit response for: {}'.
-                    format(ci.comp)))
+                print(' '*ndnt + \
+                      bold('Recomputing LOW FREQ TF with new fit response for: {}'.format(ci.comp)))
                 samp_rate_lf, lf_start_time, lfinput, lfmeas, _, _, _, _, \
-                freqs_lf, freqs_hf,
+                freqs_lf, freqs_hf, \
                 snr_lf, snr_hf = prepare_cal_data(ci.lfpath, ci.lffile, None, None,
                                                   ci.sensor, ci.comp, fit_paz)
 
-                # comute TF (and plot fig)
-                lftf_f, lftf_amp, lftf_pha, lftf_coh, lf_fig_fit = gen_tf_and_fig(
-                    ci, samp_rate_lf, lfinput, lfmeas, CALTYPE_RBLF,
-                    green_tol_limits, grey_tol_limits)
+                # compute new TF and plot fig
+                lftf_f, lftf_amp, lftf_pha, lftf_pha_detrnd, \
+                  lftf_coh, lf_fig_fit = gen_tf_and_fig(
+                     ci, samp_rate_lf, lfinput, lfmeas, CALTYPE_RBLF,
+                     green_tol_limits, grey_tol_limits)
 
                 action = fit_menu([('F', 'Fit New LOW FREQ Response'),
                                    ('A', 'Accept Current LOW FREQ Response'),
@@ -323,7 +340,7 @@ def main():
                 hf_start_time) if cal_start_time else hf_start_time
 
             # compute TF (and plot fig)
-            hftf_f, hftf_amp, hftf_pha, hftf_coh, hf_fig_start = gen_tf_and_fig(
+            hftf_f, hftf_amp, hftf_pha, hftf_pha_detrnd, hftf_coh, hf_fig_start = gen_tf_and_fig(
                 ci, samp_rate_hf, hfinput, hfmeas, CALTYPE_RBHF,
                 green_tol_limits, grey_tol_limits)
             fname = '{}_{}_{}_tf_hf_start_{}.png'.format(ci.sensor.lower(),
@@ -365,7 +382,7 @@ def main():
                                                           ci.sensor, ci.comp, fit_paz)
 
                 # comute TF (and plot fig)
-                hftf_f, hftf_amp, hftf_pha, hftf_coh, hf_fig_fit = gen_tf_and_fig(
+                hftf_f, hftf_amp, hftf_pha, hftf_pha_detrnd, hftf_coh, hf_fig_fit = gen_tf_and_fig(
                     ci, samp_rate_hf, hfinput, hfmeas, CALTYPE_RBHF,
                     green_tol_limits, grey_tol_limits)
 
@@ -443,15 +460,23 @@ def main():
                 lf_freqs_in_band = less_equal(lftf_f, 0.9 * 0.5 *
                                               CALTYPE_RBLF_SAMPLERATE)
 
+                print(lftf_amp[lf_freqs_in_band].min())
+                print(lftf_amp[lf_freqs_in_band].max())
+                print(lftf_pha_detrnd[lf_freqs_in_band].min())
+                print(lftf_pha_detrnd[lf_freqs_in_band].max())
+                print(hftf_amp[hf_freqs_in_band].min())
+                print(hftf_amp[hf_freqs_in_band].max())
+                print(hftf_pha_detrnd[hf_freqs_in_band].min())
+                print(hftf_pha_detrnd[hf_freqs_in_band].max())
                 # noinspection PyUnboundLocalVariable
                 ctbto_inspec = 'YES' if (lftf_amp[lf_freqs_in_band].min() >= 0.95) and \
                                         (lftf_amp[lf_freqs_in_band].max() <= 1.05) and \
-                                        (lftf_pha[lf_freqs_in_band].min() >= -5) and \
-                                        (lftf_pha[lf_freqs_in_band].max() <= 5) and \
+                                        (lftf_pha_detrnd[lf_freqs_in_band].min() >= -5) and \
+                                        (lftf_pha_detrnd[lf_freqs_in_band].max() <= 5) and \
                                         (hftf_amp[hf_freqs_in_band].min() >= 0.95) and \
                                         (hftf_amp[hf_freqs_in_band].max() <= 1.05) and \
-                                        (hftf_pha[hf_freqs_in_band].min() >= -5) and \
-                                        (hftf_pha[hf_freqs_in_band].max() <= 5) else 'NO'
+                                        (hftf_pha_detrnd[hf_freqs_in_band].min() >= -5) and \
+                                        (hftf_pha_detrnd[hf_freqs_in_band].max() <= 5) else 'NO'
 
                 if ctbto_inspec == 'NO':
                     print('\n', ' ' * ndnt + bold(
@@ -531,22 +556,14 @@ def main():
         with open(logfn, 'wt') as ofl:
             ofl.write(str(ci))
             output_filename_list.append(logfn)
+            ofl.write('Files saved: \n')
+            for fname in output_filename_list:
+               ofl.write('   {}\n'.format(fname))
 
-        if input_yn('\n' + ' ' * ndnt +
-                    'Publish {} component results to  {}  (y/n) ? :'.format(
-                        ci.comp, analysis_path)) == 'Y':
-            print(output_filename_list)
-            publish_files(analysis_path, output_filename_list)
-            print('\n' + ' ' * ndnt + bold(
-                blue('Saved in current working directory and published to:')),
-                  bold(analysis_path), '\n')
-            for fname in output_filename_list:
-                print(bold(' ' * (ndnt * 2) + fname))
-        else:
-            print('\n' + ' ' * ndnt +
-                  bold(blue('Saved in current working directory:')), '\n')
-            for fname in output_filename_list:
-                print(bold(' ' * (ndnt * 2) + fname))
+        print('\n' + ' ' * ndnt +
+              bold(blue('Saved in current working directory:')), '\n')
+        for fname in output_filename_list:
+            print(bold(' ' * (ndnt * 2) + fname))
 
         input(bold('\nHit ENTER/RETURN to exit...'))
 
