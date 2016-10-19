@@ -460,14 +460,6 @@ def main():
                 lf_freqs_in_band = less_equal(lftf_f, 0.9 * 0.5 *
                                               CALTYPE_RBLF_SAMPLERATE)
 
-                print(lftf_amp[lf_freqs_in_band].min())
-                print(lftf_amp[lf_freqs_in_band].max())
-                print(lftf_pha_detrnd[lf_freqs_in_band].min())
-                print(lftf_pha_detrnd[lf_freqs_in_band].max())
-                print(hftf_amp[hf_freqs_in_band].min())
-                print(hftf_amp[hf_freqs_in_band].max())
-                print(hftf_pha_detrnd[hf_freqs_in_band].min())
-                print(hftf_pha_detrnd[hf_freqs_in_band].max())
                 # noinspection PyUnboundLocalVariable
                 ctbto_inspec = 'YES' if (lftf_amp[lf_freqs_in_band].min() >= 0.95) and \
                                         (lftf_amp[lf_freqs_in_band].max() <= 1.05) and \
