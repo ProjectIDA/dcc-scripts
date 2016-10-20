@@ -22,14 +22,15 @@
 #######################################################################################################################
 import argparse
 import sys
+import os
 import datetime
 
-from fabulous.color import red, green, bold
+from fabulous.color import red, bold
 
 from ida.utils import i10get
 
 
-version = '1.1.0'
+version = '1.2.0'
 parser = argparse.ArgumentParser(description="Retrieve IDA10 raw data from IDA archives for arbitrary range of days. " +
                                              "Output is sent to STDOUT.")
 parser.add_argument('station', action="store", default='',
@@ -40,10 +41,12 @@ parser.add_argument('start', action="store", default='',
                     help="START time in either  YYYY-JJJ  or  YYYY-MM-DD formats. ")
 parser.add_argument('end', action="store", default='',
                     help="END time in either  YYYY-JJJ  or  YYYY-MM-DD formats. ")
+parser.add_argument('--i10-arc-dir', action='store', default=os.environ.get('IDA_ARCHIVE_RAW_DIR', '.'),
+                    help='Root directory of the IDA10 raw data archive.')
 parser.add_argument('-v', '--version', action='version', version=version)
 
 args = parser.parse_args()
-
+i10_arc_dir = args.i10_arc_dir
 sta = args.station.lower()
 chan_list = args.chanloc_list.lower()
 
@@ -107,5 +110,5 @@ if start_datetime > end_datetime:
 
 # now lets get to business...
 # FINALLY, lets get i10 data
-i10get(sta, chan_list, start_datetime, end_datetime)
+i10get(i10_arc_dir, sta, chan_list, start_datetime, end_datetime)
 
