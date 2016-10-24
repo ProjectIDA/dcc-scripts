@@ -40,38 +40,28 @@ class ConsoleLogFilter(logging.Filter):
             record.msg = red(bold(record.msg))
         return True
 
-def setup_logging(logger_name='', log_file=(__file__ + '.log'), debug=False):
+def setup_logging(log_file=(__file__ + '.log'), debug=False):
     """Set up logging for APSurvey processing"""
 
-    logger = logging.getLogger(logger_name)
+    logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)  # allow control via handler(s)
-    confmtr = logging.Formatter('%(levelname)s: %(message)s')
-    hndlr = logging.StreamHandler()
-    hndlr.setFormatter(confmtr)
-    if debug:
-        hndlr.setLevel(logging.DEBUG)
-    else:
-        hndlr.setLevel(logging.WARN)
 
-    filefmtr = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s: %(message)s')
+    fmtr = logging.Formatter('%(name)s %(asctime)s %(levelname)s: %(message)s')
+
+    conhndlr = logging.StreamHandler()
+    conhndlr.setFormatter(fmtr)
+    if debug:
+        conhndlr.setLevel(logging.DEBUG)
+    else:
+        conhndlr.setLevel(logging.WARN)
+    logger.addHandler(conhndlr)
+    conhndlr.addFilter(ConsoleLogFilter())
+
     fhndlr = logging.FileHandler(log_file)
-    fhndlr.setFormatter(filefmtr)
+    fhndlr.setFormatter(fmtr)
     fhndlr.setLevel(logging.DEBUG)
     logger.addHandler(fhndlr)
 
-    logger.addHandler(hndlr)
-    hndlr.addFilter(ConsoleLogFilter())
-
-    return logger
-
-def check_env(envvars):
-    """Checks list of env vars toi see if set"""
-
-    vars_stat = []
-    for var in envvars:
-        okay = os.environ.get(var) != None
-        vars_stat.append((var, okay))
-    return vars_stat
 
 def main():
     """Script main function"""
@@ -81,33 +71,55 @@ def main():
     #       and check for respfile before constructing from trace metadata
     # TODO: Dpcument ENV VARS REQUIRED here
 
-    version = '0.1.0'
+    version = '1.0.0'
     parser = argparse.ArgumentParser(description="Process APSurvey calibration data.")
-    parser.add_argument('dataset', action="store", default='', choices=['azi', 'abs'],
-                        help="Dataset to analyze. Must be set up in configuration file.")
-    parser.add_argument('-c', '--config_file', action="store", default="process_onsite.yaml",
-                        help="configuration file (yaml).")
-    # parser.add_argument('-r', '--resp-file', action="store", default="",
-    #                     help="RESP filename for reference sensor located in $SEEDRESP directory.")
+    parser.add_argument('config', action="store", help="Configuration file (YAML)")
+    parser.add_argument('--only', action="store", default='both',
+                        choices=['azi', 'abs', 'both'],
+                        help="Dataset to analyze even if both are enabled in config file.")
+    parser.add_argument('--cal-raw-dir', action='store', default=os.environ.get('IDA_CAL_RAW_DIR'),
+                        help='Root directory of the raw calibration data. Value of env var ' + \
+                        '$IDA_CAL_RAW_DIR is the default.')
+    parser.add_argument('--resp-file-dir', action='store', default=os.environ.get('SEEDRESP'),
+                        help='Directory containing SEED RESP files. Value of env var $SEEDRESP is the default.')
+    parser.add_argument('--arc-raw-dir', action='store', default=os.environ.get('IDA_ARCHIVE_RAW_DIR'),
+                        help='Root directory of file structure for raw IDA10 data. ' + \
+                        'Value of env var $IDA_ARCHIVE_RAW_DIR is the default.')
     parser.add_argument('-v', '--version', action='version', version=version)
     parser.add_argument('-d', '--debug', action='store_true',
                         help='Enable DEBUG mode for verbose output.')
 
     args = parser.parse_args()
 
-    cfg_fn = args.config_file
-    dataset = args.dataset
+    cfg_fn = args.config
+    if args.only == 'both':
+        datasets = ['abs', 'azi']
+    else:
+        datasets = [args.only]
+
     debug = args.debug
+    cal_raw_dir = args.cal_raw_dir
+    resp_file_dir = args.resp_file_dir
+    arc_raw_dir = args.arc_raw_dir
 
     # check env for required vars
     env_ok = True
-    vars_stat = check_env(['IDA_CAL_RAW_DIR',
-                           'IDA_ARCHIVE_RAW_DIR',
-                           'SEEDRESP'])
-    for avar, isset in vars_stat:
-        if not isset:
-            env_ok = False
-            print(red('The env var [{}] must be set.'.format(avar)))
+    if (not cal_raw_dir):
+        print(red(bold('The root directory of raw calibration data must be specified with --cal-raw-dir ' + \
+                       'or by setting the IDA_CAL_RAW_DIR environment variable. ' + \
+                       'Within this root directory a "shaketable" subdirectory is assumed.')))
+        env_ok = False 
+
+    if (not resp_file_dir):
+        print(red(bold('The location of the sensor RESP files must be specific with --resp-file-dir ' + \
+                       'or by setting the SEEDRESP environment variable.')))
+        env_ok = False
+
+    if (not arc_raw_dir):
+        print(red(bold('The root directory of IDA10 raw data must be specified with --arc-raw-dir ' + \
+                       'or by setting the IDA_ARCHIVE_RAW_DIR environment variable. ')))
+        env_ok = False 
+
 
     if not env_ok:
         print(red('Quitting due to missing environment variables.'))
@@ -116,47 +128,40 @@ def main():
         from ida.calibration.absolute import APSurvey
 
         logfile = __file__ + '.log'
-        final_logfile_name = ''
-        logger = setup_logging('APSurvey', log_file=logfile, debug=debug)
+        setup_logging(log_file=logfile, debug=debug)
+        logger = logging.getLogger(__file__.upper())
         logger.info('='*72)
-        logger.info('Starting APSurvey analysis: ' +
-                    datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
-        config = APSurvey(cfg_fn, dataset,
-                          os.environ['IDA_CAL_RAW_DIR'],
-                          os.environ['SEEDRESP'],
-                          logger=logger)
+        config = APSurvey(cfg_fn, cal_raw_dir, resp_file_dir, arc_raw_dir)
 
         if not config.ok:
             logger.error('Quitting due to error in configuration.')
         else:
-            sumfn, detfn, wf_files = config.analyze()
-            if sumfn:
-                logfile_parts = Path(sumfn).name.split('_')[0:2]
-                final_logfile_name = '{}_{}_log.txt'.format('_'.join(logfile_parts),
-                                                            dataset)
-                print(bold('\n   Saved in current working directory:'), '\n')
-                print(blue('    Summary results: ' + Path(os.path.abspath(sumfn)).name))
-                print(blue('   Detailed results: ' + Path(os.path.abspath(detfn)).name))
-                print(blue('           Log file: ' + final_logfile_name))
-                print(blue(bold('   Station sensor data files: ')))
-                for fname in config.waveform_files:
-                    print(blue('                     ' + Path(fname).name))
-                logger.info('    Summary results: ' + os.path.abspath(sumfn))
-                logger.info('   Detailed results: ' + os.path.abspath(detfn))
-                logger.info('           Log file: ' + logfile)
-                logger.info('Station sensor data: ')
-                for fname in wf_files:
-                    logger.info('   ' + Path(fname).name)
-            else:
-                logger.error('Error performing analysis. No results returned.')
+            logger.info('Starting APSurvey analysis: ' + config.analdate)
+
+            for ds in datasets:
+                if config.dataset_enabled(ds):
+                    sumfn, detfn, wf_files = config.analyze(ds)
+                    if sumfn:
+                        info = '\n{} Analysis saved in current working dir:\n'.format(ds.upper())
+                        print(bold(info))
+                        print(blue('    Summary results: ' + Path(os.path.abspath(sumfn)).name))
+                        print(blue('   Detailed results: ' + Path(os.path.abspath(detfn)).name))
+                        print(blue('           Log file: ' + logfile))
+                        print(blue(bold('   Station sensor data files: ')))
+                        for fname in config.waveform_files:
+                            print(blue('                     ' + Path(fname).name))
+                        logger.info('    Summary results: ' + os.path.abspath(sumfn))
+                        logger.info('   Detailed results: ' + os.path.abspath(detfn))
+                        logger.info('           Log file: ' + logfile)
+                        logger.info('Station sensor data files: ')
+                        for fname in wf_files:
+                            logger.info('   ' + Path(fname).name)
+                    else:
+                        logger.error(ds.upper()+': Error performing analysis. No results returned.')
 
         logger.info('Exiting: ' + datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
         logger.info('='*72)
-
-        # rename logfile
-        if final_logfile_name:
-            os.replace(logfile, final_logfile_name)
 
 if __name__ == '__main__':
     main()

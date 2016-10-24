@@ -27,6 +27,7 @@ import sys
 import argparse
 import shutil
 from pathlib import Path
+from os.path import exists
 
 import matplotlib
 matplotlib.use('Qt4Agg')
@@ -35,176 +36,109 @@ from fabulous.color import bold, blue, red
 from numpy import pi, cos, sin, multiply, divide, median, polyfit, polyval
 from numpy import linspace, less, greater_equal, less_equal, logical_and
 
-from ida.tui import select, SelectResult
+
+version = '1.5.0'
+
+epi = """This application will analyze the random binary
+calibration data obtained from the Q330 digitizer using IDA's qcal application."""
+
+parser = argparse.ArgumentParser(description='IDA Random Binary Analysis',
+                                epilog=epi)
+parser.add_argument('-v', '--version', action='version', version=version)
+
+subparsers = parser.add_subparsers(help='Database Access Mode')
+
+cfgparser = subparsers.add_parser('nodb', help='Do not use internal IDA Database.')
+cfgparser.add_argument('comp', help='Component to analyze (z, 1, 2)',
+                       choices=['z', '1', '2'])
+cfgparser.add_argument('chancode', help='Channel Code')
+cfgparser.add_argument('config', help='Configuration File (YAML)')
+
+interparser = subparsers.add_parser('idadb', help='Use internal IDA Database.')
+interparser.add_argument('sta', help="IDA Station code", default='')
+interparser.add_argument('loc', help="IDA Location code", default='')
+
+args = parser.parse_args()
+print(args)
+from ida.tui import input_yn, select, SelectResult
 from ida.instruments import CALTYPE_RBLF, CALTYPE_RBHF, CALTYPE_RBLF_SAMPLERATE, \
-    Q330_FIR_GAIN_1HZ, Q330_FIR_FILTER_DELAY, Q330_FIR_COEFFS
-from ida.calibration.cal_info import CalInfo
-from ida.calibration.process import prepare_cal_data, analyze_cal_component, \
-    compare_component_response
+       Q330_FIR_GAIN_1HZ, Q330_FIR_FILTER_DELAY, Q330_FIR_COEFFS
+from ida.ctbto.messages import ims2_calibrate_result_msg_header, \
+       ims2_calibrate_result_msg_comp_info, ims2_paz2_msg, ims2_dig2_msg, ims2_fir2_msg
+from ida.signals.utils import compute_response
 from ida.calibration.cross import cross_correlate
 from ida.calibration.plots import cross_tf_plot, save_comp_response_comparison_plot
-from ida.ctbto.messages import ims2_calibrate_result_msg_header, \
-    ims2_calibrate_result_msg_comp_info, ims2_paz2_msg, ims2_dig2_msg, ims2_fir2_msg
-from ida.signals.utils import compute_response
+from ida.calibration.cal_info import CalInfo
+from ida.calibration.process import prepare_cal_data, analyze_cal_component, \
+      compare_component_response
 
 
-def clean_analysis_files(filelist):
-    """Deletes specific list of files form current directory.
-
-    Args:
-        filelist (iterable): List of files to remove from current directory
-    """
-    for filename in filelist:
-        os.remove(filename)
-
-
- #def publish_files(target_dir, filelist):
- #    """Copies files to 'output' directory
- #
- #    Args:
- #        target_dir (str): Path of target directory
- #        filelist (iterable): List of files to copy from current directory to target_dir
- #    """
- #
- #    for filename in filelist:
- #        aname = Path(filename).name
- #        shutil.copy2(filename, os.path.join(target_dir, aname))
-
-
-def gen_tf_and_fig(cal_info, data_samp_rate, input_data, meas_data, cal_type,
-                   green_tol_limits, grey_tol_limits):
-    """Run cross correlation and generate Transfer Function (TF) plot.
-
-    Args:
-        cal_info (CalInfo): Instance of CalInfo containing information
-                            on calibration being processed
-        data_samp_rate (float or int): Sample rate of calibration data
-        input_data (ndarray): Input calibration timeseries convolved with response
-        meas_data (ndarray):  Output (measured) calibration timeseries
-        cal_type (CalType): Either CALTYPE_RBLF or CALTYPE_RBHF
-        green_tol_limits ((float, float)): Tuple of amplitude 'green range'
-                                           in %, phase 'green range' in degrees
-        grey_tol_limits ((float, float)): Tuple of amplitude 'grey range'
-                                          in %, phase 'grey range' in degrees
-
-    Returns:
-        tf_f (ndarray): Array of transfer function frequencies
-        tf_amp (ndarray): Array of transsfer function amplitudes
-        tf_pha (ndarray): Array of tranfer function phases
-        tf_coh (ndarray): Array of timeseries coherence
-        fig (pyplot.figure): Matplotlib containing figure with TF and Coherence plots
-
-    """
-
-    if not cal_type in [CALTYPE_RBLF, CALTYPE_RBHF]:
-       raise ValueError('cal_type must be CALTYPE_RBLF or CALTYPE_RBHF. [' + cal_type + ']')
-
-    tf_f, tf_amp, tf_pha, tf_coh, _, _, _, _, _ = cross_correlate(
-        data_samp_rate, input_data, meas_data)
-
-    if cal_type == CALTYPE_RBLF:
-        eff_samplerate_freq = data_samp_rate
-        thedate = cal_info.lfdatestr
-
-        freq_normband = less_equal(tf_f, 0.04 * eff_samplerate_freq)
-        # modelled after matlab go_parker.m code:  <=8% of 1hz cal sample rate for LF
-
-    elif cal_type == CALTYPE_RBHF:
-        eff_samplerate_freq = cal_info.opsr
-        thedate = cal_info.hfdatestr
-
-        freq_normband = logical_and(tf_f > 0.5, tf_f <
-                                    (0.35 * eff_samplerate_freq))
-        # modelled after matlab go_parker.m code: 5% < freq < 35% of channel samplerate
-
-    # normalize tf_amp
-    tf_amp_band_median = median(tf_amp[freq_normband])
-    tf_amp = divide(tf_amp, tf_amp_band_median)
-
-    # detrend pha using median coh up to 75% of nyquist
-    tf_pha_detrnd = tf_pha.copy()
-
-    # fit trend line to phase over band with "good or better coh", which is
-    # defined as median coh at freqs below 75% ofactual sample rate
-    median_coh = median(tf_coh[less(tf_f, 0.5 * .75 * data_samp_rate)])
-    good_cohs_ndxs = greater_equal(tf_coh, median_coh)
-    # fit to straight line
-    pha_trend_coeffs = polyfit(tf_f[good_cohs_ndxs], tf_pha[good_cohs_ndxs], 1)
-    ph_corr_vals = polyval(pha_trend_coeffs, tf_f)
-    # correct pha for trend
-    tf_pha_detrnd -= ph_corr_vals
-
-
-    fig = cross_tf_plot(
-        cal_info.sta,
-        cal_info.loc,
-        cal_info.chan,
-        cal_info.sensor,
-        thedate,
-        cal_type,
-        eff_samplerate_freq,
-        tf_f,
-        tf_amp,
-        tf_pha_detrnd,
-        tf_coh,
-        green_tol_lims=green_tol_limits,
-        grey_tol_lims=grey_tol_limits,
-        plot_band_limit=0.9)  # plot to 90% of nyquist
-
-    return tf_f, tf_amp, tf_pha, tf_pha_detrnd, tf_coh, fig
-
-
-def fit_menu(choice_list):
-    """Display and accept user choice of poles/zeros to fit"""
-    _, choices, _, _ = select(
-        [choice_list],
-        title='Select Action',
-        prompt='Enter selection ("q" => quit): ',
-        implicit_quit_q=True,
-        menu_on_error=True,
-        err_message='Invalid choice. Please try again')
-
-    return choices[0]
-
-
-def user_quit():
-    """User decided to quit. Print msg and exit"""
-
-    print(bold(red('User quit.')))
-    sys.exit(0)
-
-
-def main():
+def main(cl_args):
     """Main function of script"""
 
-    version = '1.1.0'
+    cal_raw_dir = os.environ.get('IDA_CAL_RAW_DIR')
+    nom_paz_dir = os.environ.get('IDA_RESPONSES_NOM_DIR')
+    cur_paz_dir = os.environ.get('IDA_RESPONSES_CUR_DIR')
+    datascopedb_dir = os.environ.get('IDA_DATASCOPEDB_DIR')
 
-    parser = argparse.ArgumentParser(description="Process random binary " + \
-        "calibration data acquired by qcal.")
-    parser.add_argument('-v', '--version', action='version', version=version)
-    parser.add_argument('sta', help="IDA Station code", default='')
-    parser.add_argument('loc', help="IDA Location code", default='')
-    args = parser.parse_args()
-    # perhaps for non-idadcc execution
-    # parser.add_argument('-d', '--datadir',
-    #    help='Data Directory containing LF and HF idacal/qcal miniseed and log files.')
-    # parser.add_argument('-r', '--response', help='IDA format poles/zeros sensor response file')
+    # check env for required vars
+    env_ok = True
+    if not cl_args.config:
+       # if not using config file, using IDA file struct and datascopedb and these must be set.
+       if (not cal_raw_dir):
+           print(red(bold('The root directory of raw calibration data must be specified with --cal-raw-dir ' + \
+                          'or by setting the IDA_CAL_RAW_DIR environment variable.')))
+           env_ok = False
+       elif not exists(cal_raw_dir):
+           print(bold(red('Error: Cal Raw directory [' + cal_raw_dir + '] does not exist.')))
+           env_ok = False
 
-    raw_dir = os.path.join(os.environ['IDA_CAL_RAW_DIR'], args.sta, args.loc)
-    if not os.path.exists(raw_dir):
-        print(
-            bold(
-                red('ERROR: Directory {} does not exist. " + \
-                       "Please check the number and dial again.'
-                    .format(raw_dir))))
-        sys.exit(1)
+       if (not datascopedb_dir):
+           print(red(bold('Required metadata is unavailable. You must specify the directory ' + \
+                          'containing the IDA Datascope DB files with --datascopedb-dir\n' + \
+                          'OR\nwith the IDA_DATASCOPEDB_DIR environment variable\n' + \
+                          'OR\nor specify configuration file with --config <yaml-filename>' + \
+                          'instead of using the Dtaascope DB.')))
+           env_ok = False
+       elif not exists(datascopedb_dir):
+           print(bold(red('Error: Datascope directory [' + datascopedb_dir + '] does not exist.')))
+           env_ok = False
 
-    ci = CalInfo(os.environ['IDA_CAL_RAW_DIR'],
-                 os.environ['IDA_RESPONSES_CUR_DIR'],
-                 os.environ['IDA_RESPONSES_NOM_DIR'],
-                 os.environ['IDA_CAL_ANALYSIS_DIR'])
-    ci.sta = args.sta
-    ci.loc = args.loc
+       if (not nom_paz_dir):
+           print(red(bold('The directory containing NOMINAL sensor poles and zeros response ' + \
+                          'files must be specified with --nom-paz-dir ' + \
+                          'or with the IDA_RESPONSES_NOM_DIR environment variable.')))
+           env_ok = False
+       elif not exists(nom_paz_dir):
+           print(red(bold('Error: Nominal Response directory [' + nom_paz_dir+ '] does not exist.')))
+           env_ok = False
+
+       if (not cur_paz_dir):
+           print(red(bold('The directory containing CURRENT/ACTUAL sensor poles and zeros response ' + \
+                          'files must be specified with --cur-paz-dirdir ' + \
+                          'or with the IDA_RESPONSES_CUR_DIR environment variable.')))
+           env_ok = False
+       elif not exists(cur_paz_dir):
+           print(red(bold('Error: Current Response directory [' + cur_paz_dir+ '] does not exist.')))
+           env_ok = False
+
+       if not env_ok:
+           print(red('Quitting due to incomplete environment.'))
+           sys.exit(1)
+
+       ci = CalInfo(sta=cl_args.sta.lower(), loc=cl_args.loc,
+                    cal_raw_dir=cal_raw_dir, resp_cur_dir=cur_paz_dir,
+                    resp_nom_dir=nom_paz_dir, db_dir=datascopedb_dir)
+
+    else:
+       ci = CalInfo(comp=cl_args.comp.lower(), chancode=cl_args.chancode, 
+                    config_file=cl_args.config)
+
+    if not ci.ok:
+       print(red('\nQuitting due to error in configuration file or environment.'))
+       sys.exit(1)
+
+
     ndnt = ci.tui_indent + 1
 
     if ci.collect_info():
@@ -213,10 +147,6 @@ def main():
         output_filename_list = []
 
         analysis_date = ci.lfdatestr if ci.lfdatestr else ci.hfdatestr
-        analysis_path = os.path.join(os.environ['IDA_CAL_ANALYSIS_DIR'],
-                                     ci.sta, ci.loc, analysis_date)
-        if not os.path.exists(analysis_path):
-            os.makedirs(analysis_path, exist_ok=True)
 
         print(' ' * ndnt + bold('All analysis output will be saved in:'),
               bold(blue(cur_dir)))
@@ -484,12 +414,21 @@ def main():
                 resp_1hz = compute_response(1.0, new_paz)
                 a0 = 1 / abs(resp_1hz[0])
 
+# TODO: move s1/3/4 system sens cals into CalInfo getters where ci.mode can be checked
                 # system sens to compute calib
-                s1_sens = abs(new_resp[bin_1hz_ndx]) * \
-                        ci.chn_stages.iloc[0].gnom * \
-                        ci.chn_stages.iloc[0].gcalib
-                s3_sens = ci.chn_stages.iloc[2].gnom * \
-                        ci.chn_stages.iloc[2].gcalib
+                sens_gnom = ci.sensor_gnom()
+                sens_gcal = ci.sensor_gcalib()
+                q330_gnom = ci.q330_gnom()
+                q330_gcal = ci.q330_gcalib()
+
+#               s1_sens = abs(new_resp[bin_1hz_ndx]) * \
+#                      ci.chn_stages.iloc[0].gnom * \
+#                      ci.chn_stages.iloc[0].gcalib
+#               s3_sens = ci.chn_stages.iloc[2].gnom * \
+#                       ci.chn_stages.iloc[2].gcalib
+                s1_sens = abs(new_resp[bin_1hz_ndx]) * sens_gnom * sens_gcal
+                s3_sens = q330_gnom * q330_gcal
+
                 s4_sens = Q330_FIR_GAIN_1HZ[int(ci.opsr)]
                 sys_sens = s1_sens * s3_sens * s4_sens
 
@@ -502,10 +441,8 @@ def main():
                 sensor_info = ims2_paz2_msg(ci.sta.upper(), ci.loc, ci.chan,
                                             ci.sensor.upper(), cal_start_time,
                                             ci.opsr, calib, calper, new_paz,
-                                            a0 * ci.chn_stages.iloc[0].gnom *
-                                            ci.chn_stages.iloc[0].gcalib)
-                digi_info = ims2_dig2_msg(2, ci.chn_stages.iloc[2].gnom * \
-                                          ci.chn_stages.iloc[2].gcalib,
+                                            a0 * sens_gnom * sens_gcal)
+                digi_info = ims2_dig2_msg(2, q330_gnom * q330_gcal,
                                           ci.opsr, 'Q330') + '\n' + \
                                           ims2_fir2_msg(3, 1.0, 1,
                                                         Q330_FIR_FILTER_DELAY[int(ci.opsr)], 'A',
@@ -552,13 +489,156 @@ def main():
             for fname in output_filename_list:
                ofl.write('   {}\n'.format(fname))
 
-        print('\n' + ' ' * ndnt +
-              bold(blue('Saved in current working directory:')), '\n')
-        for fname in output_filename_list:
-            print(bold(' ' * (ndnt * 2) + fname))
+        # if IDA_CAL_ANALYSIS_DIR env var is set, prompt to 'publish' result files
+        if os.environ.get('IDA_CAL_ANALYSIS_DIR'):
+           analysis_path = os.path.join(os.environ.get('IDA_CAL_ANALYSIS_DIR'),
+                                        ci.sta, ci.loc, analysis_date)
+        else:
+           analysis_path = None
+
+        if analysis_path and (input_yn('\n' + ' ' * ndnt +
+           'Publish {} component results to  {}  (y/n) ? :'.format(
+                ci.comp, analysis_path)) == 'Y'):
+           if not os.path.exists(analysis_path):
+               os.makedirs(analysis_path, exist_ok=True)
+           publish_files(analysis_path, output_filename_list)
+           print('\n' + ' ' * ndnt + bold(
+                 blue('Saved in current working directory and published to:')),
+                 bold(analysis_path), '\n')
+           for fname in output_filename_list:
+              print(bold(' ' * (ndnt * 2) + fname))
+        else:
+
+           print('\n' + ' ' * ndnt +
+                 bold(blue('Saved in current working directory:')), '\n')
+           for fname in output_filename_list:
+              print(bold(' ' * (ndnt * 2) + fname))
 
         input(bold('\nHit ENTER/RETURN to exit...'))
 
+def clean_analysis_files(filelist):
+    """Deletes specific list of files form current directory.
+
+    Args:
+        filelist (iterable): List of files to remove from current directory
+    """
+    for filename in filelist:
+       if os.path.exists(filename):
+          os.remove(filename)
+
+def gen_tf_and_fig(cal_info, data_samp_rate, input_data, meas_data, cal_type,
+                   green_tol_limits, grey_tol_limits):
+    """Run cross correlation and generate Transfer Function (TF) plot.
+
+    Args:
+        cal_info (CalInfo): Instance of CalInfo containing information
+                            on calibration being processed
+        data_samp_rate (float or int): Sample rate of calibration data
+        input_data (ndarray): Input calibration timeseries convolved with response
+        meas_data (ndarray):  Output (measured) calibration timeseries
+        cal_type (CalType): Either CALTYPE_RBLF or CALTYPE_RBHF
+        green_tol_limits ((float, float)): Tuple of amplitude 'green range'
+                                           in %, phase 'green range' in degrees
+        grey_tol_limits ((float, float)): Tuple of amplitude 'grey range'
+                                          in %, phase 'grey range' in degrees
+
+    Returns:
+        tf_f (ndarray): Array of transfer function frequencies
+        tf_amp (ndarray): Array of transsfer function amplitudes
+        tf_pha (ndarray): Array of tranfer function phases
+        tf_coh (ndarray): Array of timeseries coherence
+        fig (pyplot.figure): Matplotlib containing figure with TF and Coherence plots
+
+    """
+
+    if not cal_type in [CALTYPE_RBLF, CALTYPE_RBHF]:
+       raise ValueError('cal_type must be CALTYPE_RBLF or CALTYPE_RBHF. [' + cal_type + ']')
+
+    tf_f, tf_amp, tf_pha, tf_coh, _, _, _, _, _ = cross_correlate(
+        data_samp_rate, input_data, meas_data)
+
+    if cal_type == CALTYPE_RBLF:
+        eff_samplerate_freq = data_samp_rate
+        thedate = cal_info.lfdatestr
+
+        freq_normband = less_equal(tf_f, 0.04 * eff_samplerate_freq)
+        # modelled after matlab go_parker.m code:  <=8% of 1hz cal sample rate for LF
+
+    elif cal_type == CALTYPE_RBHF:
+        eff_samplerate_freq = cal_info.opsr
+        thedate = cal_info.hfdatestr
+
+        freq_normband = logical_and(tf_f > 0.5, tf_f <
+                                    (0.35 * eff_samplerate_freq))
+        # modelled after matlab go_parker.m code: 5% < freq < 35% of channel samplerate
+
+    # normalize tf_amp
+    tf_amp_band_median = median(tf_amp[freq_normband])
+    tf_amp = divide(tf_amp, tf_amp_band_median)
+
+    # detrend pha using median coh up to 75% of nyquist
+    tf_pha_detrnd = tf_pha.copy()
+
+    # fit trend line to phase over band with "good or better coh", which is
+    # defined as median coh at freqs below 75% ofactual sample rate
+    median_coh = median(tf_coh[less(tf_f, 0.5 * .75 * data_samp_rate)])
+    good_cohs_ndxs = greater_equal(tf_coh, median_coh)
+    # fit to straight line
+    pha_trend_coeffs = polyfit(tf_f[good_cohs_ndxs], tf_pha[good_cohs_ndxs], 1)
+    ph_corr_vals = polyval(pha_trend_coeffs, tf_f)
+    # correct pha for trend
+    tf_pha_detrnd -= ph_corr_vals
+
+
+    fig = cross_tf_plot(
+        cal_info.sta,
+        cal_info.loc,
+        cal_info.chan,
+        cal_info.sensor,
+        thedate,
+        cal_type,
+        eff_samplerate_freq,
+        tf_f,
+        tf_amp,
+        tf_pha_detrnd,
+        tf_coh,
+        green_tol_lims=green_tol_limits,
+        grey_tol_lims=grey_tol_limits,
+        plot_band_limit=0.9)  # plot to 90% of nyquist
+
+    return tf_f, tf_amp, tf_pha, tf_pha_detrnd, tf_coh, fig
+
+def publish_files(target_dir, filelist):
+       """Copies files to 'output' directory
+
+       Args:
+           target_dir (str): Path of target directory
+           filelist (iterable): List of files to copy from current directory to target_dir
+       """
+
+       for filename in filelist:
+           aname = Path(filename).name
+           shutil.copy2(filename, os.path.join(target_dir, aname))
+
+def fit_menu(choice_list):
+    """Display and accept user choice of poles/zeros to fit"""
+    _, choices, _, _ = select(
+        [choice_list],
+        title='Select Action',
+        prompt='Enter selection ("q" => quit): ',
+        implicit_quit_q=True,
+        menu_on_error=True,
+        err_message='Invalid choice. Please try again')
+
+    return choices[0]
+
+
+def user_quit():
+    """User decided to quit. Print msg and exit"""
+
+    print(bold(red('User quit.')))
+    sys.exit(0)
+
 
 if __name__ == '__main__':
-    main()
+    main(args)
