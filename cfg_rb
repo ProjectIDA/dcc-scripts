@@ -1,0 +1,933 @@
+#!/usr/bin/env python3
+
+from datetime import datetime
+import os
+
+# import tkinter as tk
+from tkinter import Tk, Frame, LabelFrame, Menu
+from tkinter import Entry, Checkbutton, Label, Button, OptionMenu
+from tkinter import IntVar, StringVar, BooleanVar, DoubleVar
+from tkinter import GROOVE, NORMAL, DISABLED
+from tkinter import font, filedialog
+from tkinter.messagebox import showerror
+
+from os.path import exists, isfile, isdir, abspath, normpath
+from pathlib import Path
+import yaml
+
+from tkentry.entry_widgets import FloatEntry, BGERR, BGOK, BGGRAY
+
+from ida.instruments import SEISMOMETER_MODELS, INSTRUMENT_NOMINAL_GAINS, Q330_GCALIB_FOR_SEIS, Q330_NOMINAL_GAIN,
+    Q330_FIR_COEFFS
+
+def load_yaml_file(fn):
+    return {}, True
+
+class ConfigModel():
+
+    def __init__(self):
+
+        self.config = {
+            'process_lf': '',
+            'lf_ms_file': '',
+            'lf_qcal_file': '',
+            'lf_cal_date': '',
+
+            'process_hf': '',
+            'hf_ms_file': '',
+            'hf_qcal_file': '',
+            'hf_cal_date': '',
+
+            'station': '',
+            'loc': '',
+            'sensor_code': '',
+            'sampling_rate': '',
+
+            'ctbto_analysis': '',
+            'q330_nom_sens': '',
+            'q330_calib_factor': '',
+            'sensor_nom_sens': '',
+            'sensor_calib_factor_z': '',
+            'sensor_calib_factor_1': '',
+            'sensor_calib_factor_2': '',
+
+            'nom_resp_dir': '',
+            'cur_resp_dir': '',
+        }
+
+    @property
+    def process_lf(self):
+        return self.config['process_lf']
+    @process_lf.setter
+    def process_lf(self, value):
+        self.config['process_lf'] = value
+
+    @property
+    def lf_ms_file(self):
+        return self.config['lf_ms_file']
+    @lf_ms_file.setter
+    def lf_ms_file(self, value):
+        self.config['lf_ms_file'] = value
+
+    @property
+    def lf_qcal_file(self):
+        return self.config['lf_qcal_file']
+    @lf_qcal_file.setter
+    def lf_qcal_file(self, value):
+        self.config['lf_qcal_file'] = value
+
+    @property
+    def lf_cal_date(self):
+        return self.config['lf_cal_date']
+    @lf_cal_date.setter
+    def lf_cal_date(self, value):
+        self.config['lf_cal_date'] = value
+
+    @property
+    def process_hf(self):
+        return self.config['process_hf']
+    @process_hf.setter
+    def process_hf(self, value):
+        self.config['process_hf'] = value
+
+    @property
+    def hf_ms_file(self):
+        return self.config['hf_ms_file']
+    @hf_ms_file.setter
+    def hf_ms_file(self, value):
+        self.config['hf_ms_file'] = value
+
+    @property
+    def hf_qcal_file(self):
+        return self.config['hf_qcal_file']
+    @hf_qcal_file.setter
+    def hf_qcal_file(self, value):
+        self.config['hf_qcal_file'] = value
+
+    @property
+    def hf_cal_date(self):
+        return self.config['hf_cal_date']
+    @hf_cal_date.setter
+    def hf_cal_date(self, value):
+        self.config['hf_cal_date'] = value
+
+    @property
+    def station(self):
+        return self.config['station']
+    @station.setter
+    def station(self, value):
+        self.config['station'] = value
+
+    @property
+    def loc(self):
+        return self.config['loc']
+    @loc.setter
+    def loc(self, value):
+        self.config['loc'] = value
+
+    @property
+    def sensor_code(self):
+        return self.config['sensor_code']
+    @sensor_code.setter
+    def sensor_code(self, value):
+        self.config['sensor_code'] = value
+
+    @property
+    def sampling_rate(self):
+        return self.config['sampling_rate']
+    @sampling_rate.setter
+    def sampling_rate(self, value):
+        self.config['sampling_rate'] = int(value)
+
+    @property
+    def ctbto_analysis(self):
+        return self.config['ctbto_analysis']
+    @ctbto_analysis.setter
+    def ctbto_analysis(self, value):
+        self.config['ctbto_analysis'] = value
+
+    @property
+    def q330_nom_sens(self):
+        return self.config['q330_nom_sens']
+    @q330_nom_sens.setter
+    def q330_nom_sens(self, value):
+        self.config['q330_nom_sens'] = float(value)
+
+    @property
+    def q330_calib_factor(self):
+        return self.config['q330_calib_factor']
+    @q330_calib_factor.setter
+    def q330_calib_factor(self, value):
+        self.config['q330_calib_factor'] = float(value)
+
+    @property
+    def sensor_nom_sens(self):
+        return self.config['sensor_nom_sens']
+    @sensor_nom_sens.setter
+    def sensor_nom_sens(self, value):
+        self.config['sensor_nom_sens'] = float(value)
+
+    @property
+    def sensor_calib_factor_z(self):
+        return self.config['sensor_calib_factor_z']
+    @sensor_calib_factor_z.setter
+    def sensor_calib_factor_z(self, value):
+        self.config['sensor_calib_factor_z'] = float(value)
+
+    @property
+    def sensor_calib_factor_1(self):
+        return self.config['sensor_calib_factor_1']
+    @sensor_calib_factor_1.setter
+    def sensor_calib_factor_1(self, value):
+        self.config['sensor_calib_factor_1'] = float(value)
+
+    @property
+    def sensor_calib_factor_2(self):
+        return self.config['sensor_calib_factor_2']
+    @sensor_calib_factor_2.setter
+    def sensor_calib_factor_2(self, value):
+        self.config['sensor_calib_factor_2'] = float(value)
+
+    @property
+    def nom_resp_dir(self):
+        return self.config['nom_resp_dir']
+    @nom_resp_dir.setter
+    def nom_resp_dir(self, value):
+        self.config['nom_resp_dir'] = value
+
+    @property
+    def cur_resp_dir(self):
+        return self.config['cur_resp_dir']
+    @cur_resp_dir.setter
+    def cur_resp_dir(self, value):
+        self.config['cur_resp_dir'] = value
+
+    def load_file(self, yamlfn):
+        self.config, ok = load_yaml_file(yamlfn)
+        return self.config.copy(), ok
+
+    def save_file(self, savefn):
+        if self.config:
+            yamltxt = yaml.dump(self.config)
+            with open(savefn, 'wt') as yfl:
+                yfl.write('#\n# DO NOT EDIT THIS FILE UNKLESS YOU ARE SURE YOU KNOW WHAT YOU ARE DOING\n')
+                yfl.write('#\n')
+                yfl.write(yamltxt)
+
+    def set_ctbto_info(self, process_ctbto, sensor_code, sensor_port, gcalib_z, gcalib_1, gcalib_2):
+        self.ctbto_analysis = process_ctbto
+        # if process_ctbto:
+        self.q330_nom_sens = self.q330_nominal(sensor_port)
+        self.sensor_nom_sens = self.sensor_nominal(sensor_code)
+        self.sensor_calib_factor_z = gcalib_z
+        self.sensor_calib_factor_1 = gcalib_1
+        self.sensor_calib_factor_2 = gcalib_2
+
+    def supported_seismometers(self):
+        return sorted(SEISMOMETER_MODELS)
+
+    def supported_sample_rates(self):
+        return sorted(Q330_FIR_COEFFS.keys())
+
+    def sensor_nominal(self, sensor_code):
+        if sensor_code in INSTRUMENT_NOMINAL_GAINS:
+            return INSTRUMENT_NOMINAL_GAINS[sensor_code]
+        else:
+            raise ValueError('Unsupported sensor model: ' + sensor_code)
+
+    def q330_nominal(self, port):
+        port = port.upper()
+        if port in Q330_NOMINAL_GAIN:
+            return Q330_NOMINAL_GAIN[port]
+        else:
+            raise ValueError('Invalid Q330 Port: ' + port)
+
+class ConfigController():
+
+    def __init__(self):
+        self.model = ConfigModel()
+
+    def load_config_from_file(self, filename):
+        cfgdict, ok = self.model.load_file(filename)
+
+    def save_config_to_file(self, filename, config):
+        if self.model:
+            self.commit_changes(config)
+            self.model.save_file(filename)
+
+    def commit_changes(self, config):
+        for key, val in config.items():
+            estr = 'self.model.' + key + ' = val'
+            exec(estr)
+
+        self.model.process_lf = config['process_lf']
+        self.model.lf_ms_file = config['lf_ms_file']
+        self.model.lf_qcal_file = config['lf_qcal_file']
+        self.model.lf_cal_date = config['lf_cal_date']
+        self.model.process_hf = config['process_hf']
+        self.model.hf_ms_file = config['hf_ms_file']
+        self.model.hf_qcal_file = config['hf_qcal_file']
+        self.model.hf_cal_date = config['hf_cal_date']
+        self.model.station = config['station']
+        self.model.loc = config['loc']
+        self.model.sensor_code = config['sensor_code']
+        self.model.sampling_rate = config['sampling_rate']
+        self.model.set_ctbto_info(config['ctbto_analysis'], config['sensor_code'], config['sensor_port'],
+                                  config['sensor_calib_factor_z'], config['sensor_calib_factor_1'],
+                                  config['sensor_calib_factor_2'])
+        self.model.nom_resp_dir = config['nom_resp_dir']
+        self.model.cur_resp_dir = config['cur_resp_dir']
+
+
+    def sensor_models(self):
+        return self.model.supported_seismometers()
+
+    def sampling_rates(self):
+        return self.model.supported_sample_rates()
+
+
+class Configurator():
+    """ A Gui application with three buttons"""
+
+    def __init__(self):
+        """ Inititalization the frame"""
+        self.filename = 'untitled.yaml'
+        self.directory = '.'
+
+        self.root = Tk()
+        self.root.config(width=800, height=710, padx=5, pady=5, bg=BGGRAY)
+        self.root.rowconfigure(0, weight=1, minsize=360)
+        self.root.columnconfigure(0, weight=1)
+        self.root.resizable(width=False, height=False)
+        self.set_title()
+
+        self.tk_wids= {
+            'process_lf': None,
+            'lf_ms_file': None,
+            'lf_cal_date': None,
+            'process_hf': None,
+            'hf_ms_file': None,
+            'hf_cal_date': None,
+            'station': None,
+            'loc': None,
+            'sensor_code': None,
+            'sampling_rate': None,
+            'ctbto_analysis': None,
+            'sensor_calib_factor_z': None,
+            'sensor_calib_factor_1': None,
+            'sensor_calib_factor_2': None,
+            'nom_resp_dir': None,
+            'cur_resp_dir': None,
+        }
+        self.ctrl = ConfigController()
+
+        self.build_vars()
+        self.set_defaults()
+        self.setup_main_frm()
+
+        self.refresh_ui()
+
+        self.root.mainloop()
+
+    def set_title(self):
+        self.root.title('RB Analysis Configuration Editor: '+ self.filename)
+
+    def refresh_ui(self):
+
+        if not self.is_valid('sensor_code'):
+            self.tk_wids['sensor_code'].config(bg=BGERR)
+        else:
+            self.tk_wids['sensor_code'].config(bg=BGGRAY)
+
+        if not self.is_valid('sampling_rate'):
+            self.tk_wids['sampling_rate'].config(bg=BGERR)
+        else:
+            self.tk_wids['sampling_rate'].config(bg=BGGRAY)
+
+        do_ctbto = self.tk_vars['ctbto_analysis'].get()
+        if do_ctbto :
+            bg = BGOK if self.is_valid('sensor_calib_factor_z') else BGERR
+            self.tk_wids['sensor_calib_factor_z'].config(state=NORMAL, bg=bg)
+            bg = BGOK if self.is_valid('sensor_calib_factor_1') else BGERR
+            self.tk_wids['sensor_calib_factor_1'].config(state=NORMAL)
+            bg = BGOK if self.is_valid('sensor_calib_factor_2') else BGERR
+            self.tk_wids['sensor_calib_factor_2'].config(state=NORMAL)
+        else:
+            self.tk_wids['sensor_calib_factor_z'].config(state=DISABLED, bg=BGOK)
+            self.tk_wids['sensor_calib_factor_1'].config(state=DISABLED, bg=BGOK)
+            self.tk_wids['sensor_calib_factor_2'].config(state=DISABLED, bg=BGOK)
+
+        installed = self.tk_vars['process_lf'].get()
+        if installed:
+            bg = BGOK if self.is_valid('lf_ms_file') else BGERR
+            self.tk_wids['lf_ms_file'].config(state=NORMAL, bg=bg)
+            self.tk_wids['lf_ms_file_button'].config(state=NORMAL)
+        else:
+            self.tk_wids['lf_ms_file'].config(state=DISABLED, bg=BGGRAY)
+            self.tk_wids['lf_ms_file_button'].config(state=DISABLED)
+
+        installed = self.tk_vars['process_hf'].get()
+        if installed:
+            bg = BGOK if self.is_valid('hf_ms_file') else BGERR
+            self.tk_wids['hf_ms_file'].config(state=NORMAL, bg=bg)
+            self.tk_wids['hf_ms_file_button'].config(state=NORMAL)
+        else:
+            self.tk_wids['hf_ms_file'].config(state=DISABLED, bg=BGGRAY)
+            self.tk_wids['hf_ms_file_button'].config(state=DISABLED, bg=BGGRAY)
+
+        if not self.is_valid('nom_resp_dir'):
+            self.tk_wids['nom_resp_dir'].config(bg=BGERR)
+        else:
+            self.tk_wids['nom_resp_dir'].config(bg=BGOK)
+        if not self.is_valid('cur_resp_dir'):
+            self.tk_wids['cur_resp_dir'].config(bg=BGERR)
+        else:
+            self.tk_wids['cur_resp_dir'].config(bg=BGOK)
+
+    def load_config(self, fname):
+        self.filename = Path(fname).name
+        self.directory = os.path.dirname(fname)
+        # TODO: self.config_file_lbl.config(text="Current Configuration File: " + os.path.abspath(self.filename))
+        self.set_title()
+
+        config, ok = self.ctrl.load_config_from_file(self.filename)
+        if ok:
+            self.load_values(config)
+        else:
+            showerror('Error loading config file.', 'There was an error reading or parsing the YAML configuration file.')
+
+    def load_values(self, config):
+
+        self.tk_vars['process_lf'].set(config['process_lf'])
+        self.tk_vars['lf_ms_file'].set(config['lf_ms_file'])
+        self.tk_vars['lf_qcal_file'].set(config['lf_qcal_file'])
+        self.tk_vars['lf_cal_date'].set(config['lf_cal_date'])
+        self.tk_vars['process_hf'].set(config['process_hf'])
+        self.tk_vars['hf_ms_file'].set(config['hf_ms_file'])
+        self.tk_vars['hf_qcal_file'].set(config['hf_qcal_file'])
+        self.tk_vars['hf_cal_date'].set(config['hf_cal_date'])
+        self.tk_vars['station'].set(config['station'])
+        self.tk_vars['loc'].set(config['loc'])
+        self.tk_vars['sensor_code'].set(config['sensor_code'])
+        self.tk_vars['sampling_rate'].set(config['sampling_rate'])
+        self.tk_vars['ctbto_analysis'].set(config['ctbto_analysis'])
+        self.tk_vars['q330_nom_sens'].set(config['q330_nom_sens'])
+        self.tk_vars['q330_calib_factor'].set(config['q330_calib_factor'])
+        self.tk_vars['sensor_nom_sens'].set(config['sensor_nom_sens'])
+        self.tk_vars['sensor_calib_factor_z'].set(config['sensor_calib_factor_z'])
+        self.tk_vars['sensor_calib_factor_1'].set(config['sensor_calib_factor_1'])
+        self.tk_vars['sensor_calib_factor_2'].set(config['sensor_calib_factor_2'])
+        self.tk_vars['nom_resp_dir'].set(config['nom_resp_dir'])
+        self.tk_vars['cur_resp_dir'].set(config['cur_resp_dir'])
+
+    def save_values(self):
+
+        config = {}
+        config['process_lf'] = self.tk_vars['process_lf'].get()
+        config['lf_ms_file'] = self.tk_vars['lf_ms_file'].get()
+        config['lf_qcal_file'] = self.tk_vars['lf_qcal_file'].get()
+        config['lf_cal_date'] = self.tk_vars['lf_cal_date'].get()
+        config['process_hf'] = self.tk_vars['process_hf'].get()
+        config['hf_ms_file'] = self.tk_vars['hf_ms_file'].get()
+        config['hf_qcal_file'] = self.tk_vars['hf_qcal_file'].get()
+        config['hf_cal_date'] = self.tk_vars['hf_cal_date'].get()
+        config['station'] = self.tk_vars['station'].get()
+        config['loc'] = self.tk_vars['loc'].get()
+        config['sensor_code'] = self.tk_vars['sensor_code'].get()
+        config['sampling_rate'] = self.tk_vars['sampling_rate'].get()
+        config['ctbto_analysis'] = self.tk_vars['ctbto_analysis'].get()
+        config['q330_nom_sens'] = self.tk_vars['q330_nom_sens'].get()
+        config['q330_calib_factor'] = self.tk_vars['q330_calib_factor'].get()
+        config['sensor_nom_sens'] = self.tk_vars['sensor_nom_sens'].get()
+        config['sensor_calib_factor_z'] = self.tk_vars['sensor_calib_factor_z'].get()
+        config['sensor_calib_factor_1'] = self.tk_vars['sensor_calib_factor_1'].get()
+        config['sensor_calib_factor_2'] = self.tk_vars['sensor_calib_factor_2'].get()
+        config['nom_resp_dir'] = self.tk_vars['nom_resp_dir'].get()
+        config['cur_resp_dir'] = self.tk_vars['cur_resp_dir'].get()
+
+        return config
+
+    def open_config_file(self):
+        fname = filedialog.askopenfilename(initialdir='.',
+                                           filetypes=[('YAML Config File', '*.yaml')],
+                                           title='Open RB Analysis Configuration File')
+
+        if fname:
+            self.load_config(fname)
+            self.refresh_ui()
+
+    def save_config(self):
+
+        config_ok, errs = self.is_config_valid()
+        if not config_ok:
+            for err in errs:
+                print(err)
+        else:
+            fname = filedialog.asksaveasfilename(initialdir=self.directory, initialfile=self.filename,
+                                                 filetypes=[('YAML Config File', '*.yaml')],
+                                                 title='Save RB Analysis Configuration')
+
+            if fname:
+                config = self.save_values()
+                self.ctrl.save_config_to_file(fname, config)
+                self.filename = Path(fname).name
+                self.directory = os.path.dirname(fname)
+                # TODO:  self.config_file_lbl.config(text="Current Configuration File: " + os.path.abspath(self.filename))
+                self.set_title()
+
+    def setup_main_frm(self):
+
+        WIDTH = 800
+
+        self.menu_bar = Menu(self.root)
+        file_menu = Menu(self.menu_bar)
+        file_menu.add_command(label='Quit', command=self.root.destroy)
+        self.menu_bar.add_cascade(label="File", menu=file_menu)
+
+        self.root.config(menu=self.menu_bar)
+        self.main_frm = Frame(self.root, width=WIDTH, height=750, bg=BGGRAY)
+
+        # self.valmeth = root.register(self.validate)
+        # Entry().bind_class('Entry', '<KeyPress>', (lambda _, key_press())
+
+        HEADFONT = font.Font(font='Helvetica 15 bold')
+        BOLDFONT = font.Font(font='Helvetica 12 bold')
+        LBLFONT = font.Font(font='Helvetica 12')
+        LBLBOLD = font.Font(font='Helvetica 12 bold')
+        FIXEDFONT = font.Font(family='Courier', size=9, weight='normal')
+        FIXEDBOLDFONT = font.Font(family='Courier', size=10, weight='bold')
+
+        # self = Frame(root, width=800, height=680, bg=BGGRAY) ##, bd=2, relief=GROOVE)
+        self.main_frm.grid(row=0, column=0, sticky='nw')
+        self.main_frm.grid_propagate(0)
+        self.main_frm.rowconfigure(0, weight=0, pad=5)  ##, minsize=30)
+        self.main_frm.rowconfigure(1, weight=0, pad=5)
+        self.main_frm.rowconfigure(2, weight=0, pad=5)
+        self.main_frm.rowconfigure(3, weight=0, pad=5)
+
+        cfg_frm = LabelFrame(self.main_frm, text=' Current File ', bd=2, width=760, height=50,
+            bg=BGGRAY, relief=GROOVE, font=HEADFONT)
+        cfg_frm.grid(row=0, column=0, columnspan=2, sticky='nw')
+        cfg_frm.grid_propagate(0)
+        cfg_frm.columnconfigure(0, weight=1, uniform=1)
+        cfg_frm.columnconfigure(1, weight=10, uniform=2)
+        cfg_frm.columnconfigure(2, weight=1, uniform=1)
+        cfg_frm.rowconfigure(0, weight=1)
+
+        openbtn = Button(cfg_frm, text='Open...', highlightbackground=BGGRAY, command=self.open_config_file)
+        openbtn.grid(row=0, column=0, sticky='w')
+        self.config_file_lbl = Label(cfg_frm, text="Current Configuration File: " + self.filename, bg=BGGRAY)
+        self.config_file_lbl.grid(row=0, column=1, sticky='w')
+        savebtn = Button(cfg_frm, text='Save...', highlightbackground=BGGRAY, command=self.save_config)
+        savebtn.grid(row=0, column=2, sticky='e')
+
+        sensor_frm = LabelFrame(self.main_frm, text=' Sensor Information ', padx=5, pady=5,
+                                width=WIDTH, height=60, bg=BGGRAY, bd=2, relief=GROOVE, font=HEADFONT)
+        sensor_frm.grid_propagate(0)
+        sensor_frm.grid(row=1, column=0)
+        sensor_frm.columnconfigure(0, weight=1, uniform='1')
+        sensor_frm.columnconfigure(1, weight=1, uniform='1')
+        sensor_frm.columnconfigure(2, weight=1, uniform='1')
+        sensor_frm.columnconfigure(3, weight=1, uniform='1')
+        Label(sensor_frm, text='Sensor Model:',
+              bg=BGGRAY, font=LBLBOLD).grid(row=0, column=0, sticky='e')
+        self.tk_wids['sensor_code'] = OptionMenu(sensor_frm, self.tk_vars['sensor_code'], command=self.on_option_change,
+                                                 *self.ctrl.sensor_models())
+        self.tk_wids['sensor_code'].config(bg=BGGRAY)
+        self.tk_wids['sensor_code'].grid(row=0, column=1, sticky='w')
+
+        Label(sensor_frm, text='Operating Sample Rate:',
+              bg=BGGRAY, font=LBLBOLD).grid(row=0, column=2, sticky='e')
+        self.tk_wids['sampling_rate'] = OptionMenu(sensor_frm, self.tk_vars['sampling_rate'],
+                                                   command = self.on_option_change,
+                                                   *self.ctrl.sampling_rates())
+        self.tk_wids['sampling_rate'].config(bg=BGGRAY)
+        self.tk_wids['sampling_rate'].grid(row=0, column=3, sticky='w')
+
+        file_frm = LabelFrame(self.main_frm, text=' Data Locations ', bd=2, padx=5, pady=5,
+                              width=WIDTH, height=160,
+                              bg=BGGRAY, relief=GROOVE, font=HEADFONT)
+        file_frm.grid(row=2, column=0)
+        file_frm.grid_propagate(0)
+        file_frm.columnconfigure(0, weight=2)
+        file_frm.columnconfigure(1, weight=10)
+        file_frm.columnconfigure(2, weight=1)
+
+        self.tk_wids['process_lf'] = Checkbutton(file_frm, text='Analyze LF Data', bg=BGGRAY,
+                                                           command=(lambda: self.process_clicked('lf')),
+                                                           variable=self.tk_vars['process_lf'],
+                                                           font=LBLBOLD, padx=5)
+        self.tk_wids['process_lf'].grid(row=0, column=0, sticky='e')
+        self.tk_wids['lf_ms_file'] = Entry(file_frm, font=FIXEDBOLDFONT, width=84,
+                                            textvariable=self.tk_vars['lf_ms_file'])
+        self.tk_wids['lf_ms_file'].grid(row=0, column=1, sticky='w')
+        self.tk_wids['lf_ms_file_button'] = Button(file_frm, text='Select...', highlightbackground=BGGRAY,
+                                                   command=(lambda: self.on_select_datafile_button(
+                                                       'lf', self.tk_vars['lf_ms_file'])))
+        self.tk_wids['lf_ms_file_button'].grid(row=0, column=2)
+
+        self.tk_wids['process_hf'] = Checkbutton(file_frm, text='Analyze HF Data', bg=BGGRAY,
+                                                           command=(lambda: self.process_clicked('hf')),
+                                                           variable=self.tk_vars['process_hf'],
+                                                           font=LBLBOLD, padx=5)
+        self.tk_wids['process_hf'].grid(row=1, column=0, sticky='e')
+        self.tk_wids['hf_ms_file'] = Entry(file_frm, font=FIXEDBOLDFONT, width=84,
+                                            textvariable=self.tk_vars['hf_ms_file'])
+        self.tk_wids['hf_ms_file'].grid(row=1, column=1, sticky='w')
+        self.tk_wids['hf_ms_file_button'] = Button(file_frm, text='Select...', highlightbackground=BGGRAY,
+                                                   command=(lambda: self.on_select_datafile_button(
+                                                       'hf', self.tk_vars['hf_ms_file'])))
+        self.tk_wids['hf_ms_file_button'].grid(row=1, column=2)
+
+        Label(file_frm, text='Path to Nominal Sensor RESP files:',
+              font=LBLBOLD, bg=BGGRAY, padx=5).grid(row=2, column=0, sticky='e')
+        self.tk_wids['nom_resp_dir'] = Entry(file_frm, font=FIXEDBOLDFONT, width=84,
+                                            textvariable=self.tk_vars['nom_resp_dir'])
+        self.tk_wids['nom_resp_dir'].grid(row=2, column=1, sticky='w')
+        self.tk_wids['nom_resp_dir_button'] = Button(file_frm, text='Select...', highlightbackground=BGGRAY,
+                                                   command=(lambda: self.on_select_dir_button(
+                                                       'nom_resp_dir', self.tk_vars['nom_resp_dir'])))
+        self.tk_wids['nom_resp_dir_button'].grid(row=2, column=2)
+
+        Label(file_frm, text='Path to Current Sensor RESP files:',
+              font=LBLBOLD, bg=BGGRAY, padx=5).grid(row=3, column=0, sticky='e')
+        self.tk_wids['cur_resp_dir'] = Entry(file_frm, font=FIXEDBOLDFONT, width=84,
+                                            textvariable=self.tk_vars['cur_resp_dir'])
+        self.tk_wids['cur_resp_dir'].grid(row=3, column=1, sticky='w')
+        self.tk_wids['cur_resp_dir_button'] = Button(file_frm, text='Select...', highlightbackground=BGGRAY,
+                                                   command=(lambda: self.on_select_dir_button(
+                                                       'cur_resp_dir', self.tk_vars['cur_resp_dir'])))
+        self.tk_wids['cur_resp_dir_button'].grid(row=3, column=2)
+
+
+        ctbto_frm = LabelFrame(self.main_frm, text=' CTBTO Information ', padx=5, pady=5,
+                               bg=BGGRAY, width=WIDTH, height=120, bd=2, relief=GROOVE,
+                             font=HEADFONT)
+        ctbto_frm.grid_propagate(0)
+        ctbto_frm.grid(row=3, column=0)
+        ctbto_frm.rowconfigure(0, weight=1)
+        ctbto_frm.rowconfigure(1, weight=1)
+        ctbto_frm.columnconfigure(0, weight=2, uniform='1')
+        ctbto_frm.columnconfigure(1, weight=1, uniform='2')
+        ctbto_frm.columnconfigure(2, weight=2, uniform='1')
+        ctbto_frm.columnconfigure(3, weight=1, uniform='2')
+        ctbto_frm.columnconfigure(4, weight=2, uniform='1')
+        ctbto_frm.columnconfigure(5, weight=1, uniform='2')
+
+        self.tk_wids['ctbto_analysis'] = Checkbutton(ctbto_frm, text='Perform CTBTO Analysis', bg=BGGRAY,
+                                                           command=self.ctbto_clicked,
+                                                           variable=self.tk_vars['ctbto_analysis'],
+                                                           font=LBLBOLD, padx=5)
+        self.tk_wids['ctbto_analysis'].grid(row=0, column=0, sticky='e')
+
+        Label(ctbto_frm, text='Sensor Calibration Factor - Z:',
+              bg=BGGRAY, font=LBLBOLD).grid(row=1, column=0, sticky='e')
+        self.tk_wids['sensor_calib_factor_z'] = FloatEntry(ctbto_frm, font=FIXEDBOLDFONT, width=7, minvalue=0.0,
+            textvariable=self.tk_vars['sensor_calib_factor_z'], state=DISABLED)
+        self.tk_wids['sensor_calib_factor_z'].grid(row=1, column=1, sticky='w')
+
+        Label(ctbto_frm, text='Sensor Calibration Factor - 1:',
+              bg=BGGRAY, font=LBLBOLD).grid(row=1, column=2, sticky='e')
+        self.tk_wids['sensor_calib_factor_1'] = FloatEntry(ctbto_frm, font=FIXEDBOLDFONT, width=7, minvalue=0.0,
+            textvariable=self.tk_vars['sensor_calib_factor_1'], state=DISABLED)
+        self.tk_wids['sensor_calib_factor_1'].grid(row=1, column=3, sticky='w')
+
+        Label(ctbto_frm, text='Sensor Calibration Factor - 2:',
+              bg=BGGRAY, font=LBLBOLD).grid(row=1, column=4, sticky='e')
+        self.tk_wids['sensor_calib_factor_2'] = FloatEntry(ctbto_frm, font=FIXEDBOLDFONT, width=7, minvalue=0.0,
+            textvariable=self.tk_vars['sensor_calib_factor_2'], state=DISABLED)
+        self.tk_wids['sensor_calib_factor_2'].grid(row=1, column=5, sticky='w')
+
+
+        info_frm = LabelFrame(self.main_frm, text=' Analysis Parameters ', padx=5, pady=5,
+                              width=WIDTH, height=160, bg=BGGRAY, bd=2,
+                              font=HEADFONT, relief=GROOVE)
+        info_frm.grid_propagate(0)
+        info_frm.grid(row=4, column=0, columnspan=2, sticky='nw')
+        info_frm.columnconfigure(0, minsize=250, uniform='1')
+        info_frm.columnconfigure(1, weight=4, uniform='2')
+        info_frm.columnconfigure(2, minsize=250, uniform='1')
+        info_frm.columnconfigure(3, weight=4, uniform='2')
+        info_frm.rowconfigure(0, weight=1)
+        info_frm.rowconfigure(1, weight=1)
+        info_frm.rowconfigure(2, weight=1)
+        info_frm.rowconfigure(3, weight=1)
+
+        Label(info_frm, text=' Pri Sensor Cha Codes (Z,1,2):',
+              bg=BGGRAY, font=LBLFONT).grid(row=0, column=0, sticky='e')
+
+        self.tk_wids['lf_ms_file'].bind('<Any-KeyRelease>', self.keyrelease_handler)
+        self.tk_wids['hf_ms_file'].bind('<Any-KeyRelease>', self.keyrelease_handler)
+        self.tk_wids['nom_resp_dir'].bind('<Any-KeyRelease>', self.keyrelease_handler)
+        self.tk_wids['cur_resp_dir'].bind('<Any-KeyRelease>', self.keyrelease_handler)
+
+
+    def parse_qcal_filename(self, fname):
+
+        if fname:
+            parts = fname.split('-')
+            sta = parts[1][:-2]
+            loc = parts[1][-2:]
+            sensor = parts[2]  # not used, doesn't match DB or py modules
+            if parts[3] == 'B':
+                rbhflf = parts[4]
+                caldate = '{}-{}-{}'.format(parts[5], parts[6][:2], parts[6][2:])
+            else:
+                rbhflf = parts[3]
+                caldate = '{}-{}-{}'.format(parts[4], parts[5][:2], parts[5][2:])
+
+            print('STA:', sta)
+            print('LOC:', loc)
+            print('SEN:', sensor)
+            print('RBT:', rbhflf)
+            print('CDT:', caldate)
+
+    def ctbto_clicked(self):
+        self.refresh_ui()
+
+    def on_option_change(self, idk):
+        self.refresh_ui()
+
+    def on_select_datafile_button(self, datatype, tkvar):
+        if os.environ.get('IDA_CAL_RAW_DIR'):
+            rootdir = os.environ.get('IDA_CAL_RAW_DIR')
+        else:
+            rootdir = '.'
+
+        datatype = datatype.upper()
+        title = 'Select {} Random Binary miniseed file'.format(datatype.upper())
+
+        fname = filedialog.askopenfilename(initialdir=rootdir,
+                                           filetypes=[('Miniseed Files', '*.ms'), ('Miniseed Files', '*.seed')],
+                                           title=title)
+
+        if fname:
+            tkvar.set(fname)
+            self.parse_qcal_filename(fname)
+            self.refresh_ui()
+
+    def on_select_dir_button(self, datatype, tkvar):
+        if datatype.lower() == 'nom_resp_dir':
+            if os.environ.get('IDA_RESPONSES_NOM_DIR'):
+                rootdir = os.environ.get('IDA_RESPONSES_NOM_DIR')
+            else:
+                rootdir = '.'
+
+            title = 'Select location of NOMINAL Sensor RESP Files'
+        elif datatype.lower() == 'cur_resp_dir':
+            if os.environ.get('IDA_RESPONSES_CUR_DIR'):
+                rootdir = os.environ.get('IDA_RESPONSES_CUR_DIR')
+            else:
+                rootdir = '.'
+
+            title = 'Select location of CURRENT Sensor RESP Files'
+
+        dirname = filedialog.askdirectory(initialdir=rootdir, mustexist=True, title=title)
+
+        if dirname:
+            tkvar.set(dirname)
+            self.refresh_ui()
+
+    def process_clicked(self, datatype):
+        self.refresh_ui()
+
+    def build_vars(self):
+        self.tk_vars = {
+            'process_lf': BooleanVar(),
+            'lf_ms_file': StringVar(),
+            'lf_qcal_file': StringVar(),
+            'lf_cal_date': StringVar(),
+            'process_hf': BooleanVar(),
+            'hf_ms_file': StringVar(),
+            'hf_qcal_file': StringVar(),
+            'hf_cal_date': StringVar(),
+            'station': StringVar(),
+            'loc': StringVar(),
+            'sensor_code': StringVar(),
+            'sampling_rate': IntVar(),
+            'ctbto_analysis': BooleanVar(),
+            'q330_nom_sens': DoubleVar(),
+            'q330_calib_factor': StringVar(),
+            'sensor_nom_sens': StringVar(),
+            'sensor_calib_factor_z': DoubleVar(),
+            'sensor_calib_factor_1': DoubleVar(),
+            'sensor_calib_factor_2': DoubleVar(),
+            'nom_resp_dir': StringVar(),
+            'cur_resp_dir': StringVar(),
+        }
+
+    def keyrelease_handler(self, event):
+        self.refresh_ui()
+
+    def set_defaults(self):
+        config = {}
+        config['process_lf'] = True
+        config['lf_ms_file'] = ''
+        config['lf_qcal_file'] = ''
+        config['lf_cal_date'] = ''
+        config['process_hf'] = True
+        config['hf_ms_file'] = ''
+        config['hf_qcal_file'] = ''
+        config['hf_cal_date'] = ''
+        config['station'] = ''
+        config['loc'] = ''
+        config['sensor_code'] = ''
+        config['sampling_rate'] = 0
+        config['ctbto_analysis'] = False
+        config['q330_nom_sens'] = 1.0
+        config['q330_calib_factor'] = 1.0
+        config['sensor_nom_sens'] = 1.0
+        config['sensor_calib_factor_z'] = 1.0
+        config['sensor_calib_factor_1'] = 1.0
+        config['sensor_calib_factor_2'] = 1.0
+        config['nom_resp_dir'] = ''
+        config['cur_resp_dir'] = ''
+        self.load_values(config)
+
+    def is_valid(self, varkey):
+
+        if varkey == 'sensor_code':
+            return self.tk_vars[varkey].get() in self.ctrl.sensor_models()
+        elif varkey == 'sampling_rate':
+            return self.tk_vars[varkey].get() in self.ctrl.sampling_rates()
+
+        elif varkey == 'process_lf':
+            return True  # this really can't be 'invalid'
+        elif varkey == 'process_hf':
+            return True
+
+        elif varkey == 'lf_ms_file':
+            if self.tk_vars['process_lf'].get():
+                lf_ms_file = self.tk_vars[varkey].get()
+                return lf_ms_file and exists(lf_ms_file) and isfile(lf_ms_file)
+            else:
+                return True
+        elif varkey == 'lf_cal_date':
+            if self.tk_vars['process_lf'].get():
+                cal_date = self.tk_vars[varkey].get()
+                try:
+                    _ = datetime.strptime(cal_date, '%Y-%m-%d')
+                except:
+                    return False
+                else:
+                    return True
+            else:
+                return True
+
+        elif varkey == 'hf_ms_file':
+            if self.tk_vars['process_hf'].get():
+                ms_file = self.tk_vars[varkey].get()
+                return ms_file and exists(ms_file) and isfile(hf_ms_file)
+            else:
+                return True
+        elif varkey == 'hf_cal_date':
+            if self.tk_vars['process_hf'].get():
+                cal_date = self.tk_vars[varkey].get()
+                try:
+                    _ = datetime.strptime(cal_date, '%Y-%m-%d')
+                except:
+                    return False
+                else:
+                    return True
+            else:
+                return True
+
+        elif varkey == 'ctbto_analysis':
+            return True
+        elif varkey == 'sensor_calib_factor_z':
+            ctbto_analysis = self.tk_vars['ctbto_analysis'].get()
+            if ctbto_analysis:
+                return self.tk_vars[varkey].get() > 0
+            else:
+                return True
+        elif varkey == 'sensor_calib_factor_1':
+            ctbto_analysis = self.tk_vars['ctbto_analysis'].get()
+            if ctbto_analysis:
+                return self.tk_vars[varkey].get() > 0
+            else:
+                return True
+        elif varkey == 'sensor_calib_factor_2':
+            ctbto_analysis = self.tk_vars['ctbto_analysis'].get()
+            if ctbto_analysis:
+                return self.tk_vars[varkey].get() > 0
+            else:
+                return True
+
+        elif varkey in ['nom_resp_dir', 'cur_resp_dir']:
+            path = self.tk_vars[varkey].get()
+            return path and exists(path) and isdir(path)
+
+        else:
+            raise ValueError('Invalid VARKEY: ' + varkey)
+
+    def is_config_valid(self):
+
+        errmsgs = []
+        if self.is_valid('sensor_code'):
+            errmsgs.append('INVALID Sensor Code specified: [{}]'.format(self.tk_vars['sensor_code'].get()))
+        if self.is_valid('sampling_rate'):
+            errmsgs.append('INVALID Sampling Rate specified: [{}]'.format(self.tk_vars['sampling_rate'].get()))
+
+        process_lf = self.tk_vars['process_lf'].get()
+        if process_lf:
+            lf_ms_file = self.tk_vars['lf_ms_file'].get()
+            if not lf_ms_file:
+                errmsgs.append('Missing the LF MS file path.')
+            elif not exists(lf_ms_file):
+                errmsgs.append('LF MS file does not exist:' + lf_ms_file)
+
+#           lf_cal_date = self.tk_vars['lf_cal_date'].get()
+#           try:
+#               lfcaldt = datetime.strptime(lf_cal_date, '%Y-%m-%d')
+#           except:
+#               #lfcaldt = None
+#               errmsgs.append('Invalid LF Cal Date Specified [{}]. ' + \
+#                              'Must be specified in YYYY-MM-DD format.'.format(hf_cal_date))
+
+        process_hf = self.tk_vars['process_hf'].get()
+        if process_hf:
+            hf_ms_file = self.tk_vars['hf_ms_file'].get()
+            if not hf_ms_file:
+                errmsgs.append('Missing the HF MS file path.')
+            elif not exists(hf_ms_file):
+                errmsgs.append('HF MS file does not exist:' + hf_ms_file)
+
+#           hf_cal_date = self.tk_vars['hf_cal_date'].get()
+#           try:
+#               hfcaldt = datetime.strptime(hf_cal_date, '%Y-%m-%d')
+#           except:
+#               hfcaldt = None
+#               errmsgs.append('Invalid HF Cal Date Specified [{}]. ' + \
+#                              'Must be specified in YYYY-MM-DD format.'.format(hf_cal_date))
+
+        ctbto_analysis = self.tk_vars['ctbto_analysis'].get()
+        if ctbto_analysis:
+            sensor_calib_factor_z = self.tk_vars['sensor_calib_factor_z'].get()
+            if (sensor_calib_factor_z < 0):
+                errmsgs.append('Sensor Calib (Z) factor must be > 0.0.')
+            sensor_calib_factor_1 = self.tk_vars['sensor_calib_factor_1'].get()
+            if (sensor_calib_factor_1 < 0):
+                errmsgs.append('Sensor Calib (1) factor must be > 0.0.')
+            sensor_calib_factor_2 = self.tk_vars['sensor_calib_factor_2'].get()
+            if (sensor_calib_factor_2 < 0):
+                errmsgs.append('Sensor Calib (2) factor must be > 0.0.')
+
+            if not process_lf or not process_hf:
+                errmsgs.append('Generation of CTBTO results requires both LF and HF data analysis.')
+
+        nom_resp_dir = self.tk_vars['nom_resp_dir'].get()
+        if not nom_resp_dir:
+            errmsgs.append('Missing Nominal RESP Directory.')
+        elif not exists(nom_resp_dir):
+            errmsgs.append('Nominal RESP directory does not exist:' + nom_resp_dir)
+
+        cur_resp_dir = self.tk_vars['cur_resp_dir'].get()
+        if not cur_resp_dir:
+            errmsgs.append('Missing Current RESP Directory.')
+        elif not exists(cur_resp_dir):
+            errmsgs.append('Current RESP directory does not exist:' + cur_resp_dir)
+
+        return len(errmsgs) == 0, errmsgs
+
+
+app = Configurator()
