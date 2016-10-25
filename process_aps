@@ -108,21 +108,21 @@ def main():
         print(red(bold('The root directory of raw calibration data must be specified with --cal-raw-dir ' + \
                        'or by setting the IDA_CAL_RAW_DIR environment variable. ' + \
                        'Within this root directory a "shaketable" subdirectory is assumed.')))
-        env_ok = False 
+        env_ok = False
 
     if (not resp_file_dir):
-        print(red(bold('The location of the sensor RESP files must be specific with --resp-file-dir ' + \
-                       'or by setting the SEEDRESP environment variable.')))
+        print(red(bold('The location of the sensor RESP files must be specified with ' + \
+                       '--resp-file-dir or by setting the SEEDRESP environment variable.')))
         env_ok = False
 
     if (not arc_raw_dir):
         print(red(bold('The root directory of IDA10 raw data must be specified with --arc-raw-dir ' + \
                        'or by setting the IDA_ARCHIVE_RAW_DIR environment variable. ')))
-        env_ok = False 
+        env_ok = False
 
 
     if not env_ok:
-        print(red('Quitting due to missing environment variables.'))
+        print(red('Quitting due to incomplete environment.'))
     else:
 
         from ida.calibration.absolute import APSurvey
