@@ -51,8 +51,8 @@ class ConfigModel():
             'sensor_calib_factor_1': '',
             'sensor_calib_factor_2': '',
 
-            'nom_resp_dir': '',
-            'cur_resp_dir': '',
+            'nom_paz_dir': '',
+            'cur_paz_dir': '',
         }
 
     @property
@@ -189,18 +189,18 @@ class ConfigModel():
         self.config['sensor_calib_factor_2'] = float(value)
 
     @property
-    def nom_resp_dir(self):
-        return self.config['nom_resp_dir']
-    @nom_resp_dir.setter
-    def nom_resp_dir(self, value):
-        self.config['nom_resp_dir'] = value
+    def nom_paz_dir(self):
+        return self.config['nom_paz_dir']
+    @nom_paz_dir.setter
+    def nom_paz_dir(self, value):
+        self.config['nom_paz_dir'] = value
 
     @property
-    def cur_resp_dir(self):
-        return self.config['cur_resp_dir']
-    @cur_resp_dir.setter
-    def cur_resp_dir(self, value):
-        self.config['cur_resp_dir'] = value
+    def cur_paz_dir(self):
+        return self.config['cur_paz_dir']
+    @cur_paz_dir.setter
+    def cur_paz_dir(self, value):
+        self.config['cur_paz_dir'] = value
 
     def load_file(self, yamlfn):
         self.config, ok = load_yaml_file(yamlfn)
@@ -271,8 +271,8 @@ class ConfigController():
         self.model.sensor_calib_factor_z = config['sensor_calib_factor_z']
         self.model.sensor_calib_factor_1 = config['sensor_calib_factor_1']
         self.model.sensor_calib_factor_2 = config['sensor_calib_factor_2']
-        self.model.nom_resp_dir = config['nom_resp_dir']
-        self.model.cur_resp_dir = config['cur_resp_dir']
+        self.model.nom_paz_dir = config['nom_paz_dir']
+        self.model.cur_paz_dir = config['cur_paz_dir']
 
 
     def sensor_models(self):
@@ -310,8 +310,8 @@ class Configurator():
             'sensor_calib_factor_z': None,
             'sensor_calib_factor_1': None,
             'sensor_calib_factor_2': None,
-            'nom_resp_dir': None,
-            'cur_resp_dir': None,
+            'nom_paz_dir': None,
+            'cur_paz_dir': None,
         }
         self.ctrl = ConfigController()
 
@@ -377,14 +377,14 @@ class Configurator():
             self.tk_wids['hf_ms_file'].config(state=DISABLED, bg=BGGRAY)
             self.tk_wids['hf_ms_file_button'].config(state=DISABLED, bg=BGGRAY)
 
-        if not self.is_valid('nom_resp_dir'):
-            self.tk_wids['nom_resp_dir'].config(bg=BGERR)
+        if not self.is_valid('nom_paz_dir'):
+            self.tk_wids['nom_paz_dir'].config(bg=BGERR)
         else:
-            self.tk_wids['nom_resp_dir'].config(bg=BGOK)
-        if not self.is_valid('cur_resp_dir'):
-            self.tk_wids['cur_resp_dir'].config(bg=BGERR)
+            self.tk_wids['nom_paz_dir'].config(bg=BGOK)
+        if not self.is_valid('cur_paz_dir'):
+            self.tk_wids['cur_paz_dir'].config(bg=BGERR)
         else:
-            self.tk_wids['cur_resp_dir'].config(bg=BGOK)
+            self.tk_wids['cur_paz_dir'].config(bg=BGOK)
 
     def set_modified(self, modified):
         self.cfg_modified = modified
@@ -432,8 +432,8 @@ class Configurator():
         self.tk_vars['sensor_calib_factor_z'].set(config['sensor_calib_factor_z'])
         self.tk_vars['sensor_calib_factor_1'].set(config['sensor_calib_factor_1'])
         self.tk_vars['sensor_calib_factor_2'].set(config['sensor_calib_factor_2'])
-        self.tk_vars['nom_resp_dir'].set(config['nom_resp_dir'])
-        self.tk_vars['cur_resp_dir'].set(config['cur_resp_dir'])
+        self.tk_vars['nom_paz_dir'].set(config['nom_paz_dir'])
+        self.tk_vars['cur_paz_dir'].set(config['cur_paz_dir'])
 
     def save_values(self):
 
@@ -457,8 +457,8 @@ class Configurator():
         config['sensor_calib_factor_z'] = self.tk_vars['sensor_calib_factor_z'].get()
         config['sensor_calib_factor_1'] = self.tk_vars['sensor_calib_factor_1'].get()
         config['sensor_calib_factor_2'] = self.tk_vars['sensor_calib_factor_2'].get()
-        config['nom_resp_dir'] = self.tk_vars['nom_resp_dir'].get()
-        config['cur_resp_dir'] = self.tk_vars['cur_resp_dir'].get()
+        config['nom_paz_dir'] = self.tk_vars['nom_paz_dir'].get()
+        config['cur_paz_dir'] = self.tk_vars['cur_paz_dir'].get()
 
         return config
 
@@ -573,7 +573,7 @@ class Configurator():
         self.tk_wids['sampling_rate'].config(bg=BGGRAY)
         self.tk_wids['sampling_rate'].grid(row=0, column=3, sticky='w')
 
-        file_frm = LabelFrame(self.main_frm, text=' Data Locations ', bd=2, padx=5, pady=5,
+        file_frm = LabelFrame(self.main_frm, text=' Data & Directories ', bd=2, padx=5, pady=5,
                               width=WIDTH, height=160,
                               bg=BGGRAY, relief=GROOVE, font=HEADFONT)
         file_frm.grid(row=2, column=0)
@@ -608,25 +608,25 @@ class Configurator():
                                                        'hf', self.tk_vars['hf_ms_file'])))
         self.tk_wids['hf_ms_file_button'].grid(row=1, column=2)
 
-        Label(file_frm, text='Path to Nom RESP files:',
+        Label(file_frm, text='Path to Nom P/Z files:',
               font=LBLBOLD, bg=BGGRAY, padx=5).grid(row=2, column=0, sticky='e')
-        self.tk_wids['nom_resp_dir'] = Entry(file_frm, font=FIXEDBOLDFONT, width=84,
-                                            textvariable=self.tk_vars['nom_resp_dir'])
-        self.tk_wids['nom_resp_dir'].grid(row=2, column=1, sticky='w')
-        self.tk_wids['nom_resp_dir_button'] = Button(file_frm, text='Select...', highlightbackground=BGGRAY,
+        self.tk_wids['nom_paz_dir'] = Entry(file_frm, font=FIXEDBOLDFONT, width=84,
+                                            textvariable=self.tk_vars['nom_paz_dir'])
+        self.tk_wids['nom_paz_dir'].grid(row=2, column=1, sticky='w')
+        self.tk_wids['nom_paz_dir_button'] = Button(file_frm, text='Select...', highlightbackground=BGGRAY,
                                                    command=(lambda: self.on_select_dir_button(
-                                                       'nom_resp_dir', self.tk_vars['nom_resp_dir'])))
-        self.tk_wids['nom_resp_dir_button'].grid(row=2, column=2)
+                                                       'nom_paz_dir', self.tk_vars['nom_paz_dir'])))
+        self.tk_wids['nom_paz_dir_button'].grid(row=2, column=2)
 
-        Label(file_frm, text='Path to Cur RESP files:',
+        Label(file_frm, text='Path to Cur P/Z files:',
               font=LBLBOLD, bg=BGGRAY, padx=5).grid(row=3, column=0, sticky='e')
-        self.tk_wids['cur_resp_dir'] = Entry(file_frm, font=FIXEDBOLDFONT, width=84,
-                                            textvariable=self.tk_vars['cur_resp_dir'])
-        self.tk_wids['cur_resp_dir'].grid(row=3, column=1, sticky='w')
-        self.tk_wids['cur_resp_dir_button'] = Button(file_frm, text='Select...', highlightbackground=BGGRAY,
+        self.tk_wids['cur_paz_dir'] = Entry(file_frm, font=FIXEDBOLDFONT, width=84,
+                                            textvariable=self.tk_vars['cur_paz_dir'])
+        self.tk_wids['cur_paz_dir'].grid(row=3, column=1, sticky='w')
+        self.tk_wids['cur_paz_dir_button'] = Button(file_frm, text='Select...', highlightbackground=BGGRAY,
                                                    command=(lambda: self.on_select_dir_button(
-                                                       'cur_resp_dir', self.tk_vars['cur_resp_dir'])))
-        self.tk_wids['cur_resp_dir_button'].grid(row=3, column=2)
+                                                       'cur_paz_dir', self.tk_vars['cur_paz_dir'])))
+        self.tk_wids['cur_paz_dir_button'].grid(row=3, column=2)
 
         ctbto_frm = LabelFrame(self.main_frm, text=' CTBTO Information ', padx=5, pady=5,
                                bg=BGGRAY, width=WIDTH, height=120, bd=2, relief=GROOVE,
@@ -678,8 +678,8 @@ class Configurator():
 
         self.tk_wids['lf_ms_file'].bind('<Any-KeyRelease>', self.keyrelease_handler)
         self.tk_wids['hf_ms_file'].bind('<Any-KeyRelease>', self.keyrelease_handler)
-        self.tk_wids['nom_resp_dir'].bind('<Any-KeyRelease>', self.keyrelease_handler)
-        self.tk_wids['cur_resp_dir'].bind('<Any-KeyRelease>', self.keyrelease_handler)
+        self.tk_wids['nom_paz_dir'].bind('<Any-KeyRelease>', self.keyrelease_handler)
+        self.tk_wids['cur_paz_dir'].bind('<Any-KeyRelease>', self.keyrelease_handler)
 
     def show_about_dlg(self):
         pass
@@ -784,20 +784,20 @@ class Configurator():
            self.tk_vars['q330_calib_factor'].set(Q330_GCALIB_FOR_SEIS[sens])
 
     def on_select_dir_button(self, datatype, tkvar):
-        if datatype.lower() == 'nom_resp_dir':
+        if datatype.lower() == 'nom_paz_dir':
             if os.environ.get('IDA_RESPONSES_NOM_DIR'):
                 rootdir = os.environ.get('IDA_RESPONSES_NOM_DIR')
             else:
                 rootdir = '.'
 
-            title = 'Select location of NOMINAL Sensor RESP Files'
-        elif datatype.lower() == 'cur_resp_dir':
+            title = 'Select location of NOMINAL P/Z Files'
+        elif datatype.lower() == 'cur_paz_dir':
             if os.environ.get('IDA_RESPONSES_CUR_DIR'):
                 rootdir = os.environ.get('IDA_RESPONSES_CUR_DIR')
             else:
                 rootdir = '.'
 
-            title = 'Select location of CURRENT Sensor RESP Files'
+            title = 'Select location of CURRENT P/Z Files'
 
         dirname = filedialog.askdirectory(initialdir=rootdir, mustexist=True, title=title)
 
@@ -832,8 +832,8 @@ class Configurator():
             'sensor_calib_factor_z': DoubleVar(),
             'sensor_calib_factor_1': DoubleVar(),
             'sensor_calib_factor_2': DoubleVar(),
-            'nom_resp_dir': StringVar(),
-            'cur_resp_dir': StringVar(),
+            'nom_paz_dir': StringVar(),
+            'cur_paz_dir': StringVar(),
         }
 
     def keyrelease_handler(self, event):
@@ -868,8 +868,8 @@ class Configurator():
         config['sensor_calib_factor_z'] = 1.0
         config['sensor_calib_factor_1'] = 1.0
         config['sensor_calib_factor_2'] = 1.0
-        config['nom_resp_dir'] = ''
-        config['cur_resp_dir'] = ''
+        config['nom_paz_dir'] = ''
+        config['cur_paz_dir'] = ''
         self.load_values(config)
 
     def is_valid(self, varkey):
@@ -948,7 +948,7 @@ class Configurator():
             else:
                 return True
 
-        elif varkey in ['nom_resp_dir', 'cur_resp_dir']:
+        elif varkey in ['nom_paz_dir', 'cur_paz_dir']:
             path = self.tk_vars[varkey].get()
             return path and exists(path) and isdir(path)
 
@@ -994,17 +994,17 @@ class Configurator():
             if not process_lf or not process_hf:
                 errmsgs.append('Generation of CTBTO results requires both LF and HF data analysis.')
 
-        nom_resp_dir = self.tk_vars['nom_resp_dir'].get()
-        if not nom_resp_dir:
-            errmsgs.append('Missing Nominal RESP Directory.')
-        elif not exists(nom_resp_dir):
-            errmsgs.append('Nominal RESP directory does not exist: ' + nom_resp_dir)
+        nom_paz_dir = self.tk_vars['nom_paz_dir'].get()
+        if not nom_paz_dir:
+            errmsgs.append('Missing Nominal P/Z Directory.')
+        elif not exists(nom_paz_dir):
+            errmsgs.append('Nominal P/Z directory does not exist: ' + nom_paz_dir)
 
-        cur_resp_dir = self.tk_vars['cur_resp_dir'].get()
-        if not cur_resp_dir:
-            errmsgs.append('Missing Current RESP Directory.')
-        elif not exists(cur_resp_dir):
-            errmsgs.append('Current RESP directory does not exist: ' + cur_resp_dir)
+        cur_paz_dir = self.tk_vars['cur_paz_dir'].get()
+        if not cur_paz_dir:
+            errmsgs.append('Missing Current P/Z Directory.')
+        elif not exists(cur_paz_dir):
+            errmsgs.append('Current P/Z directory does not exist: ' + cur_paz_dir)
 
         return len(errmsgs) == 0, errmsgs
 
