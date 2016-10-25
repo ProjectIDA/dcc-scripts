@@ -4,7 +4,7 @@ from datetime import datetime
 import os
 
 # import tkinter as tk
-from tkinter import Tk, Frame, LabelFrame, Menu
+from tkinter import Tk, Frame, LabelFrame  #, Menu
 from tkinter import Entry, Checkbutton, Label, Button, OptionMenu
 from tkinter import IntVar, StringVar, BooleanVar, DoubleVar
 from tkinter import GROOVE, NORMAL, DISABLED
@@ -477,28 +477,16 @@ class Configurator():
 
         WIDTH = 860
 
-        self.menu_bar = Menu(self.root)
-        file_menu = Menu(self.menu_bar)
-        file_menu.add_command(label='Quit', command=self.root.destroy)
-        self.menu_bar.add_cascade(label="File", menu=file_menu)
-
-        self.root.config(menu=self.menu_bar)
         self.main_frm = Frame(self.root, width=WIDTH, height=750, bg=BGGRAY)
 
-        # self.valmeth = root.register(self.validate)
-        # Entry().bind_class('Entry', '<KeyPress>', (lambda _, key_press())
-
         HEADFONT = font.Font(font='Helvetica 15 bold')
-#        BOLDFONT = font.Font(font='Helvetica 12 bold')
         LBLFONT = font.Font(font='Helvetica 11')
         LBLBOLD = font.Font(font='Helvetica 11 bold')
-#        FIXEDFONT = font.Font(family='Courier', size=9, weight='normal')
         FIXEDBOLDFONT = font.Font(family='Courier', size=10, weight='bold')
 
-        # self = Frame(root, width=800, height=680, bg=BGGRAY) ##, bd=2, relief=GROOVE)
         self.main_frm.grid(row=0, column=0, sticky='nw')
         self.main_frm.grid_propagate(0)
-        self.main_frm.rowconfigure(0, weight=0, pad=5)  ##, minsize=30)
+        self.main_frm.rowconfigure(0, weight=0, pad=5)
         self.main_frm.rowconfigure(1, weight=0, pad=5)
         self.main_frm.rowconfigure(2, weight=0, pad=5)
         self.main_frm.rowconfigure(3, weight=0, pad=5)
