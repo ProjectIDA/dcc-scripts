@@ -830,7 +830,7 @@ class Configurator():
 
     def setup_main_frm(self):
 
-        WIDTH = 800
+        WIDTH = 860
         HEADFONT = font.Font(font='Helvetica 15 bold')
         LBLBOLD = font.Font(font='Helvetica 11 bold')
         FIXEDBOLDFONT = font.Font(family='Courier', size=10, weight='bold')
@@ -918,6 +918,12 @@ class Configurator():
                              width=WIDTH, height=60, bd=2, relief=GROOVE, font=HEADFONT)
         ref_frm.grid_propagate(0)
         ref_frm.grid(row=5, column=0, columnspan=2, sticky='nw')
+        ref_frm.columnconfigure(0, weight=1)
+        ref_frm.columnconfigure(1, weight=1)
+        ref_frm.columnconfigure(2, weight=1)
+        ref_frm.columnconfigure(3, weight=1)
+        ref_frm.columnconfigure(4, weight=1)
+        ref_frm.columnconfigure(5, weight=1)
 
         tray_frm = LabelFrame(self.main_frm, text='', padx=5, pady=5,
                               width=WIDTH, height=28, bg='#EEE', bd=2,
@@ -1058,29 +1064,37 @@ class Configurator():
             textvariable=self.ctrl.tk_vars['abs_starttime_iso'])
         self.tk_wids['abs_starttime_iso'].grid(row=2, column=1, sticky='w')
 
-        Label(abs_frm, text='End Time (UTC):', bg=BGGRAY, font=LBLBOLD).grid(row=2, column=2, sticky='e')
+        Label(abs_frm, text='End Time (UTC):', bg=BGGRAY, font=LBLBOLD).grid(row=2,
+                                                                             column=2,
+                                                                             sticky='e')
         self.tk_wids['abs_endtime_iso'] = IsoTimeEntry(abs_frm, font=FIXEDBOLDFONT, width=19,
             textvariable=self.ctrl.tk_vars['abs_endtime_iso'])
         self.tk_wids['abs_endtime_iso'].grid(row=2, column=3, sticky='w')
 
         # REFERENCE DATA Settings
-        Label(ref_frm, text='Network Code:', bg=BGGRAY, font=LBLBOLD).place(x=20, y=10)
+        Label(ref_frm, text='Network Code:', bg=BGGRAY, font=LBLBOLD).grid(row=0,
+                                                                           column=0,
+                                                                           sticky='e')
         self.tk_wids['ref_network'] = SeedCodeEntry(ref_frm, font=FIXEDBOLDFONT, width=4,
             textvariable=self.ctrl.tk_vars['ref_network'],
             charset_cre=re.compile('[a-zA-Z0-9]*'))
-        self.tk_wids['ref_network'].place(x=120, y=7)
+        self.tk_wids['ref_network'].grid(row=0, column=1, sticky='w')
 
-        Label(ref_frm, text='Station Code:', bg=BGGRAY, font=LBLBOLD).place(x=200, y=10)
+        Label(ref_frm, text='Station Code:', bg=BGGRAY, font=LBLBOLD).grid(row=0,
+                                                                           column=2,
+                                                                           sticky='e')
         self.tk_wids['ref_station'] = SeedCodeEntry(ref_frm, font=FIXEDBOLDFONT, width=6,
             textvariable=self.ctrl.tk_vars['ref_station'],
              charset_cre=re.compile('[a-zA-Z0-9]*'))
-        self.tk_wids['ref_station'].place(x=290, y=7)
+        self.tk_wids['ref_station'].grid(row=0, column=3, sticky='w')
 
-        Label(ref_frm, text='Location Code:', bg=BGGRAY, font=LBLBOLD).place(x=380, y=10)
+        Label(ref_frm, text='Location Code:', bg=BGGRAY, font=LBLBOLD).grid(row=0,
+                                                                            column=4,
+                                                                            sticky='e')
         self.tk_wids['ref_location'] = SeedCodeEntry(ref_frm, font=FIXEDBOLDFONT, width=4,
             textvariable=self.ctrl.tk_vars['ref_location'],
             charset_cre=re.compile('[a-zA-Z0-9_]*'))
-        self.tk_wids['ref_location'].place(x=480, y=7)
+        self.tk_wids['ref_location'].grid(row=0, column=5, sticky='w')
 
         self.cur_file_lbl = Label(tray_frm, text='File:', bg='#EEE', font=FIXEDBOLDFONT)
         self.cur_file_lbl.grid(row=0, column=0, sticky='w')
