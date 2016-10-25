@@ -7,8 +7,8 @@ import os
 from tkinter import Tk, Frame, LabelFrame  #, Menu
 from tkinter import Entry, Checkbutton, Label, Button, OptionMenu
 from tkinter import IntVar, StringVar, BooleanVar, DoubleVar
-from tkinter import GROOVE, NORMAL, DISABLED
-from tkinter import font, filedialog
+from tkinter import GROOVE, SUNKEN, NORMAL, DISABLED
+from tkinter import font, filedialog, messagebox
 from tkinter.messagebox import showerror
 
 from os.path import exists, isfile, isdir #, abspath, normpath
@@ -288,15 +288,12 @@ class Configurator():
 
     def __init__(self):
         """ Inititalization the frame"""
-        self.filename = 'untitled.yaml'
-        self.directory = '.'
 
         self.root = Tk()
         self.root.config(width=900, height=710, padx=5, pady=5, bg=BGGRAY)
         self.root.rowconfigure(0, weight=1, minsize=360)
         self.root.columnconfigure(0, weight=1)
         self.root.resizable(width=False, height=False)
-        self.set_title()
 
         self.tk_wids= {
             'process_lf': None,
@@ -322,12 +319,20 @@ class Configurator():
         self.set_defaults()
         self.setup_main_frm()
 
+        self.appname = 'RB Analysis Configuration Editor'
+        # need to do this after setting up main form so tray lbl widget exists
+        self.set_new_file(os.path.abspath('untitled.yaml'))
+
         self.refresh_ui()
 
+        self.root.protocol('WM_DELETE_WINDOW', exit)
         self.root.mainloop()
 
-    def set_title(self):
-        self.root.title('RB Analysis Configuration Editor: '+ self.filename)
+    def exit(self, event=None):
+       if (not self.cfg_modified) or \
+          messagebox.askyesno("Confirm Quit",
+                              "You will lose unsaved changes.\n\nDo you wish to Quit?"):
+           self.root.destroy()
 
     def refresh_ui(self):
 
@@ -381,14 +386,19 @@ class Configurator():
         else:
             self.tk_wids['cur_resp_dir'].config(bg=BGOK)
 
-    def load_config(self, fname):
-        self.filename = Path(fname).name
-        self.directory = os.path.dirname(fname)
-        # TODO: self.config_file_lbl.config(text="Current Configuration File: " + os.path.abspath(self.filename))
-        self.set_title()
+    def set_new_file(self, fname):
+         self.cfg_modified = False
+         self.filename = Path(fname).name
+         self.directory = os.path.dirname(fname)
+         self.cur_file_lbl.config(text="File: " + fname)
+         self.root.title(self.appname + ': ' + self.filename)
 
-        config, ok = self.ctrl.load_config_from_file(self.filename)
+    def load_config(self, fname):
+        fname = os.path.normpath(fname)
+
+        config, ok = self.ctrl.load_config_from_file(fname)
         if ok:
+            self.set_new_file(fname)
             self.load_values(config)
         else:
             showerror('Error loading config file.', 'There was an error reading or parsing the YAML configuration file.')
@@ -468,10 +478,7 @@ class Configurator():
             if fname:
                 config = self.save_values()
                 self.ctrl.save_config_to_file(fname, config)
-                self.filename = Path(fname).name
-                self.directory = os.path.dirname(fname)
-                # TODO:  self.config_file_lbl.config(text="Current Configuration File: " + os.path.abspath(self.filename))
-                self.set_title()
+                self.set_new_file(fname)
 
     def setup_main_frm(self):
 
@@ -502,8 +509,7 @@ class Configurator():
 
         openbtn = Button(cfg_frm, text='Open...', highlightbackground=BGGRAY, command=self.open_config_file)
         openbtn.grid(row=0, column=0, sticky='w')
-        self.config_file_lbl = Label(cfg_frm, text="Current Configuration File: " + self.filename, bg=BGGRAY)
-        self.config_file_lbl.grid(row=0, column=1, sticky='w')
+
         savebtn = Button(cfg_frm, text='Save...', highlightbackground=BGGRAY, command=self.save_config)
         savebtn.grid(row=0, column=2, sticky='e')
 
@@ -585,7 +591,6 @@ class Configurator():
                                                        'cur_resp_dir', self.tk_vars['cur_resp_dir'])))
         self.tk_wids['cur_resp_dir_button'].grid(row=3, column=2)
 
-
         ctbto_frm = LabelFrame(self.main_frm, text=' CTBTO Information ', padx=5, pady=5,
                                bg=BGGRAY, width=WIDTH, height=120, bd=2, relief=GROOVE,
                              font=HEADFONT)
@@ -629,7 +634,7 @@ class Configurator():
                               width=WIDTH, height=160, bg=BGGRAY, bd=2,
                               font=HEADFONT, relief=GROOVE)
         info_frm.grid_propagate(0)
-        info_frm.grid(row=4, column=0, columnspan=2, sticky='nw')
+        info_frm.grid(row=4, column=0, sticky='nw')
         info_frm.columnconfigure(0, minsize=250, uniform='1')
         info_frm.columnconfigure(1, weight=4, uniform='2')
         info_frm.columnconfigure(2, minsize=250, uniform='1')
@@ -642,24 +647,38 @@ class Configurator():
         Label(info_frm, text=' Pri Sensor Cha Codes (Z,1,2):',
               bg=BGGRAY, font=LBLFONT).grid(row=0, column=0, sticky='e')
 
+        foot_frm = LabelFrame(self.main_frm, text='', padx=5, pady=5,
+                              width=WIDTH, height=40, bg=BGGRAY, bd=2,
+                              font=HEADFONT, relief=GROOVE)
+        foot_frm.grid_propagate(0)
+        foot_frm.grid(row=5, column=0, sticky='w')
+        foot_frm.columnconfigure(0, weight=1)
+
+        closebtn = Button(foot_frm, text='Close', highlightbackground=BGGRAY,
+                         command=self.exit)
+        closebtn.grid(row=0, column=1, sticky='e')
+
+        tray_frm = LabelFrame(self.main_frm, text='', padx=5, pady=5,
+                              width=WIDTH, height=28, bg=BGGRAY, bd=2,
+                              font=HEADFONT, relief=SUNKEN)
+        tray_frm.grid_propagate(0)
+        tray_frm.grid(row=6, column=0, sticky='w')
+        tray_frm.columnconfigure(0, weight=1)
+
+        self.cur_file_lbl = Label(tray_frm, text='Close', bg=BGGRAY, font=FIXEDBOLDFONT)
+        self.cur_file_lbl.grid(row=0, column=0, sticky='w')
         self.tk_wids['lf_ms_file'].bind('<Any-KeyRelease>', self.keyrelease_handler)
         self.tk_wids['hf_ms_file'].bind('<Any-KeyRelease>', self.keyrelease_handler)
         self.tk_wids['nom_resp_dir'].bind('<Any-KeyRelease>', self.keyrelease_handler)
         self.tk_wids['cur_resp_dir'].bind('<Any-KeyRelease>', self.keyrelease_handler)
 
 
-#    def set_ctbto_info(self, process_ctbto, sensor_code, sensor_port, gcalib_z, gcalib_1, gcalib_2):
-#        self.ctbto_analysis = process_ctbto
-#        self.q330_nom_sens = self.q330_nominal(sensor_port)
-#        self.sensor_nom_sens = self.sensor_nominal(sensor_code)
-#        self.sensor_calib_factor_z = gcalib_z
-#        self.sensor_calib_factor_1 = gcalib_1
-#        self.sensor_calib_factor_2 = gcalib_2
-
     def ctbto_clicked(self):
+        self.cfg_modified = True
         self.refresh_ui()
 
     def on_option_change(self, idk):
+        self.cfg_modified = True
         self.refresh_ui()
 
     def on_select_datafile_button(self, datatype, tkvar):
@@ -679,6 +698,7 @@ class Configurator():
             if ('-rb' + datatype.lower() + '-') in fname:
                tkvar.set(fname)
                self.process_qcal_filename(datatype, fname)
+               self.cfg_modified = True
                self.refresh_ui()
             else:
                showerror('ERROR: Selecting MS File',
@@ -702,11 +722,6 @@ class Configurator():
               year_ok = (len(parts[4]) == 4) and parts[4].isdigit()
               mmdd_ok = (len(parts[5]) == 4) and parts[5].isdigit()
            ok = cal_ok and digi_ok and type_ok and year_ok and mmdd_ok
-           print('cal_ok:', cal_ok)
-           print('digi_ok:', digi_ok)
-           print('type_ok:', type_ok)
-           print('year_ok:', year_ok)
-           print('mmdd_ok:', mmdd_ok)
         return ok
 
     def process_qcal_filename(self, datatype, fname):
@@ -784,9 +799,11 @@ class Configurator():
 
         if dirname:
             tkvar.set(dirname)
+            self.cfg_modified = True
             self.refresh_ui()
 
     def process_clicked(self, datatype):
+        self.cfg_modified = True
         self.refresh_ui()
 
     def build_vars(self):
@@ -817,8 +834,10 @@ class Configurator():
 
     def keyrelease_handler(self, event):
         if event.widget == self.tk_wids['lf_ms_file']:
+            self.cfg_modified = True
             self.process_qcal_filename('lf', self.tk_vars['lf_ms_file'].get())
         elif event.widget == self.tk_wids['hf_ms_file']:
+            self.cfg_modified = True
             self.process_qcal_filename('hf', self.tk_vars['hf_ms_file'].get())
 
         self.refresh_ui()
@@ -866,7 +885,6 @@ class Configurator():
         elif varkey == 'lf_ms_file':
             if self.tk_vars['process_lf'].get():
                 lf_ms_file = self.tk_vars[varkey].get()
-                print('suffix:', Path(lf_ms_file).suffix)
                 return lf_ms_file and exists(lf_ms_file) and isfile(lf_ms_file) and \
                    (Path(lf_ms_file).suffix.lower() in ['.ms', '.seed']) and \
                    self.is_valid_qcal_filename(lf_ms_file)
