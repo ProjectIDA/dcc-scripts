@@ -998,13 +998,13 @@ class Configurator():
         if not nom_resp_dir:
             errmsgs.append('Missing Nominal RESP Directory.')
         elif not exists(nom_resp_dir):
-            errmsgs.append('Nominal RESP directory does not exist:' + nom_resp_dir)
+            errmsgs.append('Nominal RESP directory does not exist: ' + nom_resp_dir)
 
         cur_resp_dir = self.tk_vars['cur_resp_dir'].get()
         if not cur_resp_dir:
             errmsgs.append('Missing Current RESP Directory.')
         elif not exists(cur_resp_dir):
-            errmsgs.append('Current RESP directory does not exist:' + cur_resp_dir)
+            errmsgs.append('Current RESP directory does not exist: ' + cur_resp_dir)
 
         return len(errmsgs) == 0, errmsgs
 

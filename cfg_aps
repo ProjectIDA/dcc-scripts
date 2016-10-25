@@ -496,7 +496,7 @@ class ConfigController():
         errmsgs = []
         station = self.tk_vars['station'].get()
         if not re.fullmatch(r'[a-zA-Z0-9]{3,5}', station):
-            errmsgs.append('Missing or Invalid STATION CODE: [{}].  It should be 3-5 alpha-numeric characters.'.format(station))
+            errmsgs.append('Missing or Invalid STATION CODE: {}.'.format(station))
 
         pri_sensor_installed = self.tk_vars['pri_sensor_installed'].get()
         if pri_sensor_installed:
@@ -505,12 +505,12 @@ class ConfigController():
             if not re.fullmatch(r'(.hz( *, *| +).h1( *, *| +).h2)|(.hz( *, *| +).hn( *, *| +).he)',
                                 pri_sensor_chans, flags=re.IGNORECASE):
                 errmsgs.append('Missing or Invalid PRIMARY SENSOR CHANNELS: [{}].  '.format(pri_sensor_chans) + \
-                'Enter 3-character channel codes, comma or space separated, ' + \
+                'Enter 3-character channel codes, comma or space separated, ' \
                 'one for each component in Z12/ZNE order. E.g.: bhz,bh1,bh2')
                 #chans_val_re = '(.hz( *, *| +).h1( *, *| +).h2)|(.hz( *, *| +).hn( *, *| +).he)'
             if not re.fullmatch(r'([0-9a-zA-Z_]{2})|(__)', pri_sensor_loc):
-                errmsgs.append('Missing or Invalid PRIMARY LOCATION CODE: [{}].  ' + \
-                'Enter 2-character LOCATION code. Enter 2 spaces or underscores ' + \
+                errmsgs.append('Missing or Invalid PRIMARY LOCATION CODE: [{}].  ' \
+                'Enter 2-character LOCATION code. Enter 2 spaces or underscores ' \
                 'for an empty LOCATION code.'.format(pri_sensor_loc))
 
         sec_sensor_installed = self.tk_vars['sec_sensor_installed'].get()
@@ -519,110 +519,130 @@ class ConfigController():
             sec_sensor_loc = self.tk_vars['sec_sensor_loc'].get()
             if not re.fullmatch(r'(.hz( *, *| +).h1( *, *| +).h2)|(.hz( *, *| +).hn( *, *| +).he)',
                                 sec_sensor_chans, flags=re.IGNORECASE):
-                errmsgs.append('Missing or Invalid SECONDARY SENSOR CHANNELS: [{}].  ' + \
-                'Enter 3-character channel codes, comma or space separated, ' + \
+                errmsgs.append('Missing or Invalid SECONDARY SENSOR CHANNELS: [{}].  ' \
+                'Enter 3-character channel codes, comma or space separated, ' \
                 'one for each component in Z12/ZNE order. E.g.: bhz,bh1,bh2'.format(sec_sensor_chans))
             if not re.fullmatch(r'([0-9a-zA-Z_]{2})|(__)', sec_sensor_loc):
-                errmsgs.append('Missing or Invalid SECONDARY LOCATION CODE: [{}].  ' + \
-                'Enter 2-character LOCATION code. Enter 2 spaces or underscores ' + \
+                errmsgs.append('Missing or Invalid SECONDARY LOCATION CODE: [{}].  ' \
+                'Enter 2-character LOCATION code. Enter 2 spaces or underscores ' \
                 'for an empty LOCATION code.'.format(sec_sensor_loc))
 
         azi_process = self.tk_vars['azi_process'].get()
         if azi_process:
+            startdt = None
+            enddt = None
             azi_ms_file = self.tk_vars['azi_ms_file'].get()
             azi_starttime_iso = self.tk_vars['azi_starttime_iso'].get()
             azi_endtime_iso = self.tk_vars['azi_endtime_iso'].get()
-            if not azi_ms_file:
-                errmsgs.append('Missing the AZIMUTH MS file path.')
-            try:
-                startdt = datetime.strptime(azi_starttime_iso, '%Y-%m-%d %H:%M:%S')
-            except:
+            if not azi_starttime_iso:
+                errmsgs.append('Missing the AZIMUTH START TIME file path.')
+            else:
+                if not azi_ms_file:
+                    errmsgs.append('Missing the AZIMUTH MS file path.')
                 try:
-                    startdt = datetime.strptime(azi_starttime_iso, '%Y-%m-%dT%H:%M:%S')
+                    startdt = datetime.strptime(azi_starttime_iso, '%Y-%m-%d %H:%M:%S')
                 except:
-                    startdt = None
-                    errmsgs.append('Invalid AZIMUTH START TIME Specified [{}]. ' + \
-                                   'Must be formatted as YYYY-MM-DD HH:MM:SS'.format(azi_starttime_iso))
+                    try:
+                        startdt = datetime.strptime(azi_starttime_iso, '%Y-%m-%dT%H:%M:%S')
+                    except:
+                        startdt = None
+                        errmsgs.append('Invalid AZIMUTH START TIME Specified [{}]. ' \
+                                       'Must be formatted as YYYY-MM-DD HH:MM:SS'.format(azi_starttime_iso))
 
-            try:
-                enddt = datetime.strptime(azi_endtime_iso, '%Y-%m-%d %H:%M:%S')
-            except:
+            if not azi_endtime_iso:
+                errmsgs.append('Missing the AZIMUTH END TIME file path.')
+            else:
                 try:
-                    enddt = datetime.strptime(azi_endtime_iso, '%Y-%m-%dT%H:%M:%S')
+                    enddt = datetime.strptime(azi_endtime_iso, '%Y-%m-%d %H:%M:%S')
                 except:
-                    enddt = None
-                    errmsgs.append('Invalid AZIMUTH END TIME Specified [{}]. ' + \
-                                   'Must be formatted as YYYY-MM-DD HH:MM:SS'.format(azi_endtime_iso))
+                    try:
+                        enddt = datetime.strptime(azi_endtime_iso, '%Y-%m-%dT%H:%M:%S')
+                    except:
+                        enddt = None
+                        errmsgs.append('Invalid AZIMUTH END TIME Specified [{}]. ' \
+                                       'Must be formatted as YYYY-MM-DD HH:MM:SS'.format(azi_endtime_iso))
 
             if startdt and enddt and (enddt <= startdt):
-                errmsgs.append('Invalid AZIMUTH Times. END TIME [{}] ' + \
+                errmsgs.append('Invalid AZIMUTH Times. END TIME [{}] ' \
                                'must be after START TIME [{}]'.format(enddt, startdt))
 
         abs_process = self.tk_vars['abs_process'].get()
         if abs_process:
+            startdt = None
+            enddt = None
             abs_ms_file = self.tk_vars['abs_ms_file'].get()
             abs_starttime_iso = self.tk_vars['abs_starttime_iso'].get()
             abs_endtime_iso = self.tk_vars['abs_endtime_iso'].get()
             if not abs_ms_file:
                 errmsgs.append('Missing the ABSOLUTE MS file path.')
-            try:
-                startdt = datetime.strptime(abs_starttime_iso, '%Y-%m-%d %H:%M:%S')
-            except:
+            if not abs_starttime_iso:
+                errmsgs.append('Missing the ABSOLUTE START TIME file path.')
+            else:
                 try:
-                    startdt = datetime.strptime(abs_starttime_iso, '%Y-%m-%dT%H:%M:%S')
+                    startdt = datetime.strptime(abs_starttime_iso, '%Y-%m-%d %H:%M:%S')
                 except:
-                    startdt = None
-                    errmsgs.append('Invalid ABSOLUTE START TIME Specified [{}]. ' + \
-                                   'Must be formatted as YYYY-MM-DD HH:MM:SS'.format(abs_starttime_iso))
+                    try:
+                        startdt = datetime.strptime(abs_starttime_iso, '%Y-%m-%dT%H:%M:%S')
+                    except:
+                        startdt = None
+                        errmsgs.append('Invalid ABSOLUTE START TIME Specified [{}]. ' \
+                                       'Must be formatted as YYYY-MM-DD HH:MM:SS'.format(abs_starttime_iso))
 
-            try:
-                enddt = datetime.strptime(abs_endtime_iso, '%Y-%m-%d %H:%M:%S')
-            except:
+            if not abs_endtime_iso:
+                errmsgs.append('Missing the ABSOLUTE END TIME file path.')
+            else:
                 try:
-                    enddt = datetime.strptime(abs_endtime_iso, '%Y-%m-%dT%H:%M:%S')
+                    enddt = datetime.strptime(abs_endtime_iso, '%Y-%m-%d %H:%M:%S')
                 except:
-                    enddt = None
-                    errmsgs.append('Invalid ABSOLUTE END TIME Specified [{}]. ' + \
-                                   'Must be formatted as YYYY-MM-DD HH:MM:SS'.format(abs_endtime_iso))
+                    try:
+                        enddt = datetime.strptime(abs_endtime_iso, '%Y-%m-%dT%H:%M:%S')
+                    except:
+                        enddt = None
+                        errmsgs.append('Invalid ABSOLUTE END TIME Specified [{}]. ' \
+                                       'Must be formatted as YYYY-MM-DD HH:MM:SS'.format(abs_endtime_iso))
 
             if startdt and enddt and (enddt <= startdt):
-                errmsgs.append('Invalid ABSOLUTE Times. END TIME [{}] ' + \
+                errmsgs.append('Invalid ABSOLUTE Times. END TIME [{}] ' \
                                'must be after START TIME [{}]'.format(enddt, startdt))
 
-        correlation_segment_size_secs = self.tk_vars['correlation_segment_size_secs'].get()
-        if not correlation_segment_size_secs:
+        val = self.tk_vars['correlation_segment_size_secs'].get()
+        if not val:
             errmsgs.append('Missing CORRELATION SEGMENT SIZE. ' + \
                            'Please specify in seconds, between 3600 and 14400.')
-        elif (int(correlation_segment_size_secs) < 3600) or \
-                (int(correlation_segment_size_secs) > 14000):
-            errmsgs.append('Invalid CORRELATION SEGMENT SIZE [{}]. ' + \
-                           'Please specify a value between 3600 and 14400.')
+        elif (int(val) < 3600) or \
+                (int(val) > 14000):
+            errmsgs.append('Invalid CORRELATION SEGMENT SIZE [{}]. ' \
+                           'Please specify a value between 3600 and 14400.'.format(val))
 
-        segment_size_secs = self.tk_vars['segment_size_secs'].get()
-        if not segment_size_secs:
+        val = self.tk_vars['segment_size_secs'].get()
+        if not val:
             errmsgs.append('Missing ANALYSIS SEGMENT SIZE. Please specify in seconds, between 1024 and 4096.')
-        elif (int(segment_size_secs) < 1024) or (int(segment_size_secs) > 4096):
-            errmsgs.append('Invalid ANALYSIS SEGMENT SIZE [{}]. Please specify a value between 1024 and 4096.'.format(segment_size_secs))
+        elif (int(val) < 1024) or (int(val) > 4096):
+            errmsgs.append('Invalid ANALYSIS SEGMENT SIZE [{}]. ' \
+                           'Please specify a value between 1024 and 4096.'.format(val))
 
-        segment_size_trim_secs = self.tk_vars['segment_size_trim_secs'].get()
-        if not segment_size_trim_secs:
+        val = self.tk_vars['segment_size_trim_secs'].get()
+        if not val:
             errmsgs.append('Missing SEGMENT TRIM SIZE. Please specify in seconds. ' + \
                            'This should be approx 1/8 of the ANALYSIS SEGMENT SIZE')
-        elif (int(segment_size_trim_secs) < 128) or (int(segment_size_trim_secs) > 512):
-            errmsgs.append('Invalid SEGMENT TRIM SIZE [{}]. Please specify a value between 128 and 512.')
+        elif (int(val) < 128) or (int(val) > 512):
+            errmsgs.append('Invalid SEGMENT TRIM SIZE [{}]. ' \
+                           'Please specify a value between 128 and 512.'.format(val))
 
-        coherence_cutoff = self.tk_vars['coherence_cutoff'].get()
-        if not coherence_cutoff:
+        val = self.tk_vars['coherence_cutoff'].get()
+        if not val:
             errmsgs.append('Missing COHERENCE CUTOFF. Enter a value greater than 0.0 and less than 1.0.')
-        elif (float(coherence_cutoff) < 0.0) or (float(coherence_cutoff) >= 1.0):
-            errmsgs.append('Invalid COHERENCE CUTOFF [{}]. ' + \
-            'Please specify a value greater than 0.0 and less than 1.0'.format(coherence_cutoff))
+        elif (float(val) < 0.0) or (float(val) >= 1.0):
+            errmsgs.append('Invalid COHERENCE CUTOFF [{}]. ' \
+            'Please specify a value greater than 0.0 and less than 1.0'.format(val))
 
-        analysis_sample_rate_hz = self.tk_vars['analysis_sample_rate_hz'].get()
-        if not analysis_sample_rate_hz:
-            errmsgs.append('Missing ANALYSIS SAMPLE RATE. Enter a frequency (hz) ' + \
-                           'such that the sampling rate of all sensors is ' + \
-            'an even multiple of this value. 5 Hz is good.')
+        val = self.tk_vars['analysis_sample_rate_hz'].get()
+        if not val:
+            errmsgs.append('Missing ANALYSIS SAMPLE RATE. Enter a multiple of 5 that is <= 20. ' + \
+                           '5 has been thoroughly tested.')
+        elif (int(val) % 5 != 0) or (int(val) > 20):
+            errmsgs.append('Invalid ANALYSIS SAMPLE RATE [{}]. ' \
+                           'Enter a multiple of 5 that is <= 20'.format(val))
 
         analysis_bandpass_hz_start = self.tk_vars['analysis_bandpass_hz_start'].get()
         bpstart = None
@@ -630,7 +650,7 @@ class ConfigController():
             errmsgs.append('Missing ANALYSIS BANDPASS START. Enter the starting frequency (hz) ' + \
                            'of the bandpass used for analysis. 0.1 is good. ')
         elif (float(analysis_bandpass_hz_start) < 0.1) or (float(analysis_bandpass_hz_start) > 1.0):
-            errmsgs.append('Invalid ANALYSIS BANDPASS START [{}]. Frequencies < 0.1 and >1.0 ' + \
+            errmsgs.append('Invalid ANALYSIS BANDPASS START [{}]. Frequencies < 0.1 and >1.0 ' \
                            'have not been tested.'.format(analysis_bandpass_hz_start))
         else:
             bpstart = float(analysis_bandpass_hz_start)
@@ -641,7 +661,7 @@ class ConfigController():
             errmsgs.append('Missing ANALYSIS BANDPASS END. Enter the ending frequency (hz) ' + \
                            'of the bandpass used for analysis. 0.3 is good. ')
         elif (float(analysis_bandpass_hz_end) < 0.1) or (float(analysis_bandpass_hz_end) > 1.0):
-            errmsgs.append('Invalid ANALYSIS BANDPASS END [{}]. Frequencies < 0.1 and >1.0 ' + \
+            errmsgs.append('Invalid ANALYSIS BANDPASS END [{}]. Frequencies < 0.1 and >1.0 ' \
                            'have not been tested.'.format(analysis_bandpass_hz_end))
         else:
             bpend = float(analysis_bandpass_hz_end)
