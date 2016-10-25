@@ -650,19 +650,19 @@ class Configurator():
 
         Label(ctbto_frm, text='Sensor Cal Factor - Z:',
               bg=BGGRAY, font=LBLBOLD).grid(row=1, column=0, sticky='e')
-        self.tk_wids['sensor_calib_factor_z'] = FloatEntry(ctbto_frm, font=FIXEDBOLDFONT, width=7, minvalue=0.0,
+        self.tk_wids['sensor_calib_factor_z'] = FloatEntry(ctbto_frm, font=FIXEDBOLDFONT, width=7,
             textvariable=self.tk_vars['sensor_calib_factor_z'], state=DISABLED)
         self.tk_wids['sensor_calib_factor_z'].grid(row=1, column=1, sticky='w')
 
         Label(ctbto_frm, text='Sensor Cal Factor - 1:',
               bg=BGGRAY, font=LBLBOLD).grid(row=1, column=2, sticky='e')
-        self.tk_wids['sensor_calib_factor_1'] = FloatEntry(ctbto_frm, font=FIXEDBOLDFONT, width=7, minvalue=0.0,
+        self.tk_wids['sensor_calib_factor_1'] = FloatEntry(ctbto_frm, font=FIXEDBOLDFONT, width=7,
             textvariable=self.tk_vars['sensor_calib_factor_1'], state=DISABLED)
         self.tk_wids['sensor_calib_factor_1'].grid(row=1, column=3, sticky='w')
 
         Label(ctbto_frm, text='Sensor Cal Factor - 2:',
               bg=BGGRAY, font=LBLBOLD).grid(row=1, column=4, sticky='e')
-        self.tk_wids['sensor_calib_factor_2'] = FloatEntry(ctbto_frm, font=FIXEDBOLDFONT, width=7, minvalue=0.0,
+        self.tk_wids['sensor_calib_factor_2'] = FloatEntry(ctbto_frm, font=FIXEDBOLDFONT, width=7,
             textvariable=self.tk_vars['sensor_calib_factor_2'], state=DISABLED)
         self.tk_wids['sensor_calib_factor_2'].grid(row=1, column=5, sticky='w')
 

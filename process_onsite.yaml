@@ -1,47 +1,65 @@
 ---
-correlation_segment_size_secs: 7200 # 2 hours
-segment_size_secs: 1024  # 1024 secs @ 40Hz for Compact Trillium
-segment_size_trim: 128  # (segment_size_secs-2*segment_size_trim) should leave mult of 2, if not power of 2
-minimum_segment_cnt: 25
+correlation_segment_size_secs: 7200
+segment_size_secs: 1024
+segment_size_trim_secs: 128
 coherence_cutoff: 0.99
-analysis_sample_rate: 5  # hz
-analysis_bandpass: [0.1, 0.3]  # hz
-process_azimuth: False
-azimuth_ref_data: {
-  ms_file: '',  # abs path
-  starttime_iso: '2015-08-25T00:00',  #
-  endtime_iso: '2015-08-25T14:00',
-}
-process_absolute: True
-    #  ms_file: 'KAPI.2016251/STN01_centaur-3_0829_20160907_011552.seed', # abs path or relative to $IDA_CAL_ABS_SITEDATA_DIR
-    #  starttime_iso: '2016-09-07T03:44:00', #
-    #  endtime_iso: '2016-09-07T23:59:59',
-absolute_ref_data: {
-    ms_file: 'FFC.2016189/S0001_centaur-3_1682_20160707_010000.seed', # abs path or relative to $IDA_CAL_ABS_SITEDATA_DIR 
-    starttime_iso: '2016-07-07T18:59:59', #
-    endtime_iso: '2016-07-08T13:30:00',
-#   ms_file: 'JTS.2016049/JTS3.seed', # abs path or relative to $IDA_CAL_ABS_SITEDATA_DIR 
-#   starttime_iso: '2016-02-17T16:00:45', #
+analysis_sample_rate_hz: 5
+analysis_bandpass_hz: [0.1, 0.3]
+
+station: 'SIMI'
+pri_sensor_installed: True
+pri_sensor_chans: 'bhz,bh1,bh2'  #  to get station sensor i10/ms data
+pri_sensor_loc: '00'
+sec_sensor_installed: False 
+sec_sensor_chans: 'bhz,bh1,bh2'  #  to get station sensor i10/ms data
+sec_sensor_loc: '10'
+
+ref_azimuth_data: 
+    process: True 
+    ms_file: 'simi/APSurvey/2016-1009/S0001_centaur-3_1683_20161008_054500.seed'
+    starttime_iso: '2016-10-08T16:00:00'
+    endtime_iso: '2016-10-09T05:00:00'
+    # ms_file: '',  # relative to '$IDA_CAL_RAW/<station>/APSurvey'
+    # starttime_iso: '2015-08-25T00:00:00',
+    # endtime_iso: '2015-08-25T14:00:00',
+    #ms_file: 'kapi/APSurvey/2016-0905/STN01_centaur-3_0829_20160905_005452.seed'
+    #starttime_iso: '2016-09-05T13:20:20'
+    #endtime_iso: '2016-09-05T21:00:00'
+    #ms_file: '2016-0907/STN01_centaur-3_0829_20160907_011552.seed',
+    #starttime_iso: '2016-09-07T03:44:00',
+    #endtime_iso: '2016-09-08T00:07:59',
+    #ms_file: '2016-0707/S0001_centaur-3_1682_20160707_010000.seed',
+    #starttime_iso: '2016-07-07T18:59:59',
+    #endtime_iso: '2016-07-08T13:30:00',
+    #ms_file: '2016-0921/TRI_centaur-3_1682_20160921_000000.seed',
+    #starttime_iso: '2016-09-22T00:10:00',
+    #endtime_iso: '2016-09-22T16:37:59'
+    #ms_file: '2016-0310/MSEY4_taurus_2385_20160310_030000.seed',
+    #starttime_iso: '2016-03-10T08:26:00',
+    #endtime_iso: '2016-03-10T13:05:00'
+    #ms_file: '2016-0307/MSEY2_taurus_2385_20160307_060000.seed',
+    #starttime_iso: '2016-03-07T08:16:00',
+    #endtime_iso: '2016-03-07T19:28:59'
+    #}
+ref_absolute_data: 
+    process: True
+    ms_file: 'simi/APSurvey/2016-1009-Pier/S0001_centaur-3_1683_20161009_050428.seed'
+    starttime_iso: '2016-10-09T20:15:00'
+    endtime_iso: '2016-10-10T06:00:00'
+    # relative to '$IDA_CAL_RAW/<station>/APSurvey'
+    #ms_file: 'nna/APSurvey/2015-08-24/NNA_Sens_20150824_010000.seed'
+    #starttime_iso: '2015-08-24T21:00:00'
+    #endtime_iso: '2015-08-25T13:46:00'
+#   ms_file: 'JTS.2016049/JTS3.seed',
+#   starttime_iso: '2016-02-17T16:00:45',
 #   endtime_iso: '2016-02-18T13:00:45',
-    #   ms_file: 'KAPI.2016251/STN01_centaur-3_0829_20160907_011552.seed', # abs path or relative to $IDA_CAL_ABS_SITEDATA_DIR
-    #   starttime_iso: '2016-09-07T03:44:00', #
+    #   ms_file: 'KAPI.2016251/STN01_centaur-3_0829_20160907_011552.seed',
+    #   starttime_iso: '2016-09-07T03:44:00',
     #   endtime_iso: '2016-09-07T23:59:59',
-    #ms_file: 'MSEY.2016070/MSEY4_taurus_2385_20160310_030000.seed', # abs path or relative to $IDA_CAL_ABS_SITEDATA_DIR 
-    #starttime_iso: '2016-03-10T08:26:00', #
-    #endtime_iso: '2016-03-10T13:05:00',
-}
 
-site_info: {
-    station: 'FFC',
-    perform_site_sensor_compare: False,
-    pri_sensor_chans: 'bhz,bh1,bh2',  # leave empty string ('') if sensor should be skipped
-    pri_sensor_loc: '00',
-    sec_sensor_chans: 'bhz,bh1,bh2',  # leave empty string ('') if sensor should be skipped
-    sec_sensor_loc: '10',
-}
-
-field_kit_metadata: {  # IMPORTANT: this is used to construct RESP filename and to get response of ref sensor
-    network: 'II',
-    station: 'TRI',
+# IMPORTANT: this is used to construct RESP filename and to get response of ref sensor
+ref_kit_metadata: 
+    network: 'II'
+    station: 'TRI'
     location: '30'
-}
+
