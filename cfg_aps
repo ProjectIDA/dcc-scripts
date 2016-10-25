@@ -4,7 +4,7 @@ import re
 from datetime import datetime
 import os
 from functools import reduce
-from os.path import abspath, dirname, join, exists, isfile
+from os.path import abspath, dirname, join, exists, isfile, isdir
 from pathlib import Path
 import yaml
 
@@ -52,6 +52,8 @@ class ConfigModel():
                 'starttime_iso': '',
                 'endtime_iso': '',
             },
+            'arc_raw_dir': '',
+            'resp_file_dir': '',
             'ref_kit_metadata': {
                 'network': '',
                 'station': '',
@@ -229,6 +231,20 @@ class ConfigModel():
         self.config['ref_absolute_data']['endtime_iso'] = value
 
     @property
+    def arc_raw_dir(self):
+        return self.config['arc_raw_dir']
+    @arc_raw_dir.setter
+    def arc_raw_dir(self, value):
+        self.config['arc_raw_dir'] = value
+
+    @property
+    def resp_file_dir(self):
+        return self.config['resp_file_dir']
+    @resp_file_dir.setter
+    def resp_file_dir(self, value):
+        self.config['resp_file_dir'] = value
+
+    @property
     def ref_network(self):
         return self.config['ref_kit_metadata']['network']
     @ref_network.setter
@@ -256,7 +272,6 @@ class ConfigController():
     def __init__(self):
         self.tk_vars = self.build_config()
         self.model = ConfigModel()
-        # self.set_defaults()
 
     def load_config_from_file(self, filename):
         if self.model.load_file(filename):
@@ -285,6 +300,8 @@ class ConfigController():
             self.tk_vars['abs_starttime_iso'].set(self.model.abs_starttime_iso)
             self.tk_vars['abs_endtime_iso'].set(self.model.abs_endtime_iso)
 
+            self.tk_vars['arc_raw_dir'].set(self.model.arc_raw_dir)
+            self.tk_vars['resp_file_dir'].set(self.model.resp_file_dir)
             self.tk_vars['ref_network'].set(self.model.ref_network)
             self.tk_vars['ref_station'].set(self.model.ref_station)
             self.tk_vars['ref_location'].set(self.model.ref_location)
@@ -320,6 +337,8 @@ class ConfigController():
             'abs_ms_file': StringVar(),
             'abs_starttime_iso': StringVar(),
             'abs_endtime_iso': StringVar(),
+            'arc_raw_dir': StringVar(),
+            'resp_file_dir': StringVar(),
             'ref_network': StringVar(),
             'ref_station': StringVar(),
             'ref_location': StringVar(),
@@ -358,6 +377,8 @@ class ConfigController():
         self.tk_vars['abs_starttime_iso'].set('')
         self.tk_vars['abs_endtime_iso'].set('')
 
+        self.tk_vars['arc_raw_dir'].set(os.environ.get('IDA_CAL_RAW_DIR', ''))
+        self.tk_vars['resp_file_dir'].set(os.environ.get('SEEDRESP', ''))
         self.tk_vars['ref_network'].set('')
         self.tk_vars['ref_station'].set('')
         self.tk_vars['ref_location'].set('')
@@ -489,6 +510,14 @@ class ConfigController():
         elif varkey == 'analysis_bandpass_hz_end':
             val = self.tk_vars['analysis_bandpass_hz_end'].get()
             return val and ((float(val) >= 0.1) and (float(val) < 1.0))
+
+        elif varkey == 'arc_raw_dir':
+           path = self.tk_vars[varkey].get()
+           return path and exists(path) and isdir(path)
+
+        elif varkey == 'resp_file_dir':
+           path = self.tk_vars[varkey].get()
+           return path and exists(path) and isdir(path)
 
         elif varkey == 'ref_network':
            ref_network = self.tk_vars['ref_network'].get()
@@ -680,6 +709,18 @@ class ConfigController():
             errmsgs.append('Invalid ANAYLSIS BANDPASS. ' + \
             'END frequency [{}] must be greater than the START frequency [{}]'.format(bpend, bpstart))
 
+        arc_raw_dir = self.tk_vars['arc_raw_dir'].get()
+        if not arc_raw_dir:
+            errmsgs.append('Missing Raw Archive directory.')
+        elif (not exists(arc_raw_dir)) or (not isdir(arc_raw_dir)):
+            errmsgs.append('Raw Archive directory does not exist: ' + arc_raw_dir)
+
+        resp_file_dir = self.tk_vars['resp_file_dir'].get()
+        if not resp_file_dir:
+            errmsgs.append('Missing RESP File directory.')
+        elif (not exists(resp_file_dir)) or (not isdir(resp_file_dir)):
+            errmsgs.append('RESP file directory does not exist: ' + resp_file_dir)
+
         ref_network = self.tk_vars['ref_network'].get()
         if (ref_network) and not re.fullmatch(r'[a-zA-Z0-9]{2}', ref_network):
             errmsgs.append('Invalid REF NETWORK CODE: {}.'.format(ref_network) + \
@@ -743,6 +784,8 @@ class Configurator():
             'abs_starttime_iso': None,
             'abs_endtime_iso': None,
 
+            'arc_raw_dir': None,
+            'resp_file_dir': None,
             'ref_network': None,
             'ref_station': None,
             'ref_location': None,
@@ -798,6 +841,23 @@ class Configurator():
 
         if fname:
             tkvar.set(fname)
+            self.set_modified(True)
+            self.refresh_ui()
+
+    def on_select_dir_button(self, datatype, tkvar):
+        if datatype.lower() == 'resp_file_dir':
+            rootdir = os.environ.get('SEEDRESP', '.')
+            title = 'Select location of Reference Sensor RESP File'
+        elif datatype.lower() == 'arc_raw_dir':
+            rootdir = os.environ.get('IDA_CAL_RAW_DIR', '.')
+            title = 'Select location of Raw Archive'
+        else:
+           return
+
+        dirname = filedialog.askdirectory(initialdir=rootdir, mustexist=True, title=title)
+
+        if dirname:
+            tkvar.set(dirname)
             self.set_modified(True)
             self.refresh_ui()
 
@@ -873,7 +933,7 @@ class Configurator():
         self.menu_bar.add_command(label="About", command=self.show_about_dlg)
         self.root.config(menu=self.menu_bar)
 
-        self.main_frm = Frame(self.root, width=WIDTH, height=710, bg=BGGRAY)
+        self.main_frm = Frame(self.root, width=WIDTH, height=800, bg=BGGRAY)
         self.main_frm.grid(row=0, column=0, sticky='nw')
         self.main_frm.grid_propagate(0)
         self.main_frm.columnconfigure(0, weight=1, uniform=1)
@@ -941,10 +1001,21 @@ class Configurator():
         analysis_frm.rowconfigure(2, weight=1)
         analysis_frm.rowconfigure(3, weight=1)
 
-        ref_frm = LabelFrame(self.main_frm, text=' Reference Sensor Metadata Overrides ', bg=BGGRAY,
+        file_frm = LabelFrame(self.main_frm, text=' Directories ', bd=2, padx=5, pady=5,
+                              width=WIDTH, height=90,
+                              bg=BGGRAY, relief=GROOVE, font=HEADFONT)
+        file_frm.grid(row=5, column=0, columnspan=2)
+        file_frm.grid_propagate(0)
+        file_frm.columnconfigure(0, weight=4, minsize=200)
+        file_frm.columnconfigure(1, weight=10)
+        file_frm.columnconfigure(2, weight=1)
+
+        ref_frm = LabelFrame(self.main_frm, text=' Reference Sensor ', bg=BGGRAY,
                              width=WIDTH, height=60, bd=2, relief=GROOVE, font=HEADFONT)
         ref_frm.grid_propagate(0)
-        ref_frm.grid(row=5, column=0, columnspan=2, sticky='nw')
+        ref_frm.grid(row=6, column=0, columnspan=2, sticky='nw')
+        ref_frm.rowconfigure(0, weight=1)
+        ref_frm.rowconfigure(1, weight=1)
         ref_frm.columnconfigure(0, weight=1)
         ref_frm.columnconfigure(1, weight=1)
         ref_frm.columnconfigure(2, weight=1)
@@ -956,7 +1027,7 @@ class Configurator():
                               width=WIDTH, height=28, bg='#EEE', bd=2,
                               font=HEADFONT, relief=SUNKEN)
         tray_frm.grid_propagate(0)
-        tray_frm.grid(row=6, column=0, columnspan=2, sticky='w')
+        tray_frm.grid(row=7, column=0, columnspan=2, sticky='w')
         tray_frm.columnconfigure(0, weight=1)
 
         # add 3x2 grid of controls
@@ -1098,30 +1169,57 @@ class Configurator():
             textvariable=self.ctrl.tk_vars['abs_endtime_iso'])
         self.tk_wids['abs_endtime_iso'].grid(row=2, column=3, sticky='w')
 
+        # FILE LOCATIONS
+        Label(file_frm, text='Path to RESP files:',
+              font=LBLBOLD, bg=BGGRAY, padx=5).grid(row=0, column=0, sticky='e')
+        self.tk_wids['resp_file_dir'] = Entry(file_frm, font=FIXEDBOLDFONT, width=84,
+                                            textvariable=self.ctrl.tk_vars['resp_file_dir'])
+        self.tk_wids['resp_file_dir'].grid(row=0, column=1, sticky='w')
+        self.tk_wids['resp_file_dir_button'] = Button(file_frm,
+                                                    text='Select...', highlightbackground=BGGRAY,
+                                                   command=(lambda: self.on_select_dir_button(
+                                                      'resp_file_dir',
+                                                      self.ctrl.tk_vars['resp_file_dir'])))
+
+        self.tk_wids['resp_file_dir_button'].grid(row=0, column=2)
+
+        Label(file_frm, text='Path to Raw Archive:',
+              font=LBLBOLD, bg=BGGRAY, padx=5).grid(row=1, column=0, sticky='e')
+        self.tk_wids['arc_raw_dir'] = Entry(file_frm, font=FIXEDBOLDFONT, width=84,
+                                            textvariable=self.ctrl.tk_vars['arc_raw_dir'])
+        self.tk_wids['arc_raw_dir'].grid(row=1, column=1, sticky='w')
+        self.tk_wids['arc_raw_dir_button'] = Button(file_frm,
+                                                    text='Select...', highlightbackground=BGGRAY,
+                                                   command=(lambda: self.on_select_dir_button(
+                                                      'arc_raw_dir',
+                                                      self.ctrl.tk_vars['arc_raw_dir'])))
+
+        self.tk_wids['arc_raw_dir_button'].grid(row=1, column=2)
+
         # REFERENCE DATA Settings
-        Label(ref_frm, text='Network Code:', bg=BGGRAY, font=LBLBOLD).grid(row=0,
+        Label(ref_frm, text='Network Code (override):', bg=BGGRAY, font=LBLBOLD).grid(row=1,
                                                                            column=0,
                                                                            sticky='e')
         self.tk_wids['ref_network'] = SeedCodeEntry(ref_frm, font=FIXEDBOLDFONT, width=4,
             textvariable=self.ctrl.tk_vars['ref_network'],
             charset_cre=re.compile('[a-zA-Z0-9]*'))
-        self.tk_wids['ref_network'].grid(row=0, column=1, sticky='w')
+        self.tk_wids['ref_network'].grid(row=1, column=1, sticky='w')
 
-        Label(ref_frm, text='Station Code:', bg=BGGRAY, font=LBLBOLD).grid(row=0,
+        Label(ref_frm, text='Station Code (override):', bg=BGGRAY, font=LBLBOLD).grid(row=1,
                                                                            column=2,
                                                                            sticky='e')
         self.tk_wids['ref_station'] = SeedCodeEntry(ref_frm, font=FIXEDBOLDFONT, width=6,
             textvariable=self.ctrl.tk_vars['ref_station'],
              charset_cre=re.compile('[a-zA-Z0-9]*'))
-        self.tk_wids['ref_station'].grid(row=0, column=3, sticky='w')
+        self.tk_wids['ref_station'].grid(row=1, column=3, sticky='w')
 
-        Label(ref_frm, text='Location Code:', bg=BGGRAY, font=LBLBOLD).grid(row=0,
+        Label(ref_frm, text='Location Code (override):', bg=BGGRAY, font=LBLBOLD).grid(row=1,
                                                                             column=4,
                                                                             sticky='e')
         self.tk_wids['ref_location'] = SeedCodeEntry(ref_frm, font=FIXEDBOLDFONT, width=4,
             textvariable=self.ctrl.tk_vars['ref_location'],
             charset_cre=re.compile('[a-zA-Z0-9_]*'))
-        self.tk_wids['ref_location'].grid(row=0, column=5, sticky='w')
+        self.tk_wids['ref_location'].grid(row=1, column=5, sticky='w')
 
         self.cur_file_lbl = Label(tray_frm, text='File:', bg='#EEE', font=FIXEDBOLDFONT)
         self.cur_file_lbl.grid(row=0, column=0, sticky='w')
@@ -1149,6 +1247,7 @@ class Configurator():
         self.tk_wids['abs_starttime_iso'].bind('<Any-KeyRelease>', self.keyrelease_handler)
         self.tk_wids['abs_endtime_iso'].bind('<Any-KeyRelease>', self.keyrelease_handler)
 
+        self.tk_wids['resp_file_dir'].bind('<Any-KeyRelease>', self.keyrelease_handler)
         self.tk_wids['ref_network'].bind('<Any-KeyRelease>', self.keyrelease_handler)
         self.tk_wids['ref_station'].bind('<Any-KeyRelease>', self.keyrelease_handler)
         self.tk_wids['ref_location'].bind('<Any-KeyRelease>', self.keyrelease_handler)
@@ -1307,6 +1406,16 @@ class Configurator():
         else:
             self.tk_wids['analysis_bandpass_hz_end'].config(bg=BGOK)
 
+
+        if not self.ctrl.is_valid('arc_raw_dir'):
+            self.tk_wids['arc_raw_dir'].config(bg=BGERR)
+        else:
+            self.tk_wids['arc_raw_dir'].config(bg=BGOK)
+
+        if not self.ctrl.is_valid('resp_file_dir'):
+            self.tk_wids['resp_file_dir'].config(bg=BGERR)
+        else:
+            self.tk_wids['resp_file_dir'].config(bg=BGOK)
 
         if not self.ctrl.is_valid('ref_network'):
             self.tk_wids['ref_network'].config(bg=BGERR)
