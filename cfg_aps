@@ -1,0 +1,1177 @@
+#!/usr/bin/env python3
+
+import re
+from datetime import datetime
+import os
+
+# import tkinter as tk
+from tkinter import Tk, Frame, LabelFrame, Menu
+from tkinter import Entry, Checkbutton, Label, Button
+from tkinter import IntVar, StringVar, BooleanVar
+from tkinter import GROOVE, NORMAL, DISABLED
+from tkinter import font, filedialog  ##, messagebox
+
+import os.path
+from pathlib import Path
+import yaml
+from ida.utils import load_yaml_file
+
+
+
+BGCOLOR = '#CCE'
+BGGRAY = '#CCC'
+
+class ConfigModel():
+
+    def __init__(self, yamlfn=''):
+        # this structure should match any YAML file read in
+        self.config = {
+            'correlation_segment_size_secs': '',
+            'segment_size_secs': '',
+            'segment_size_trim_secs': '',
+            'coherence_cutoff': '',
+            'analysis_sample_rate_hz': '',
+            'analysis_bandpass_hz': [0.1, 0.3],
+            'station': '',
+            'pri_sensor_installed': '',
+            'pri_sensor_chans': '',
+            'pri_sensor_loc': '',
+            'sec_sensor_installed': '',
+            'sec_sensor_chans': '',
+            'sec_sensor_loc': '',
+            'ref_azimuth_data': {
+                'process': '',
+                'ms_file': '',
+                'starttime_iso': '',
+                'endtime_iso': '',
+            },
+            'ref_absolute_data': {
+                'process': '',
+                'ms_file': '',
+                'starttime_iso': '',
+                'endtime_iso': '',
+            },
+            'ref_kit_metadata': {
+                'network': '',
+                'station': '',
+                'location': '',
+            }
+        }
+
+    def load_file(self, yamlfn):
+        self.config, ok = load_yaml_file(yamlfn)
+
+        return ok
+
+    def save_file(self, savefn):
+        if self.config:
+            print(type(self.config), self.config)
+            yamltxt = yaml.dump(self.config)
+            print(type(yamltxt), yamltxt)
+            with open(savefn, 'wt') as yfl:
+                yfl.write(yamltxt)
+
+    @property
+    def correlation_segment_size_secs(self):
+        return self.config['correlation_segment_size_secs']
+    @correlation_segment_size_secs.setter
+    def correlation_segment_size_secs(self, value):
+        self.config['correlation_segment_size_secs'] = int(value)
+
+    @property
+    def segment_size_secs(self):
+        return self.config['segment_size_secs']
+    @segment_size_secs.setter
+    def segment_size_secs(self, value):
+        self.config['segment_size_secs'] = int(value)
+
+    @property
+    def segment_size_trim_secs(self):
+        return self.config['segment_size_trim_secs']
+    @segment_size_trim_secs.setter
+    def segment_size_trim_secs(self, value):
+        self.config['segment_size_trim_secs'] = int(value)
+
+    @property
+    def coherence_cutoff(self):
+        return self.config['coherence_cutoff']
+    @coherence_cutoff.setter
+    def coherence_cutoff(self, value):
+        self.config['coherence_cutoff'] = float(value)
+
+    @property
+    def analysis_sample_rate_hz(self):
+        return self.config['analysis_sample_rate_hz']
+    @analysis_sample_rate_hz.setter
+    def analysis_sample_rate_hz(self, value):
+        self.config['analysis_sample_rate_hz'] = int(value)
+
+    @property
+    def analysis_bandpass_hz_start(self):
+        return self.config['analysis_bandpass_hz'][0]
+    @analysis_bandpass_hz_start.setter
+    def analysis_bandpass_hz_start(self, value):
+        self.config['analysis_bandpass_hz'][0] = float(value)
+
+    @property
+    def analysis_bandpass_hz_end(self):
+        return self.config['analysis_bandpass_hz'][1]
+    @analysis_bandpass_hz_end.setter
+    def analysis_bandpass_hz_end(self, value):
+        self.config['analysis_bandpass_hz'][1] = float(value)
+
+    @property
+    def station(self):
+        return self.config['station']
+    @station.setter
+    def station(self, value):
+        self.config['station'] = value
+
+    @property
+    def pri_sensor_installed(self):
+        return self.config['pri_sensor_installed']
+    @pri_sensor_installed.setter
+    def pri_sensor_installed(self, value):
+        self.config['pri_sensor_installed'] = value
+
+    @property
+    def pri_sensor_chans(self):
+        return self.config['pri_sensor_chans']
+    @pri_sensor_chans.setter
+    def pri_sensor_chans(self, value):
+        self.config['pri_sensor_chans'] = value
+
+    @property
+    def pri_sensor_loc(self):
+        return self.config['pri_sensor_loc']
+    @pri_sensor_loc.setter
+    def pri_sensor_loc(self, value):
+        value = value.replace('_', ' ')
+        self.config['pri_sensor_loc'] = value
+
+    @property
+    def sec_sensor_installed(self):
+        return self.config['sec_sensor_installed']
+    @sec_sensor_installed.setter
+    def sec_sensor_installed(self, value):
+        self.config['sec_sensor_installed'] = value
+
+    @property
+    def sec_sensor_chans(self):
+        return self.config['sec_sensor_chans']
+    @sec_sensor_chans.setter
+    def sec_sensor_chans(self, value):
+        self.config['sec_sensor_chans'] = value
+
+    @property
+    def sec_sensor_loc(self):
+        return self.config['sec_sensor_loc']
+    @sec_sensor_loc.setter
+    def sec_sensor_loc(self, value):
+        value = value.replace('_', ' ')
+        self.config['sec_sensor_loc'] = value
+
+    @property
+    def azi_process(self):
+        return self.config['ref_azimuth_data']['process']
+    @azi_process.setter
+    def azi_process(self, value):
+        self.config['ref_azimuth_data']['process'] = value
+
+    @property
+    def azi_ms_file(self):
+        return self.config['ref_azimuth_data']['ms_file']
+    @azi_ms_file.setter
+    def azi_ms_file(self, value):
+        self.config['ref_azimuth_data']['ms_file'] = value
+
+    @property
+    def azi_starttime_iso(self):
+        return self.config['ref_azimuth_data']['starttime_iso']
+    @azi_starttime_iso.setter
+    def azi_starttime_iso(self, value):
+        self.config['ref_azimuth_data']['starttime_iso'] = value
+
+    @property
+    def azi_endtime_iso(self):
+        return self.config['ref_azimuth_data']['endtime_iso']
+    @azi_endtime_iso.setter
+    def azi_endtime_iso(self, value):
+        self.config['ref_azimuth_data']['endtime_iso'] = value
+
+    @property
+    def abs_process(self):
+        return self.config['ref_absolute_data']['process']
+    @abs_process.setter
+    def abs_process(self, value):
+        self.config['ref_absolute_data']['process'] = value
+
+    @property
+    def abs_ms_file(self):
+        return self.config['ref_absolute_data']['ms_file']
+    @abs_ms_file.setter
+    def abs_ms_file(self, value):
+        self.config['ref_absolute_data']['ms_file'] = value
+
+    @property
+    def abs_starttime_iso(self):
+        return self.config['ref_absolute_data']['starttime_iso']
+    @abs_starttime_iso.setter
+    def abs_starttime_iso(self, value):
+        self.config['ref_absolute_data']['starttime_iso'] = value
+
+    @property
+    def abs_endtime_iso(self):
+        return self.config['ref_absolute_data']['endtime_iso']
+    @abs_endtime_iso.setter
+    def abs_endtime_iso(self, value):
+        self.config['ref_absolute_data']['endtime_iso'] = value
+
+    @property
+    def ref_network(self):
+        return self.config['ref_kit_metadata']['network']
+    @ref_network.setter
+    def ref_network(self, value):
+        self.config['ref_kit_metadata']['network'] = value
+
+    @property
+    def ref_station(self):
+        return self.config['ref_kit_metadata']['station']
+    @ref_station.setter
+    def ref_station(self, value):
+        self.config['ref_kit_metadata']['station'] = value
+
+    @property
+    def ref_location(self):
+        return self.config['ref_kit_metadata']['location']
+    @ref_location.setter
+    def ref_location(self, value):
+        value = value.replace('_', ' ')
+        self.config['ref_kit_metadata']['location'] = value
+
+
+
+class ConfigController():
+
+    def __init__(self):
+        self.tk_vars = self.build_config()
+        self.model = ConfigModel()
+        # self.set_defaults()
+
+    def load_config_from_file(self, filename):
+        if self.model.load_file(filename):
+            self.tk_vars['correlation_segment_size_secs'].set(str(self.model.correlation_segment_size_secs))
+            self.tk_vars['segment_size_secs'].set(str(self.model.segment_size_secs))
+            self.tk_vars['segment_size_trim_secs'].set(str(self.model.segment_size_trim_secs))
+            self.tk_vars['coherence_cutoff'].set(str(self.model.coherence_cutoff))
+            self.tk_vars['analysis_sample_rate_hz'].set(str(self.model.analysis_sample_rate_hz))
+            self.tk_vars['analysis_bandpass_hz_start'].set(str(self.model.analysis_bandpass_hz_start))
+            self.tk_vars['analysis_bandpass_hz_end'].set(str(self.model.analysis_bandpass_hz_end))
+
+            self.tk_vars['station'].set(self.model.station)
+            self.tk_vars['pri_sensor_installed'].set(self.model.pri_sensor_installed)
+            self.tk_vars['pri_sensor_chans'].set(self.model.pri_sensor_chans)
+            self.tk_vars['pri_sensor_loc'].set(self.model.pri_sensor_loc)
+            self.tk_vars['sec_sensor_installed'].set(self.model.sec_sensor_installed)
+            self.tk_vars['sec_sensor_chans'].set(self.model.sec_sensor_chans)
+            self.tk_vars['sec_sensor_loc'].set(self.model.sec_sensor_loc)
+
+            self.tk_vars['azi_process'].set(self.model.azi_process)
+            self.tk_vars['azi_ms_file'].set(self.model.azi_ms_file)
+            self.tk_vars['azi_starttime_iso'].set(self.model.azi_starttime_iso)
+            self.tk_vars['azi_endtime_iso'].set(self.model.azi_endtime_iso)
+            self.tk_vars['abs_process'].set(self.model.abs_process)
+            self.tk_vars['abs_ms_file'].set(self.model.abs_ms_file)
+            self.tk_vars['abs_starttime_iso'].set(self.model.abs_starttime_iso)
+            self.tk_vars['abs_endtime_iso'].set(self.model.abs_endtime_iso)
+
+            self.tk_vars['ref_network'].set(self.model.ref_network)
+            self.tk_vars['ref_station'].set(self.model.ref_station)
+            self.tk_vars['ref_location'].set(self.model.ref_location)
+
+    def save_config_to_file(self, filename):
+        if self.model:
+            self.commit_changes()
+            self.model.save_file(filename)
+
+    def build_config(self):
+#        segment_size_trim_secs = IntVar()
+#        coherence_cutoff = DoubleVar()
+        tk_vars = {
+            'correlation_segment_size_secs': IntVar(),
+            'segment_size_secs': StringVar(),
+            'segment_size_trim_secs': StringVar(),
+            'coherence_cutoff': StringVar(),
+            'analysis_sample_rate_hz': StringVar(),
+            'analysis_bandpass_hz_start': StringVar(),
+            'analysis_bandpass_hz_end': StringVar(),
+            'station': StringVar(),
+            'pri_sensor_installed': BooleanVar(),
+            'pri_sensor_chans': StringVar(),
+            'pri_sensor_loc': StringVar(),
+            'sec_sensor_installed': BooleanVar(),
+            'sec_sensor_chans': StringVar(),
+            'sec_sensor_loc': StringVar(),
+            'azi_process': BooleanVar(),
+            'azi_ms_file': StringVar(),
+            'azi_starttime_iso': StringVar(),
+            'azi_endtime_iso': StringVar(),
+            'abs_process': BooleanVar(),
+            'abs_ms_file': StringVar(),
+            'abs_starttime_iso': StringVar(),
+            'abs_endtime_iso': StringVar(),
+            'ref_network': StringVar(),
+            'ref_station': StringVar(),
+            'ref_location': StringVar(),
+        }
+
+        return tk_vars
+
+    def commit_changes(self):
+        for key, var in self.tk_vars.items():
+            estr = 'self.model.' + key + ' = var.get()'
+            exec(estr)
+        # else
+
+    def set_defaults(self):
+        self.tk_vars['correlation_segment_size_secs'].set('7200')
+        self.tk_vars['segment_size_secs'].set('1024')
+        self.tk_vars['segment_size_trim_secs'].set('128')
+        self.tk_vars['coherence_cutoff'].set('0.99')
+        self.tk_vars['analysis_sample_rate_hz'].set('5')
+        self.tk_vars['analysis_bandpass_hz_start'].set('0.1')
+        self.tk_vars['analysis_bandpass_hz_end'].set('0.3')
+        self.tk_vars['station'].set('')
+        self.tk_vars['pri_sensor_installed'].set(True)
+        self.tk_vars['pri_sensor_chans'].set('BHZ,BH1,BH2')
+        self.tk_vars['pri_sensor_loc'].set('00')
+        self.tk_vars['sec_sensor_installed'].set(True)
+        self.tk_vars['sec_sensor_chans'].set('BHZ,BH1,BH2')
+        self.tk_vars['sec_sensor_loc'].set('10')
+
+        self.tk_vars['azi_process'].set(True)
+        self.tk_vars['azi_ms_file'].set('')
+        self.tk_vars['azi_starttime_iso'].set('')
+        self.tk_vars['azi_endtime_iso'].set('')
+        self.tk_vars['abs_process'].set(True)
+        self.tk_vars['abs_ms_file'].set('')
+        self.tk_vars['abs_starttime_iso'].set('')
+        self.tk_vars['abs_endtime_iso'].set('')
+
+        self.tk_vars['ref_network'].set('')
+        self.tk_vars['ref_station'].set('')
+        self.tk_vars['ref_location'].set('')
+
+    def is_config_valid(self):
+
+        errmsgs = []
+        station = self.tk_vars['station'].get()
+        if not re.fullmatch(r'[a-zA-Z0-9]{3,5}', station):
+            errmsgs.append('Missing or Invalid STATION CODE: [{}].  It should be 3-5 alpha-numeric characters.'.format(station))
+
+        pri_sensor_installed = self.tk_vars['pri_sensor_installed'].get()
+        if pri_sensor_installed:
+            pri_sensor_chans = self.tk_vars['pri_sensor_chans'].get()
+            pri_sensor_loc = self.tk_vars['pri_sensor_loc'].get()
+            if not re.fullmatch(r'(.hz( *, *| +).h1( *, *| +).h2)|(.hz( *, *| +).hn( *, *| +).he)', pri_sensor_chans, flags=re.IGNORECASE):
+                errmsgs.append('Missing or Invalid PRIMARY SENSOR CHANNELS: [{}].  '.format(pri_sensor_chans) + \
+                'Enter 3-character channel codes, comma or space separated, ' + \
+                'one for each component in Z12/ZNE order. E.g.: bhz,bh1,bh2')
+                #chans_val_re = '(.hz( *, *| +).h1( *, *| +).h2)|(.hz( *, *| +).hn( *, *| +).he)'
+            if not re.fullmatch(r'([0-9a-zA-Z_]{2})|(__)', pri_sensor_loc):
+                errmsgs.append('Missing or Invalid PRIMARY LOCATION CODE: [{}].  ' + \
+                'Enter 2-character LOCATION code. Enter 2 spaces or underscores ' + \
+                'for an empty LOCATION code.'.format(pri_sensor_loc))
+
+        sec_sensor_installed = self.tk_vars['sec_sensor_installed'].get()
+        if sec_sensor_installed:
+            sec_sensor_chans = self.tk_vars['sec_sensor_chans'].get()
+            sec_sensor_loc = self.tk_vars['sec_sensor_loc'].get()
+            if not re.fullmatch(r'(.hz( *, *| +).h1( *, *| +).h2)|(.hz( *, *| +).hn( *, *| +).he)', sec_sensor_chans, flags=re.IGNORECASE):
+                errmsgs.append('Missing or Invalid SECONDARY SENSOR CHANNELS: [{}].  ' + \
+                'Enter 3-character channel codes, comma or space separated, ' + \
+                'one for each component in Z12/ZNE order. E.g.: bhz,bh1,bh2'.format(pri_sensor_chans))
+            if not re.fullmatch(r'([0-9a-zA-Z_]{2})|(__)', sec_sensor_loc):
+                errmsgs.append('Missing or Invalid SECONDARY LOCATION CODE: [{}].  ' + \
+                'Enter 2-character LOCATION code. Enter 2 spaces or underscores ' + \
+                'for an empty LOCATION code.'.format(pri_sensor_loc))
+
+        azi_process = self.tk_vars['azi_process'].get()
+        if azi_process:
+            azi_ms_file = self.tk_vars['azi_ms_file'].get()
+            azi_starttime_iso = self.tk_vars['azi_starttime_iso'].get()
+            azi_endtime_iso = self.tk_vars['azi_endtime_iso'].get()
+            if not azi_ms_file:
+                errmsgs.append('Missing the AZIMUTH MS file path.')
+            try:
+                startdt = datetime.strptime(azi_starttime_iso, '%Y-%m-%d %H:%M:%S')
+            except:
+                try:
+                    startdt = datetime.strptime(azi_starttime_iso, '%Y-%m-%dT%H:%M:%S')
+                except:
+                    startdt = None
+                    errmsgs.append('Invalid AZIMUTH START TIME Specified [{}]. Must be specified in ISO8601 format:' + \
+                    'YYYY-MM-DD HH:MM:SS')
+
+            try:
+                enddt = datetime.strptime(azi_endtime_iso, '%Y-%m-%d %H:%M:%S')
+            except:
+                try:
+                    enddt = datetime.strptime(azi_endtime_iso, '%Y-%m-%dT%H:%M:%S')
+                except:
+                    enddt = None
+                    errmsgs.append('Invalid AZIMUTH END TIME Specified [{}]. Must be specified in ISO8601 format:' + \
+                    'YYYY-MM-DD HH:MM:SS')
+            if startdt and enddt and (enddt <= startdt):
+                errmsgs.append('Invalid AZIMUTH Times. END TIME [{}] must be after START TIME [{}]'.format(enddt, startdt))
+
+        abs_process = self.tk_vars['abs_process'].get()
+        if abs_process:
+            abs_ms_file = self.tk_vars['abs_ms_file'].get()
+            abs_starttime_iso = self.tk_vars['abs_starttime_iso'].get()
+            abs_endtime_iso = self.tk_vars['abs_endtime_iso'].get()
+            if not abs_ms_file:
+                errmsgs.append('Missing the ABSOLUTE MS file path.')
+            try:
+                startdt = datetime.strptime(abs_starttime_iso, '%Y-%m-%d %H:%M:%S')
+            except:
+                try:
+                    startdt = datetime.strptime(abs_starttime_iso, '%Y-%m-%dT%H:%M:%S')
+                except:
+                    startdt = None
+                    errmsgs.append('Invalid ABSOLUTE START TIME Specified [{}]. Must be specified in ISO8601 format:' + \
+                    'YYYY-MM-DD HH:MM:SS')
+
+            try:
+                enddt = datetime.strptime(abs_endtime_iso, '%Y-%m-%d %H:%M:%S')
+            except:
+                try:
+                    enddt = datetime.strptime(abs_endtime_iso, '%Y-%m-%dT%H:%M:%S')
+                except:
+                    enddt = None
+                    errmsgs.append('Invalid ABSOLUTE END TIME Specified [{}]. Must be specified in ISO8601 format:' + \
+                    'YYYY-MM-DD HH:MM:SS')
+            if startdt and enddt and (enddt <= startdt):
+                errmsgs.append('Invalid ABSOLUTE Times. END TIME [{}] must be after START TIME [{}]'.format(enddt, startdt))
+
+        correlation_segment_size_secs = self.tk_vars['correlation_segment_size_secs'].get()
+        if not correlation_segment_size_secs:
+            errmsgs.append('Missing CORRELATION SEGMENT SIZE. Please specify in seconds, between 3600 and 14400.')
+        elif (int(correlation_segment_size_secs) < 3600) or (int(correlation_segment_size_secs) > 14000):
+            errmsgs.append('Invalid CORRELATION SEGMENT SIZE [{}]. Please specify a value between 3600 and 14400.')
+
+        segment_size_secs = self.tk_vars['segment_size_secs'].get()
+        if not segment_size_secs:
+            errmsgs.append('Missing ANALYSIS SEGMENT SIZE. Please specify in seconds, between 1024 and 4096.')
+        elif (int(segment_size_secs) < 1024) or (int(segment_size_secs) > 4096):
+            errmsgs.append('Invalid ANALYSIS SEGMENT SIZE [{}]. Please specify a value between 1024 and 4096.'.format(segment_size_secs))
+
+        segment_size_trim_secs = self.tk_vars['segment_size_trim_secs'].get()
+        if not segment_size_trim_secs:
+            errmsgs.append('Missing SEGMENT TRIM SIZE. Please specify in seconds. This should be approx 1/8 of the ANALYSIS SEGMENT SIZE')
+        elif (int(segment_size_trim_secs) < 128) or (int(segment_size_trim_secs) > 512):
+            errmsgs.append('Invalid SEGMENT TRIM SIZE [{}]. Please specify a value between 128 and 512.')
+
+        coherence_cutoff = self.tk_vars['coherence_cutoff'].get()
+        if not coherence_cutoff:
+            errmsgs.append('Missing COHERENCE CUTOFF. Enter a value greater than 0.0 and less than 1.0.')
+        elif (float(coherence_cutoff) < 0.0) or (float(coherence_cutoff) >= 1.0):
+            errmsgs.append('Invalid COHERENCE CUTOFF [{}]. ' + \
+            'Please specify a value greater than 0.0 and less than 1.0'.format(coherence_cutoff))
+
+        analysis_sample_rate_hz = self.tk_vars['analysis_sample_rate_hz'].get()
+        if not analysis_sample_rate_hz:
+            errmsgs.append('Missing ANALYSIS SAMPLE RATE. Enter a frequency (hz) such that the sampling rate of all sensors is ' + \
+            'an even multiple of this value. 5 Hz is good.')
+
+        analysis_bandpass_hz_start = self.tk_vars['analysis_bandpass_hz_start'].get()
+        bpstart = None
+        if not analysis_bandpass_hz_start:
+            errmsgs.append('Missing ANALYSIS BANDPASS START. Enter the starting frequency (hz) of the bandpass used for analysis. 0.1 is good. ')
+        elif (float(analysis_bandpass_hz_start) < 0.1) or (float(analysis_bandpass_hz_start) > 1.0):
+            errmsgs.append('Invalid ANALYSIS BANDPASS START [{}]. Frequencies < 0.1 and >1.0 have not been tested.'.format(analysis_bandpass_hz_start))
+        else:
+            bpstart = float(analysis_bandpass_hz_start)
+
+        analysis_bandpass_hz_end = self.tk_vars['analysis_bandpass_hz_end'].get()
+        bpend = None
+        if not analysis_bandpass_hz_end:
+            errmsgs.append('Missing ANALYSIS BANDPASS END. Enter the ending frequency (hz) of the bandpass used for analysis. 0.3 is good. ')
+        elif (float(analysis_bandpass_hz_end) < 0.1) or (float(analysis_bandpass_hz_end) > 1.0):
+            errmsgs.append('Invalid ANALYSIS BANDPASS END [{}]. Frequencies < 0.1 and >1.0 have not been tested.'.format(analysis_bandpass_hz_end))
+        else:
+            bpend = float(analysis_bandpass_hz_end)
+        if bpstart and bpend and (bpend <= bpstart):
+            errmsgs.append('Invalid ANAYLSIS BANDPASS. ' + \
+            'END frequency [{}] must be greater than the START frequency [{}]'.format(enddt, startdt))
+
+        # ref_network = self.tk_vars['ref_network'].get()
+        # ref_station = self.tk_vars['ref_station'].get()
+        # ref_location = self.tk_vars['ref_location'].get()
+
+        return len(errmsgs) == 0, errmsgs
+
+
+class SeedCodeEntry(Entry):
+    """Used for entry single word text items like Network, Station"""
+
+    def __init__(self, master=None, value='', valid_cre=None, charset_cre=None, **kw):
+        Entry.__init__(self, master, **kw)
+        self.insert('end', value)
+        self._valid = True
+        self._valid_cre = valid_cre
+        self._charset_cre = charset_cre
+
+        vcmd = (self.register(self._validate), '%s', '%P', '%V')
+        self.configure(validate='all', vcmd=vcmd)
+        self.bind('<FocusOut>', self._focus_out)
+        self._validate(value, value, 'init')
+
+
+    def _focus_out(self, event):
+        value = Entry.get(self)
+        if value and self._valid:
+            newvalue = value.upper()
+            self.delete(0, 'end')
+            self.insert('end', newvalue)
+        # self.get()
+
+    def _validate(self, old, new, valmode):
+        if self._valid_cre:
+            self._valid = self._valid_cre.fullmatch(new) != None
+        if self._charset_cre:
+            charset_ok = self._charset_cre.fullmatch(new) != None
+        else:
+            charset_ok = True
+        # don't change if filtering'
+        # if charset_ok:
+        if self._valid:
+            self.config(bg='#CFC')
+        else:
+            self.config(bg='#FCC')
+
+        return charset_ok or (new == '')
+
+
+
+
+class ChanListEntry(Entry):
+
+    chans_fil_re = '[a-zA-Z12, ]*'
+    chans_val_re = '(.hz( *, *| +).h1( *, *| +).h2)|(.hz( *, *| +).hn( *, *| +).he)'
+    chans_fix_re = [r'( *, *| +)', ',', re.IGNORECASE]
+
+    def __init__(self, master=None, value='', **kw):
+        Entry.__init__(self, master, **kw)
+        self.insert('end', value)
+        self._valid = True
+        vcmd = (self.register(self._validate), '%s', '%P', '%V')
+        self.configure(validate='all', vcmd=vcmd)
+        self.bind('<FocusOut>', self._focus_out)
+
+        self._validate(value, value, 'init')
+
+    def _focus_out(self, event):
+        value = Entry.get(self)
+        if value and self._valid:
+            value = value.strip().upper()
+            newval = re.sub(self.chans_fix_re[0], self.chans_fix_re[1], value, flags=self.chans_fix_re[2])
+            self.delete(0, 'end')
+            self.insert('end', newval)
+        # self.get()
+
+    def _validate(self, old, new, valmode):
+        self._valid = not (re.fullmatch(self.chans_val_re, new, flags=re.IGNORECASE) == None)
+        filter = (re.fullmatch(self.chans_fil_re, new, flags=re.IGNORECASE) == None)
+        # don't change if filtering'
+        if not filter:
+            if self._valid:
+                self.config(bg='#CFC')
+            else:
+                self.config(bg='#FCC')
+
+        return not filter
+
+
+class IntEntry(Entry):
+
+    _messages = {
+        'en': {
+            'below_min': 'Value [{}] is less than minimum permitted value [{}].',
+            'above_max': 'Value [{}] is greater than maximum permitted value [{}].',
+        }
+    }
+
+    def __init__(self, master=None, value=0, minvalue=None, maxvalue=None, **kw):
+        Entry.__init__(self, master, **kw)
+        value = str(value)
+        self.insert('end', value)
+        self._valid = True
+        self._minval = minvalue
+        self._maxval = maxvalue
+        self._errmsgs = []
+        vcmd = (self.register(self._validate), '%s', '%P', '%V')
+        self.configure(validate='all', vcmd=vcmd)
+
+        self._validate(value, value, 'init')
+
+    def _validate(self, old, new, valmode):
+        new_valid = new.isdigit()
+        inrange = new_valid and (new != '')
+        self._errmsgs = []
+
+        # if valid int
+        if new_valid:
+            self._valid = new_valid
+            curval = new
+        else:
+            # if not valid int use previous value, re-assess validity adn range with old value
+            self._valid = old.isdigit()
+            curval = old
+
+        # if valid int, whether prev or new value, check range.
+        if self._valid and (curval != ''):
+            if self._minval:
+                if not int(curval) >= self._minval:
+                    self._errmsgs.append(self._messages['en']['below_min'].format(curval, self._minval))
+            if self._maxval:
+                if not int(curval) <= self._maxval:
+                    self._errmsgs.append(self._messages['en']['above_max'].format(curval, self._maxval))
+
+        if (not inrange) or (not self._valid) or (curval == ''):
+            self.config(bg='#FCC')
+        else:
+            self.config(bg='#CFC')
+
+        return new_valid or (new == '')
+
+
+class FloatEntry(IntEntry):
+
+    float_val_re = '[0-9]*(\.){0,1}[0-9]*'
+
+    def _validate(self, old, new, valmode):
+
+        if new == '.': new = '0.'
+        new_valid = (re.fullmatch(self.float_val_re, new) != None)
+        inrange = True
+
+        self._errmsgs = []
+        # if valid Float
+        if new_valid:
+            self._valid = new_valid
+            curval = new
+        else:
+            # if not valid float use previous value, re-assess validity adn range with old value
+            if old == '.': old = '0.'
+            self._valid = not (re.fullmatch(self.float_val_re, old) == None)
+            curval = old
+
+        # if valid float, whether prev or new value, check range.
+        if self._valid and (curval != ''):
+            if self._minval:
+                if not float(curval) >= self._minval:
+                    self._errmsgs.append(self._messages['en']['below_min'].format(curval, self._minval))
+            if self._maxval:
+                if not float(curval) <= self._maxval:
+                    self._errmsgs.append(self._messages['en']['above_max'].format(curval, self._maxval))
+
+        # flag error in UI of not valid float, not in range, or blank
+        # (regardless of new or old value used)
+        if (not inrange) or (not self._valid) or (curval == ''):
+            self.config(bg='#FCC')
+        else:
+            self.config(bg='#CFC')
+
+        return new_valid or (new == '')
+
+
+class LocationEntry(Entry):
+
+    loc_fil_re = '[0-9a-zA-Z_]{0,2}'
+    loc_val_re = '([0-9a-zA-Z]{0})|([0-9a-zA-Z_]{2})'
+
+    def __init__(self, master=None, value='', **kw):
+        Entry.__init__(self, master, **kw)
+        self.insert('end', value)
+        self._valid = True
+        vcmd = (self.register(self._validate), '%s', '%P', '%V')
+        self.configure(validate='all', vcmd=vcmd)
+        self.bind('<FocusOut>', self._focus_out)
+
+        self._validate(value, value, 'init')
+
+    def _focus_out(self, event):
+        val = Entry.get(self)
+        if val == '':
+            self.delete(0, 'end')
+            self.insert('end', '__')
+        # self.get()
+
+    def _validate(self, old, new, valmode):
+        self._valid = not (re.fullmatch(self.loc_val_re, new, flags=re.IGNORECASE) == None)
+        filter = (re.fullmatch(self.loc_fil_re, new, flags=re.IGNORECASE) == None)
+        # don't change if filtering'
+        if not filter:
+            if self._valid:
+                self.config(bg='#CFC')
+            else:
+                self.config(bg='#FCC')
+
+        return (not filter)
+
+
+class IsoTimeEntry(Entry):
+
+    isotime_fil_re = '[0-9:T\- ]*'
+
+    def __init__(self, master=None, value='', **kw):
+        Entry.__init__(self, master, **kw)
+        self.insert('end', value)
+        self._valid = True
+        vcmd = (self.register(self._validate), '%s', '%P', '%V')
+        self.configure(validate='all', vcmd=vcmd)
+        # self.bind('<FocusOut>', self._focus_out)
+
+        self._validate(value, value, 'init')
+
+    def valid_isotime_string(self, timestr):
+        try:
+            datetime.strptime(timestr, '%Y-%m-%d %H:%M:%S')
+        except:
+            try:
+                datetime.strptime(timestr, '%Y-%m-%dT%H:%M:%S')
+            except:
+                valid = False
+            else:
+                valid = True
+        else:
+            valid = True
+
+        return valid
+
+
+    def _validate(self, old, new, valmode):
+        self._valid = self.valid_isotime_string(new) and (len(new) == 19)
+        filter = (re.fullmatch(self.isotime_fil_re, new) == None)
+
+        self._errmsgs = []
+
+        if (not self._valid):
+            self.config(bg='#FCC')
+        else:
+            self.config(bg='#CFC')
+
+        return (not filter) or (new == '')
+
+
+
+class Configurator():
+    """ A Gui application with three buttons"""
+    def __init__(self):
+        """ Inititalization the frame"""
+        self.filename = '<untitled.yaml>'
+        self.directory = '.'
+
+        self.root = Tk()
+        self.root.config(width=800, height=710, padx=5, pady=5, bg=BGGRAY)
+        self.root.rowconfigure(0, weight=1, minsize=360)
+        self.root.columnconfigure(0, weight=1)
+        self.root.resizable(width=False, height=False)
+        self.root.title('APSurvey Analysis Configuration Editor: '+ self.filename)
+
+        self.tk_wids= {
+            'correlation_segment_size_secs': None,
+            'segment_size_secs': None,
+            'segment_size_trim_secs': None,
+            'coherence_cutoff': None,
+            'analysis_sample_rate_hz': None,
+            'analysis_bandpass_hz_start': None,
+            'analysis_bandpass_hz_end': None,
+
+            'station': None,
+            'pri_sensor_installed': None,
+            'pri_sensor_chans': None,
+            'pri_sensor_loc': None,
+            'sec_sensor_installed': None,
+            'sec_sensor_chans': None,
+            'sec_sensor_loc': None,
+
+            'azi_process': None,
+            'azi_ms_file': None,
+            'azi_starttime_iso': None,
+            'azi_endtime_iso': None,
+            'abs_process': None,
+            'abs_ms_file': None,
+            'abs_starttime_iso': None,
+            'abs_endtime_iso': None,
+
+            'ref_network': None,
+            'ref_station': None,
+            'ref_location': None,
+        }
+
+        self.ctrl = ConfigController()
+
+        self.setup_main_frm()
+
+        self.ctrl.set_defaults()
+
+
+        self.root.mainloop()
+
+    def on_select_datafile_button(self, datatype, tkvar):
+
+        if os.environ.get('IDA_CAL_RAW_DIR'):
+            rootdir = os.environ.get('IDA_CAL_RAW_DIR')
+        else:
+            rootdir = '.'
+
+        datatype = datatype.upper()
+        if datatype== 'AZI':
+            title = 'Select Reference AZIMUTH Survey Miniseed file'
+        elif datatype == 'ABS':
+            title = 'Select Reference ABSOLUTE Survey Miniseed file'
+        # elif datatype == 'asdasd'
+
+        fname = filedialog.askopenfilename(initialdir=rootdir,
+            filetypes=[('Miniseed Files', '*.ms'), ('Miniseed Files', '*.seed')],
+            title=title)
+
+        if fname:
+            tkvar.set(fname)
+
+    def open_config_file(self):
+        fname = filedialog.askopenfilename(initialdir='.',
+            filetypes=[('YAML Config File', '*.yaml')],
+            title='Open APSurvey Analysis Configuration File')
+
+        if fname:
+            self.filename = Path(fname).name
+            self.directory = os.path.dirname(fname)
+            self.ctrl.load_config_from_file(self.filename)
+            self.config_file_lbl.config(text="Current Configuration File: " + os.path.abspath(self.filename))
+            self.root.title('APSurvey Analysis Configuration Editor: '+ self.filename)
+
+    def save_config(self):
+
+        config_ok, errs = self.ctrl.is_config_valid()
+        if not config_ok:
+            for err in errs:
+                print(err)
+        else:
+            fname = filedialog.asksaveasfilename(initialdir=self.directory, initialfile=self.filename,
+                filetypes=[('YAML Config File', '*.yaml')],
+                title='Save APSurvey Analysis Configuration')
+
+            if fname:
+                print('saving to:', fname)
+                self.ctrl.save_config_to_file(fname)
+                self.filename = Path(fname).name
+                self.directory = os.path.dirname(fname)
+                self.config_file_lbl.config(text="Current Configuration File: " + os.path.abspath(self.filename))
+                self.root.title('APSurvey Analysis Configuration Editor: '+ self.filename)
+
+    def setup_main_frm(self):
+
+        self.menu_bar = Menu(self.root)
+        file_menu = Menu(self.menu_bar)
+        file_menu.add_command(label='Quit', command=self.root.destroy)
+        self.menu_bar.add_cascade(label="File", menu=file_menu)
+
+        self.root.config(menu=self.menu_bar)
+        self.main_frm = Frame(self.root, width=800, height=750, bg=BGGRAY)
+
+        # self.valmeth = root.register(self.validate)
+        # Entry().bind_class('Entry', '<KeyPress>', (lambda _, key_press())
+
+        HEADFONT = font.Font(font='helvetica 13 bold')
+        BOLDFONT = font.Font(font='helvetica 11 bold')
+        LBLFONT = font.Font(font='helvetica 10')
+        LBLBOLD = font.Font(font='helvetica 10 bold')
+        FIXEDFONT = font.Font(family='Courier', size=9, weight='normal')
+        FIXEDBOLDFONT = font.Font(family='Courier', size=10, weight='bold')
+
+        # self = Frame(root, width=800, height=680, bg=BGGRAY) ##, bd=2, relief=GROOVE)
+        self.main_frm.grid(row=0, column=0, sticky='nw')
+        self.main_frm.grid_propagate(0)
+        self.main_frm.columnconfigure(0, weight=1, uniform=1)
+        self.main_frm.columnconfigure(1, weight=1, uniform=1)
+        self.main_frm.rowconfigure(0, weight=0, pad=5) ##, minsize=30)
+        self.main_frm.rowconfigure(1, weight=0, pad=5, minsize=120)
+        self.main_frm.rowconfigure(2, weight=0, pad=5, minsize=120)
+        self.main_frm.rowconfigure(3, weight=0, pad=5)
+        self.main_frm.rowconfigure(4, weight=0, pad=5)
+        self.main_frm.rowconfigure(5, weight=0, pad=5)
+
+        file_frm = LabelFrame(self.main_frm, text=' Current File ', bd=2, width=760, height=50,
+            bg=BGGRAY, relief=GROOVE, font=HEADFONT)
+        file_frm.grid(row=0, column=0, columnspan=2, sticky='nw')
+        file_frm.grid_propagate(0)
+        file_frm.columnconfigure(0, weight=1, uniform=1)
+        file_frm.columnconfigure(1, weight=10, uniform=2)
+        file_frm.columnconfigure(2, weight=1, uniform=1)
+        file_frm.rowconfigure(0, weight=1)
+
+        openbtn = Button(file_frm, text='Open...', highlightbackground=BGGRAY, command=self.open_config_file)
+        openbtn.grid(row=0, column=0, sticky='w')
+        self.config_file_lbl = Label(file_frm, text="Current Configuration File: " + self.filename, bg=BGGRAY)
+        self.config_file_lbl.grid(row=0, column=1, sticky='w')
+        savebtn = Button(file_frm, text='Save...', highlightbackground=BGGRAY, command=self.save_config)
+        savebtn.grid(row=0, column=2, sticky='e')
+
+        sensors_frm = LabelFrame(self.main_frm, text=' Sensors at Station ',
+            width=760, height=150, bg=BGGRAY, bd=2, relief=GROOVE, font=HEADFONT)
+        sensors_frm.grid_propagate(0)
+        sensors_frm.grid(row=1, column=0, columnspan=2, sticky='nw')
+        sensors_frm.columnconfigure(0, minsize=250, uniform='1')
+        sensors_frm.columnconfigure(1, weight=1, uniform='2')
+        sensors_frm.columnconfigure(2, minsize=250, uniform='1')
+        sensors_frm.columnconfigure(3, weight=1, uniform='2')
+        sensors_frm.rowconfigure(0, weight=1, uniform='1')
+        sensors_frm.rowconfigure(1, weight=1, uniform='1')
+        sensors_frm.rowconfigure(2, weight=1, uniform='1')
+        sensors_frm.rowconfigure(3, weight=1, uniform='1')
+
+        azi_frm = LabelFrame(self.main_frm, text=' Azimuth Data ', bg=BGGRAY, width=760, height=120, bd=2, relief=GROOVE, font=HEADFONT)
+        abs_frm = LabelFrame(self.main_frm, text=' Absolute Data ', bg=BGGRAY, width=760, height=120, bd=2, relief=GROOVE, font=HEADFONT)
+        azi_frm.grid_propagate(0)
+        abs_frm.grid_propagate(0)
+        azi_frm.grid(row=2, column=0, columnspan=2, sticky='nw')
+        abs_frm.grid(row=3, column=0, columnspan=2, sticky='nw')
+
+        azi_frm.columnconfigure(0, weight=2, uniform='1')
+        azi_frm.columnconfigure(1, weight=3, uniform='2')
+        azi_frm.columnconfigure(2, weight=2, uniform='1')
+        azi_frm.columnconfigure(3, weight=3, uniform='2')
+        azi_frm.columnconfigure(4, weight=1, uniform='3')
+        # azi_frm.rowconfigure(0, weight=1)
+        abs_frm.columnconfigure(0, weight=2, uniform='1')
+        abs_frm.columnconfigure(1, weight=3, uniform='2')
+        abs_frm.columnconfigure(2, weight=2, uniform='1')
+        abs_frm.columnconfigure(3, weight=3, uniform='2')
+        abs_frm.columnconfigure(4, weight=1, uniform='3')
+
+        analysis_frm = LabelFrame(self.main_frm, text=' Analysis Parameters ', width=760, height=160, bg=BGGRAY, bd=2, font=HEADFONT, relief=GROOVE)
+        analysis_frm.grid_propagate(0)
+        analysis_frm.grid(row=4, column=0, columnspan=2, sticky='nw')
+        analysis_frm.columnconfigure(0, minsize=250, uniform='1')
+        analysis_frm.columnconfigure(1, weight=4, uniform='2')
+        analysis_frm.columnconfigure(2, minsize=250, uniform='1')
+        analysis_frm.columnconfigure(3, weight=4, uniform='2')
+        analysis_frm.rowconfigure(0, weight=1)
+        analysis_frm.rowconfigure(1, weight=1)
+        analysis_frm.rowconfigure(2, weight=1)
+        analysis_frm.rowconfigure(3, weight=1)
+
+        ref_frm = LabelFrame(self.main_frm, text=' Reference Sensor Metadata Overrides ', bg=BGGRAY, width=760, height=60, bd=2, relief=GROOVE, font=HEADFONT)
+        ref_frm.grid_propagate(0)
+        ref_frm.grid(row=5, column=0, columnspan=2, sticky='nw')
+
+        # add 3x2 grid of controls
+
+        # set up station sensors grid
+        # pri sensor info
+        Label(sensors_frm, text=' Station Code: ', bg=BGGRAY, font=BOLDFONT).place(x=5, y=7)
+        self.tk_wids['station'] = SeedCodeEntry(sensors_frm, font=FIXEDBOLDFONT, width=5,
+            textvariable=self.ctrl.tk_vars['station'],
+            valid_cre=re.compile('[a-zA-Z0-9]{3,5}'), charset_cre=re.compile('[a-zA-Z0-9]*'))
+        self.tk_wids['station'].place(x=105, y=5)
+
+        self.tk_wids['pri_sensor_installed'] = Checkbutton(sensors_frm, text='Analyze Primary Sensor', bg=BGGRAY,
+            command=self.pri_sensor_installed_clicked, variable=self.ctrl.tk_vars['pri_sensor_installed'],
+            font=LBLBOLD)
+        self.tk_wids['pri_sensor_installed'].grid(row=1, column=0, sticky='e')
+
+        Label(sensors_frm, text=' Pri Sensor Cha Codes (Z,1,2):',
+              bg=BGGRAY, font=LBLFONT).grid(row=2, column=0, sticky='e')
+        self.tk_wids['pri_sensor_chans'] = ChanListEntry(sensors_frm, font=FIXEDBOLDFONT, width=12,
+            textvariable=self.ctrl.tk_vars['pri_sensor_chans'])
+        self.tk_wids['pri_sensor_chans'].grid(row=2, column=1, sticky='w')
+
+        Label(sensors_frm, text=' Pri Sensor Loc Code:',
+              bg=BGGRAY, font=LBLFONT).grid(row=3, column=0, sticky='e')
+        self.tk_wids['pri_sensor_loc'] = SeedCodeEntry(sensors_frm, font=FIXEDBOLDFONT, width=4,
+            textvariable=self.ctrl.tk_vars['pri_sensor_loc'],
+            valid_cre=re.compile('([a-zA-Z0-9]{2})|(__)'), charset_cre=re.compile('[a-zA-Z0-9_]*'))
+        self.tk_wids['pri_sensor_loc'].grid(row=3, column=1, sticky='w')
+
+        # sec sensor info
+        self.tk_wids['sec_sensor_installed'] = Checkbutton(sensors_frm, text='Analyze Secondary Sensor', bg=BGGRAY,
+            command=self.sec_sensor_installed_clicked, variable=self.ctrl.tk_vars['sec_sensor_installed'],
+            font=LBLBOLD)
+        self.tk_wids['sec_sensor_installed'].grid(row=1, column=2, sticky='e')
+
+        Label(sensors_frm, text=' Sec Sensor Channel Codes (Z,1,2):',
+              font=LBLFONT, bg=BGGRAY).grid(row=2, column=2, sticky='e')
+        self.tk_wids['sec_sensor_chans'] = ChanListEntry(sensors_frm, font=FIXEDBOLDFONT, width=12,
+            textvariable=self.ctrl.tk_vars['sec_sensor_chans'])
+        self.tk_wids['sec_sensor_chans'].grid(row=2, column=3, sticky='w')
+
+        Label(sensors_frm, text=' Sec Sensor Loc Code:',
+              font=LBLFONT, bg=BGGRAY).grid(row=3, column=2, sticky='e')
+        self.tk_wids['sec_sensor_loc'] = SeedCodeEntry(sensors_frm, font=FIXEDBOLDFONT, width=4,
+            textvariable=self.ctrl.tk_vars['sec_sensor_loc'],
+            valid_cre=re.compile('([a-zA-Z0-9]{2})|(__)'), charset_cre=re.compile('[a-zA-Z0-9_]*'))
+        self.tk_wids['sec_sensor_loc'].grid(row=3, column=3, sticky='w')
+
+
+        # set up analysis grid
+        Label(analysis_frm, text='Correlation Segment Size (secs):', bg=BGGRAY).grid(row=0, column=0, sticky='e')
+        self.tk_wids['correlation_segment_size_secs'] = IntEntry(analysis_frm,
+                                                                 font=FIXEDBOLDFONT, width=5,
+                                                                 minvalue=3600, maxvalue=14400,
+            textvariable=self.ctrl.tk_vars['correlation_segment_size_secs'])
+        self.tk_wids['correlation_segment_size_secs'].grid(row=0, column=1, sticky='w')
+
+        Label(analysis_frm, text='Analysis Segment Size (secs):', bg=BGGRAY).grid(row=1, column=0, sticky='e')
+        self.tk_wids['segment_size_secs'] = IntEntry(analysis_frm, font=FIXEDBOLDFONT, width=5, minvalue=1024, maxvalue=4096,
+            textvariable=self.ctrl.tk_vars['segment_size_secs'])
+        self.tk_wids['segment_size_secs'].grid(row=1, column=1, sticky='w')
+
+        Label(analysis_frm, text='Segment Trim Size (secs):', bg=BGGRAY).grid(row=2, column=0, sticky='e')
+        self.tk_wids['segment_size_trim_secs'] = IntEntry(analysis_frm, font=FIXEDBOLDFONT, width=5, minvalue=128, maxvalue=256,
+            textvariable=self.ctrl.tk_vars['segment_size_trim_secs'])
+        self.tk_wids['segment_size_trim_secs'].grid(row=2, column=1, sticky='w')
+
+        Label(analysis_frm, text='Coherence Cutoff (0.0 - 1.0):', bg=BGGRAY).grid(row=3, column=0, sticky='e')
+        self.tk_wids['coherence_cutoff'] = FloatEntry(analysis_frm, font=FIXEDBOLDFONT, width=5, minvalue=0.0, maxvalue=0.999,
+            textvariable=self.ctrl.tk_vars['coherence_cutoff'])
+        self.tk_wids['coherence_cutoff'].grid(row=3, column=1, sticky='w')
+
+        Label(analysis_frm, text='Analysis Sample Rate (hz):', bg=BGGRAY).grid(row=0, column=2, sticky='e')
+        self.tk_wids['analysis_sample_rate_hz'] = IntEntry(analysis_frm, font=FIXEDBOLDFONT, width=5, value=5, minvalue=5, maxvalue=20,
+            textvariable=self.ctrl.tk_vars['analysis_sample_rate_hz'])
+        self.tk_wids['analysis_sample_rate_hz'].grid(row=0, column=3, sticky='w')
+
+        Label(analysis_frm, text='Analysis Bandpass Start (hz):', bg=BGGRAY).grid(row=1, column=2, sticky='e')
+        self.tk_wids['analysis_bandpass_hz_start'] = FloatEntry(analysis_frm, font=FIXEDBOLDFONT, width=5, minvalue=0.01, maxvalue=1.0,
+            textvariable=self.ctrl.tk_vars['analysis_bandpass_hz_start'])
+        self.tk_wids['analysis_bandpass_hz_start'].grid(row=1, column=3, sticky='w')
+
+        Label(analysis_frm, text='Analysis Bandpass End (hz):', bg=BGGRAY).grid(row=2, column=2, sticky='e')
+        self.tk_wids['analysis_bandpass_hz_end'] = FloatEntry(analysis_frm, font=FIXEDBOLDFONT, width=5, minvalue=0.01, maxvalue=1.0,
+            textvariable=self.ctrl.tk_vars['analysis_bandpass_hz_end'])
+        self.tk_wids['analysis_bandpass_hz_end'].grid(row=2, column=3, sticky='w')
+
+        # AZIMUTH Settings
+        self.tk_wids['azi_process'] = Checkbutton(azi_frm, text='Process AZIMUTH Data', bg=BGGRAY,
+            command=self.azi_process_clicked, variable=self.ctrl.tk_vars['azi_process'])
+        self.tk_wids['azi_process'].grid(row=0, column=1, columnspan=2, sticky='w')
+
+        Label(azi_frm, text='Azimuth MS File:', bg=BGGRAY).grid(row=1, column=0, sticky='e')
+        self.tk_wids['azi_ms_file'] = Entry(azi_frm, font=FIXEDFONT, width=72,
+            textvariable=self.ctrl.tk_vars['azi_ms_file'])
+        self.tk_wids['azi_ms_file'].grid(row=1, column=1, columnspan=3, sticky='w')
+        self.tk_wids['azi_ms_file_button'] = Button(azi_frm, text='Select...', highlightbackground=BGGRAY,
+            command=(lambda: self.on_select_datafile_button('azi', self.ctrl.tk_vars['azi_ms_file'])))
+        self.tk_wids['azi_ms_file_button'].grid(row=1, column=4, sticky='w')
+
+        Label(azi_frm, text='Start Time (UTC):', bg=BGGRAY).grid(row=2, column=0, sticky='e')
+        self.tk_wids['azi_starttime_iso'] = IsoTimeEntry(azi_frm, font=FIXEDFONT, width=19,
+            textvariable=self.ctrl.tk_vars['azi_starttime_iso'])
+        self.tk_wids['azi_starttime_iso'].grid(row=2, column=1, sticky='w')
+
+        Label(azi_frm, text='End Time (UTC):', bg=BGGRAY).grid(row=2, column=2, sticky='e')
+        self.tk_wids['azi_endtime_iso'] = IsoTimeEntry(azi_frm, font=FIXEDFONT, width=19,
+            textvariable=self.ctrl.tk_vars['azi_endtime_iso'])
+        self.tk_wids['azi_endtime_iso'].grid(row=2, column=3, sticky='w')
+
+        # ABSOLUTE Settings
+        self.tk_wids['abs_process'] = Checkbutton(abs_frm, text='Process ABSOLUTE Data', bg=BGGRAY,
+                        command=self.abs_process_clicked, variable=self.ctrl.tk_vars['abs_process'])
+        self.tk_wids['abs_process'].grid(row=0, column=1, columnspan=2, sticky='w')
+
+        Label(abs_frm, text='Absolute MS File:', bg=BGGRAY).grid(row=1, column=0, sticky='e')
+        self.tk_wids['abs_ms_file'] = Entry(abs_frm, font=FIXEDFONT, width=72,
+            textvariable=self.ctrl.tk_vars['abs_ms_file'])
+        self.tk_wids['abs_ms_file'].grid(row=1, column=1, columnspan=3, sticky='w')
+        self.tk_wids['abs_ms_file_button'] = Button(abs_frm, text='Select...', highlightbackground=BGGRAY,
+            command=(lambda: self.on_select_datafile_button('abs', self.ctrl.tk_vars['abs_ms_file'])))
+        self.tk_wids['abs_ms_file_button'].grid(row=1, column=4, sticky='w')
+
+        Label(abs_frm, text='Start Time (UTC):', bg=BGGRAY).grid(row=2, column=0, sticky='e')
+        self.tk_wids['abs_starttime_iso'] = IsoTimeEntry(abs_frm, font=FIXEDFONT, width=19,
+            textvariable=self.ctrl.tk_vars['abs_starttime_iso'])
+        self.tk_wids['abs_starttime_iso'].grid(row=2, column=1, sticky='w')
+
+        Label(abs_frm, text='End Time (UTC):', bg=BGGRAY).grid(row=2, column=2, sticky='e')
+        self.tk_wids['abs_endtime_iso'] = IsoTimeEntry(abs_frm, font=FIXEDFONT, width=19,
+            textvariable=self.ctrl.tk_vars['abs_endtime_iso'])
+        self.tk_wids['abs_endtime_iso'].grid(row=2, column=3, sticky='w')
+
+        # REFERENCE DATA Settings
+        Label(ref_frm, text='Network Code:', bg=BGGRAY).place(x=20, y=10)
+        self.tk_wids['ref_network'] = SeedCodeEntry(ref_frm, font=FIXEDFONT, width=4,
+            textvariable=self.ctrl.tk_vars['ref_network'],
+            valid_cre=re.compile('[a-zA-Z][a-zA-Z0-9]'), charset_cre=re.compile('[a-zA-Z0-9]*'))
+        self.tk_wids['ref_network'].place(x=120, y=7)
+
+        Label(ref_frm, text='Station Code:', bg=BGGRAY).place(x=200, y=10)
+        self.tk_wids['ref_station'] = SeedCodeEntry(ref_frm, font=FIXEDFONT, width=6,
+            textvariable=self.ctrl.tk_vars['ref_station'],
+            valid_cre=re.compile('[a-zA-Z0-9]{3,5}'), charset_cre=re.compile('[a-zA-Z0-9]*'))
+        self.tk_wids['ref_station'].place(x=290, y=7)
+
+        Label(ref_frm, text='Location Code:', bg=BGGRAY).place(x=380, y=10)
+        self.tk_wids['ref_location'] = SeedCodeEntry(ref_frm, font=FIXEDFONT, width=4,
+            textvariable=self.ctrl.tk_vars['ref_location'],
+            valid_cre=re.compile('([a-zA-Z0-9]{2})|(__)'), charset_cre=re.compile('[a-zA-Z0-9_]*'))
+        self.tk_wids['ref_location'].place(x=480, y=7)
+
+
+
+    def pri_sensor_installed_clicked(self):
+        installed = self.ctrl.tk_vars['pri_sensor_installed'].get()
+        if installed:
+            self.tk_wids['pri_sensor_chans'].config(state=NORMAL)
+            self.tk_wids['pri_sensor_loc'].config(state=NORMAL)
+        else:
+            self.tk_wids['pri_sensor_chans'].config(state=DISABLED)
+            self.tk_wids['pri_sensor_loc'].config(state=DISABLED)
+
+    def sec_sensor_installed_clicked(self):
+        installed = self.ctrl.tk_vars['sec_sensor_installed'].get()
+        if installed:
+            self.tk_wids['sec_sensor_chans'].config(state=NORMAL)
+            self.tk_wids['sec_sensor_loc'].config(state=NORMAL)
+        else:
+            self.tk_wids['sec_sensor_chans'].config(state=DISABLED)
+            self.tk_wids['sec_sensor_loc'].config(state=DISABLED)
+
+    def azi_process_clicked(self):
+        process = self.ctrl.tk_vars['azi_process'].get()
+        if process:
+            self.tk_wids['azi_ms_file'].config(state=NORMAL)
+            self.tk_wids['azi_starttime_iso'].config(state=NORMAL)
+            self.tk_wids['azi_endtime_iso'].config(state=NORMAL)
+            self.tk_wids['azi_ms_file_button'].config(state=NORMAL)
+        else:
+            self.tk_wids['azi_ms_file'].config(state=DISABLED)
+            self.tk_wids['azi_starttime_iso'].config(state=DISABLED)
+            self.tk_wids['azi_endtime_iso'].config(state=DISABLED)
+            self.tk_wids['azi_ms_file_button'].config(state=DISABLED)
+
+    def abs_process_clicked(self):
+        process = self.ctrl.tk_vars['abs_process'].get()
+        if process:
+            self.tk_wids['abs_ms_file'].config(state=NORMAL)
+            self.tk_wids['abs_starttime_iso'].config(state=NORMAL)
+            self.tk_wids['abs_endtime_iso'].config(state=NORMAL)
+            self.tk_wids['abs_ms_file_button'].config(state=NORMAL)
+        else:
+            self.tk_wids['abs_ms_file'].config(state=DISABLED)
+            self.tk_wids['abs_starttime_iso'].config(state=DISABLED)
+            self.tk_wids['abs_endtime_iso'].config(state=DISABLED)
+            self.tk_wids['abs_ms_file_button'].config(state=DISABLED)
+
+    def set_refdata_state(self, dataset, enabled):
+        pass
+
+    def station_isvalid(self, station):
+
+        station_re = r'[a-zA-Z0-9]{3,5}'
+        match = re.fullmatch(station_re, station)
+        return not (match == None)
+
+app = Configurator()
