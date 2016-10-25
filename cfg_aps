@@ -490,6 +490,17 @@ class ConfigController():
             val = self.tk_vars['analysis_bandpass_hz_end'].get()
             return val and ((float(val) >= 0.1) and (float(val) < 1.0))
 
+        elif varkey == 'ref_network':
+           ref_network = self.tk_vars['ref_network'].get()
+           return (not ref_network) or re.fullmatch(r'[a-zA-Z0-9]{2}', ref_network)
+
+        elif varkey == 'ref_station':
+           ref_station = self.tk_vars['ref_station'].get()
+           return (not ref_station) or re.fullmatch(r'[a-zA-Z0-9]{3,5}', ref_station)
+
+        elif varkey == 'ref_location':
+           ref_location = self.tk_vars['ref_location'].get()
+           return (not ref_location) or re.fullmatch(r'([0-9a-zA-Z_]{2})', ref_location)
 
     def is_config_valid(self):
 
@@ -669,9 +680,23 @@ class ConfigController():
             errmsgs.append('Invalid ANAYLSIS BANDPASS. ' + \
             'END frequency [{}] must be greater than the START frequency [{}]'.format(bpend, bpstart))
 
-        # ref_network = self.tk_vars['ref_network'].get()
-        # ref_station = self.tk_vars['ref_station'].get()
-        # ref_location = self.tk_vars['ref_location'].get()
+        ref_network = self.tk_vars['ref_network'].get()
+        if (ref_network) and not re.fullmatch(r'[a-zA-Z0-9]{2}', ref_network):
+            errmsgs.append('Invalid REF NETWORK CODE: {}.'.format(ref_network) + \
+                           'Enter REF sensor NETWORK code or leave empty ' \
+                           'if not needed.')
+
+        ref_station = self.tk_vars['ref_station'].get()
+        if (ref_station) and not re.fullmatch(r'[a-zA-Z0-9]{3,5}', ref_station):
+            errmsgs.append('Invalid REF STATION CODE: {}.  ' \
+                           'Enter REF sensor STATION code or leave empty ' \
+                           'if not needed.'.format(ref_station))
+
+        ref_location = self.tk_vars['ref_location'].get()
+        if (ref_location) and not re.fullmatch(r'([0-9a-zA-Z_]{2})|(__)', ref_location):
+            errmsgs.append('Invalid REF LOCATION CODE: [{}]. ' \
+            'Enter REF sensor LOCATION code or leave empty if not needed. ' \
+            'for an empty LOCATION code.'.format(ref_location))
 
         return len(errmsgs) == 0, errmsgs
 
@@ -732,6 +757,8 @@ class Configurator():
         self.set_modified(False)
 
         self.ctrl.set_defaults()
+
+        self.refresh_ui()
 
         self.root.protocol('WM_DELETE_WINDOW', self.exit)
         self.root.mainloop()
