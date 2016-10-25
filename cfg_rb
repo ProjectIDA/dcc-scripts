@@ -516,6 +516,10 @@ class Configurator():
     def setup_main_frm(self):
 
         WIDTH = 860
+        HEADFONT = font.Font(font='Helvetica 15 bold')
+        LBLBOLD = font.Font(font='Helvetica 11 bold')
+        FIXEDBOLDFONT = font.Font(family='Courier', size=10, weight='bold')
+
 
         self.menu_bar = Menu(self.root)
         file_menu = Menu(self.menu_bar)
@@ -529,10 +533,6 @@ class Configurator():
 
         self.root.config(menu=self.menu_bar)
         self.main_frm = Frame(self.root, width=WIDTH, height=430, bg=BGGRAY)
-
-        HEADFONT = font.Font(font='Helvetica 15 bold')
-        LBLBOLD = font.Font(font='Helvetica 11 bold')
-        FIXEDBOLDFONT = font.Font(family='Courier', size=10, weight='bold')
 
         self.main_frm.grid(row=0, column=0, sticky='nw')
         self.main_frm.grid_propagate(0)
@@ -673,8 +673,9 @@ class Configurator():
         tray_frm.grid(row=6, column=0, sticky='w')
         tray_frm.columnconfigure(0, weight=1)
 
-        self.cur_file_lbl = Label(tray_frm, text='Close', bg='#EEE', font=FIXEDBOLDFONT)
+        self.cur_file_lbl = Label(tray_frm, text='File:', bg='#EEE', font=FIXEDBOLDFONT)
         self.cur_file_lbl.grid(row=0, column=0, sticky='w')
+
         self.tk_wids['lf_ms_file'].bind('<Any-KeyRelease>', self.keyrelease_handler)
         self.tk_wids['hf_ms_file'].bind('<Any-KeyRelease>', self.keyrelease_handler)
         self.tk_wids['nom_resp_dir'].bind('<Any-KeyRelease>', self.keyrelease_handler)
@@ -692,8 +693,10 @@ class Configurator():
         self.refresh_ui()
 
     def on_select_datafile_button(self, datatype, tkvar):
-        if os.environ.get('IDA_CAL_RAW_DIR'):
-            rootdir = os.environ.get('IDA_CAL_RAW_DIR')
+
+        idaroot = os.environ.get('IDA_CAL_RAW_DIR')
+        if idaroot and exists(idaroot):
+            rootdir = idaroot
         else:
             rootdir = '.'
 
@@ -712,7 +715,7 @@ class Configurator():
                self.refresh_ui()
             else:
                showerror('ERROR: Selecting MS File',
-                         'This does not appear to be a ' + datatype.upper() + ' file.') 
+                         'This does not appear to be a ' + datatype.upper() + ' file.')
 
     def is_valid_qcal_filename(self, fname):
 
