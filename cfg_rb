@@ -318,6 +318,7 @@ class Configurator():
         }
         self.ctrl = ConfigController()
 
+        self.most_recent_datadir = ''
         self.build_vars()
         self.set_defaults()
         self.setup_main_frm()
@@ -720,11 +721,10 @@ class Configurator():
 
     def on_select_datafile_button(self, datatype, tkvar):
 
-        idaroot = os.environ.get('IDA_CAL_RAW_DIR')
-        if idaroot and exists(idaroot):
-            rootdir = idaroot
+        if self.most_recent_datadir:
+           rootdir = self.most_recent_datadir
         else:
-            rootdir = '.'
+           rootdir = os.environ.get('IDA_CAL_RAW_DIR', '.')
 
         datatype = datatype.upper()
         title = 'Select {} Random Binary miniseed file'.format(datatype.upper())
@@ -739,9 +739,33 @@ class Configurator():
                self.process_qcal_filename(datatype, fname)
                self.set_modified(True)
                self.refresh_ui()
+               self.most_recent_datadir = dirname(fname)
             else:
                showerror('ERROR: Selecting MS File',
                          'This does not appear to be a ' + datatype.upper() + ' file.')
+
+    def is_valid_qcal_filename(self, fname):
+
+      ok = False
+      if fname:
+         name = Path(fname).stem
+         parts = name.split('-')
+
+         if len(parts) in [7, 8]:
+            cal_ok = parts[0].upper() == 'CAL'
+            digi_ok = (len(parts[1]) in [5,6]) and parts[1][-2:].isdigit()
+            # skipping sensor segment, can't currently use
+            if parts[3] == 'B':
+               type_ok = parts[4].lower() in ['rblf', 'rbhf']
+               year_ok = (len(parts[5]) == 4) and parts[5].isdigit()
+               mmdd_ok = (len(parts[6]) == 4) and parts[6].isdigit()
+            else:
+               type_ok = parts[3].lower() in ['rblf', 'rbhf']
+               year_ok = (len(parts[4]) == 4) and parts[4].isdigit()
+               mmdd_ok = (len(parts[5]) == 4) and parts[5].isdigit()
+            ok = cal_ok and digi_ok and type_ok and year_ok and mmdd_ok
+
+      return ok
 
     def process_qcal_filename(self, datatype, fname):
 
