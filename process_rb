@@ -316,9 +316,11 @@ def main(cl_args):
                                                           ci.sensor, ci.comp, fit_paz)
 
                 # comute TF (and plot fig)
-                hftf_f, fit_hftf_amp, fit_hftf_pha, fit_hftf_pha_detrnd, fit_hftf_coh, hf_fig_fit = gen_tf_and_fig(
-                    ci, samp_rate_hf, hfinput, hfmeas, CALTYPE_RBHF,
-                    green_tol_limits, grey_tol_limits)
+                hftf_f, fit_hftf_amp, fit_hftf_pha, fit_hftf_pha_detrnd, \
+                    fit_hftf_coh, hf_fig_fit = gen_tf_and_fig(
+                        ci, samp_rate_hf, hfinput, hfmeas, CALTYPE_RBHF,
+                        green_tol_limits, grey_tol_limits
+                    )
 
                 action = fit_menu([('F', 'Fit New HIGH FREQ Response'),
                                    ('A', 'Accept Current HIGH FREQ Response'),
@@ -397,7 +399,6 @@ def main(cl_args):
                 lf_freqs_in_band = less_equal(lftf_f, 0.9 * 0.5 *
                                               CALTYPE_RBLF_SAMPLERATE)
 
-                # noinspection PyUnboundLocalVariable
                 ctbto_inspec_lf = 'YES' if (lftf_amp[lf_freqs_in_band].min() >= 0.95) and \
                                            (lftf_amp[lf_freqs_in_band].max() <= 1.05) and \
                                            (lftf_pha_detrnd[lf_freqs_in_band].min() >= -5) and \
@@ -420,19 +421,10 @@ def main(cl_args):
                     print('\n', ' ' * ndnt + bold(
                         red('HEADS UP: Does not meet CTBTO IN_SPEC Criteria!')
                     ), '\n')
-#                   if ctbto_inspec_lf != 'YES':
-#                       print(red('LF is out of spec'))
-#                       print(lftf_amp[lf_freqs_in_band].min())
-#                       print(lftf_amp[lf_freqs_in_band].max())
-#                       print(lftf_pha_detrnd[lf_freqs_in_band].min())
-#                       print(lftf_pha_detrnd[lf_freqs_in_band].max())
-#
-#                   if ctbto_inspec_hf != 'YES':
-#                       print(red('HF is out of spec'))
-#                       print(hftf_amp[hf_freqs_in_band].min())
-#                       print(hftf_amp[hf_freqs_in_band].max())
-#                       print(hftf_pha_detrnd[hf_freqs_in_band].min())
-#                       print(hftf_pha_detrnd[hf_freqs_in_band].max())
+                    if ctbto_inspec_lf != 'YES':
+                        print(red('LF is out of spec (amp: 0.95 to 1.05; pha -5 to +5)'))
+                    if ctbto_inspec_hf != 'YES':
+                        print(red('HF is out of spec (amp: 0.95 to 1.05; pha -5 to +5)'))
 
                 # compute new a0 (using pre-normalized response)
                 calper = 1.0
@@ -574,6 +566,7 @@ def gen_tf_and_fig(cal_info, data_samp_rate, input_data, meas_data, cal_type,
         tf_f (ndarray): Array of transfer function frequencies
         tf_amp (ndarray): Array of transsfer function amplitudes
         tf_pha (ndarray): Array of tranfer function phases
+        tf_pha_detrnd (ndarray): Array of tranfer function phases after linear detrend and unwrap
         tf_coh (ndarray): Array of timeseries coherence
         fig (pyplot.figure): Matplotlib containing figure with TF and Coherence plots
 
@@ -617,6 +610,9 @@ def gen_tf_and_fig(cal_info, data_samp_rate, input_data, meas_data, cal_type,
     # correct pha for trend
     tf_pha_detrnd -= ph_corr_vals
 
+    # unwrap phases
+    tf_pha_detrnd[less(tf_pha_detrnd, -180.)] = \
+        tf_pha_detrnd[less(tf_pha_detrnd, -180.)] + 360.0
 
     fig = cross_tf_plot(
         cal_info.sta,
