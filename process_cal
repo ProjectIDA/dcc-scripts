@@ -166,6 +166,7 @@ def main(cl_args):
 
         fit_paz = ci.fullpaz
         new_paz = ci.fullpaz
+
         cal_start_time = None
 
         if not ci.omit_lf:
@@ -229,8 +230,8 @@ def main(cl_args):
                                                   ci.sensor, ci.comp, fit_paz)
 
                 # compute new TF and plot fig
-                lftf_f, lftf_amp, lftf_pha, lftf_pha_detrnd, \
-                  lftf_coh, lf_fig_fit = gen_tf_and_fig(
+                lftf_f, fit_lftf_amp, fit_lftf_pha, fit_lftf_pha_detrnd, \
+                  fit_lftf_coh, lf_fig_fit = gen_tf_and_fig(
                      ci, samp_rate_lf, lfinput, lfmeas, CALTYPE_RBLF,
                      green_tol_limits, grey_tol_limits)
 
@@ -243,6 +244,9 @@ def main(cl_args):
 
                 if action == 'A':
                     new_paz = fit_paz
+                    lftf_amp = fit_lftf_amp
+                    lftf_pha = fit_lftf_pha
+                    lftf_pha_detrnd = fit_lftf_pha_detrnd
                     fname = '{}_{}_{}_tf_lf_fit_{}.png'.format(
                         ci.sensor.lower(), ci.sta.lower(), ci.loc, ci.comp)
                     fnpath = os.path.join(cur_dir, fname)
@@ -312,7 +316,7 @@ def main(cl_args):
                                                           ci.sensor, ci.comp, fit_paz)
 
                 # comute TF (and plot fig)
-                hftf_f, hftf_amp, hftf_pha, hftf_pha_detrnd, hftf_coh, hf_fig_fit = gen_tf_and_fig(
+                hftf_f, fit_hftf_amp, fit_hftf_pha, fit_hftf_pha_detrnd, fit_hftf_coh, hf_fig_fit = gen_tf_and_fig(
                     ci, samp_rate_hf, hfinput, hfmeas, CALTYPE_RBHF,
                     green_tol_limits, grey_tol_limits)
 
@@ -325,6 +329,9 @@ def main(cl_args):
 
                 if action == 'A':
                     new_paz = fit_paz
+                    hftf_amp = fit_hftf_amp
+                    hftf_pha = fit_hftf_pha
+                    hftf_pha_detrnd = fit_hftf_pha_detrnd
                     fname = '{}_{}_{}_tf_hf_fit_{}.png'.format(
                         ci.sensor.lower(), ci.sta.lower(), ci.loc, ci.comp)
                     fnpath = os.path.join(cur_dir, fname)
@@ -391,6 +398,15 @@ def main(cl_args):
                                               CALTYPE_RBLF_SAMPLERATE)
 
                 # noinspection PyUnboundLocalVariable
+                ctbto_inspec_lf = 'YES' if (lftf_amp[lf_freqs_in_band].min() >= 0.95) and \
+                                           (lftf_amp[lf_freqs_in_band].max() <= 1.05) and \
+                                           (lftf_pha_detrnd[lf_freqs_in_band].min() >= -5) and \
+                                           (lftf_pha_detrnd[lf_freqs_in_band].max() <= 5) else 'NO' 
+
+                ctbto_inspec_hf = 'YES' if (hftf_amp[hf_freqs_in_band].min() >= 0.95) and \
+                                        (hftf_amp[hf_freqs_in_band].max() <= 1.05) and \
+                                        (hftf_pha_detrnd[hf_freqs_in_band].min() >= -5) and \
+                                        (hftf_pha_detrnd[hf_freqs_in_band].max() <= 5) else 'NO'
                 ctbto_inspec = 'YES' if (lftf_amp[lf_freqs_in_band].min() >= 0.95) and \
                                         (lftf_amp[lf_freqs_in_band].max() <= 1.05) and \
                                         (lftf_pha_detrnd[lf_freqs_in_band].min() >= -5) and \
@@ -399,11 +415,24 @@ def main(cl_args):
                                         (hftf_amp[hf_freqs_in_band].max() <= 1.05) and \
                                         (hftf_pha_detrnd[hf_freqs_in_band].min() >= -5) and \
                                         (hftf_pha_detrnd[hf_freqs_in_band].max() <= 5) else 'NO'
-
+                ctbto_inspec == (ctbto_inspec_lf == 'YES') and (ctbto_inspec_hf == 'YES')
                 if ctbto_inspec == 'NO':
                     print('\n', ' ' * ndnt + bold(
                         red('HEADS UP: Does not meet CTBTO IN_SPEC Criteria!')
                     ), '\n')
+#                   if ctbto_inspec_lf != 'YES':
+#                       print(red('LF is out of spec'))
+#                       print(lftf_amp[lf_freqs_in_band].min())
+#                       print(lftf_amp[lf_freqs_in_band].max())
+#                       print(lftf_pha_detrnd[lf_freqs_in_band].min())
+#                       print(lftf_pha_detrnd[lf_freqs_in_band].max())
+#
+#                   if ctbto_inspec_hf != 'YES':
+#                       print(red('HF is out of spec'))
+#                       print(hftf_amp[hf_freqs_in_band].min())
+#                       print(hftf_amp[hf_freqs_in_band].max())
+#                       print(hftf_pha_detrnd[hf_freqs_in_band].min())
+#                       print(hftf_pha_detrnd[hf_freqs_in_band].max())
 
                 # compute new a0 (using pre-normalized response)
                 calper = 1.0
@@ -414,7 +443,6 @@ def main(cl_args):
                 resp_1hz = compute_response(1.0, new_paz)
                 a0 = 1 / abs(resp_1hz[0])
 
-# TODO: move s1/3/4 system sens cals into CalInfo getters where ci.mode can be checked
                 # system sens to compute calib
                 sens_gnom = ci.sensor_gnom()
                 sens_gcal = ci.sensor_gcalib()
@@ -496,7 +524,8 @@ def main(cl_args):
         else:
            analysis_path = None
 
-        if analysis_path and (input_yn('\n' + ' ' * ndnt +
+        if (ci.mode == 'interactive') and analysis_path and \
+           (input_yn('\n' + ' ' * ndnt +
            'Publish {} component results to  {}  (y/n) ? :'.format(
                 ci.comp, analysis_path)) == 'Y'):
            if not os.path.exists(analysis_path):
