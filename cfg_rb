@@ -17,6 +17,7 @@ from pathlib import Path
 import yaml
 
 from ida.tkui.entry_widgets import FloatEntry, BGERR, BGOK, BGGRAY
+from ida.tkui.dialogs import AboutDialog
 
 from ida.utils import load_yaml_file
 from ida.instruments import SEISMOMETER_MODELS, INSTRUMENT_NOMINAL_GAINS, \
@@ -288,6 +289,8 @@ class Configurator():
     def __init__(self):
         """ Inititalization the frame"""
         self.appname = 'RB Analysis Configuration Editor'
+        self.version = '1.0.0'
+        self.version_date = 'October, 2016'
 
         self.root = Tk()
         self.root.config(width=900, height=710, padx=5, pady=5, bg=BGGRAY)
@@ -326,6 +329,8 @@ class Configurator():
         self.refresh_ui()
 
         self.root.protocol('WM_DELETE_WINDOW', self.exit)
+        self.root.grab_set()
+        self.root.focus_set()
         self.root.mainloop()
 
     def exit(self, event=None):
@@ -523,13 +528,14 @@ class Configurator():
 
         self.menu_bar = Menu(self.root)
         file_menu = Menu(self.menu_bar)
+        file_menu.add_command(label="About", command=self.show_about_dlg)
+        file_menu.add_separator()
         file_menu.add_command(label='Open...', underline=0, command=self.open_config_file)
         file_menu.add_command(label='Save', underline=0, command=self.save_config)
         file_menu.add_command(label='Save As...', command=self.save_config_as)
         file_menu.add_separator()
         file_menu.add_command(label='Exit', command=self.exit)
         self.menu_bar.add_cascade(label="File", menu=file_menu)
-        self.menu_bar.add_command(label="About", command=self.show_about_dlg)
 
         self.root.config(menu=self.menu_bar)
         self.main_frm = Frame(self.root, width=WIDTH, height=430, bg=BGGRAY)
@@ -682,7 +688,27 @@ class Configurator():
         self.tk_wids['cur_paz_dir'].bind('<Any-KeyRelease>', self.keyrelease_handler)
 
     def show_about_dlg(self):
-        pass
+        about_hd = '{}\nVersion {}, {}'.format(Path(__file__).name.upper(),
+                                               self.version, self.version_date)
+        about_txt = 'Project IDA\n'
+        about_txt += 'Random Binary Calibration\n'
+        about_txt += 'Analysis Configuration Editor\n\n'
+
+        about_txt += 'For use with Project IDA deployed GSN sensors and \n'
+        about_txt += 'Kinametrics Q330HR digitizers.\n\n'
+
+        about_txt += 'Developed by:\n\n'
+
+        about_txt += 'Project IDA, Data Collection Center\n'
+        about_txt += 'Institute of Geophysics and Planetary Physics\n'
+        about_txt += 'Scripps Institution of Oceanography\n'
+        about_txt += 'University of California, San Diego\n\n'
+
+        about_txt += 'Copyright © 2016\n'
+        about_txt += 'Regents of the University of California\n'
+        # showinfo('About', about_txt)
+        dlg = AboutDialog(self.root, about_head=about_hd, about_text=about_txt)
+        dlg.wait_window()
 
     def ctbto_clicked(self):
         self.set_modified(True)
@@ -763,17 +789,18 @@ class Configurator():
          if fname:
             name = Path(fname).name
             parts = name.split('-')
-            sta = parts[1][:-2]
-            loc = parts[1][-2:]
-            if parts[3] == 'B':
-                port = 'B'
-                caltype = parts[4]
-                caldate = '{}-{}-{}'.format(parts[5], parts[6][:2], parts[6][2:])
-            else:
-                port = 'A'
-                caltype = parts[3]
-                caldate = '{}-{}-{}'.format(parts[4], parts[5][:2], parts[5][2:])
-            ok = True
+            if len(parts) in [7, 8]:
+                sta = parts[1][:-2]
+                loc = parts[1][-2:]
+                if parts[3] == 'B':
+                    port = 'B'
+                    caltype = parts[4]
+                    caldate = '{}-{}-{}'.format(parts[5], parts[6][:2], parts[6][2:])
+                else:
+                    port = 'A'
+                    caltype = parts[3]
+                    caldate = '{}-{}-{}'.format(parts[4], parts[5][:2], parts[5][2:])
+                ok = True
 
          return sta, loc, port, caltype, caldate, ok
 
