@@ -743,44 +743,23 @@ class Configurator():
                showerror('ERROR: Selecting MS File',
                          'This does not appear to be a ' + datatype.upper() + ' file.')
 
-    def is_valid_qcal_filename(self, fname):
-
-        ok = False
-        if fname:
-           name = Path(fname).stem
-           parts = name.split('-')
-           cal_ok = parts[0].upper() == 'CAL'
-           digi_ok = (len(parts[1]) in [5,6]) and parts[1][-2:].isdigit()
-           # skipping sensor segment, don't care
-           if parts[3] == 'B':
-              type_ok = parts[4].lower() in ['rblf', 'rbhf']
-              year_ok = (len(parts[5]) == 4) and parts[5].isdigit()
-              mmdd_ok = (len(parts[6]) == 4) and parts[6].isdigit()
-           else:
-              type_ok = parts[3].lower() in ['rblf', 'rbhf']
-              year_ok = (len(parts[4]) == 4) and parts[4].isdigit()
-              mmdd_ok = (len(parts[5]) == 4) and parts[5].isdigit()
-           ok = cal_ok and digi_ok and type_ok and year_ok and mmdd_ok
-        return ok
-
     def process_qcal_filename(self, datatype, fname):
 
-       if fname and self.is_valid_qcal_filename(fname):
-          name = Path(fname).stem
-          sta, loc, port, caltype, caldate, ok = self.parse_qcal_filename(name)
-          if ok:
-             self.tk_vars['station'].set(sta.upper())
-             self.tk_vars['loc'].set(loc)
-             self.tk_vars['sensor_port'].set(port.upper())
-             if datatype == 'lf':
-                self.tk_vars['lf_cal_date'].set(caldate)
-                self.tk_vars['lf_qcal_file'].set(os.path.join(dirname(fname),
-                                                             name + '.log'))
-             else:
-                self.tk_vars['hf_cal_date'].set(caldate)
-                self.tk_vars['hf_qcal_file'].set(os.path.join(dirname(fname),
-                                                             name + '.log'))
-             self.update_sensitivities()
+        name = Path(fname).stem
+        sta, loc, port, caltype, caldate, ok = self.parse_qcal_filename(name)
+        if ok:
+          self.tk_vars['station'].set(sta.upper())
+          self.tk_vars['loc'].set(loc)
+          self.tk_vars['sensor_port'].set(port.upper())
+          if datatype == 'lf':
+             self.tk_vars['lf_cal_date'].set(caldate)
+             self.tk_vars['lf_qcal_file'].set(os.path.join(dirname(fname),
+                                                          name + '.log'))
+          else:
+             self.tk_vars['hf_cal_date'].set(caldate)
+             self.tk_vars['hf_qcal_file'].set(os.path.join(dirname(fname),
+                                                          name + '.log'))
+          self.update_sensitivities()
 
     def parse_qcal_filename(self, fname):
 
