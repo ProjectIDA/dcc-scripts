@@ -622,7 +622,9 @@ class Configurator():
         sensor_frm.columnconfigure(3, weight=1, uniform='1')
         Label(sensor_frm, text='Sensor Model:',
               bg=BGGRAY, font=LBLBOLD).grid(row=0, column=0, sticky='e')
-        self.tk_wids['sensor_code'] = OptionMenu(sensor_frm, self.tk_vars['sensor_code'], command=self.on_option_change,
+        self.tk_wids['sensor_code'] = OptionMenu(sensor_frm, self.tk_vars['sensor_code'],
+                                                 command=(lambda val: self.on_option_change(val,
+                                                       'sensor_code', self.tk_vars['sensor_code'])),
                                                  *self.ctrl.sensor_models())
         self.tk_wids['sensor_code'].config(bg=BGGRAY)
         self.tk_wids['sensor_code'].grid(row=0, column=1, sticky='w')
@@ -630,7 +632,8 @@ class Configurator():
         Label(sensor_frm, text='Operating Sample Rate:',
               bg=BGGRAY, font=LBLBOLD).grid(row=0, column=2, sticky='e')
         self.tk_wids['sampling_rate'] = OptionMenu(sensor_frm, self.tk_vars['sampling_rate'],
-                                                   command = self.on_option_change,
+                                                   command=(lambda val: self.on_option_change(val,
+                                                       'sampling_rate', self.tk_vars['sampling_rate'])),
                                                    *self.ctrl.sampling_rates())
         self.tk_wids['sampling_rate'].config(bg=BGGRAY)
         self.tk_wids['sampling_rate'].grid(row=0, column=3, sticky='w')
@@ -715,7 +718,12 @@ class Configurator():
         self.set_modified(True)
         self.refresh_ui()
 
-    def on_option_change(self, idk):
+    def on_option_change(self, val, varkey, var):
+        print(str(val))
+        if varkey == 'sensor_code':
+            sensor = var.get()
+            self.tk_vars['sensor_nom_sens'].set(INSTRUMENT_NOMINAL_GAINS[sensor])
+            self.tk_vars['q330_calib_factor'].set(Q330_GCALIB_FOR_SEIS[sensor])
         self.set_modified(True)
         self.refresh_ui()
 
