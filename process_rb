@@ -408,15 +408,15 @@ def main(cl_args):
                                         (hftf_amp[hf_freqs_in_band].max() <= 1.05) and \
                                         (hftf_pha_detrnd[hf_freqs_in_band].min() >= -5) and \
                                         (hftf_pha_detrnd[hf_freqs_in_band].max() <= 5) else 'NO'
-                ctbto_inspec = 'YES' if (lftf_amp[lf_freqs_in_band].min() >= 0.95) and \
-                                        (lftf_amp[lf_freqs_in_band].max() <= 1.05) and \
-                                        (lftf_pha_detrnd[lf_freqs_in_band].min() >= -5) and \
-                                        (lftf_pha_detrnd[lf_freqs_in_band].max() <= 5) and \
-                                        (hftf_amp[hf_freqs_in_band].min() >= 0.95) and \
-                                        (hftf_amp[hf_freqs_in_band].max() <= 1.05) and \
-                                        (hftf_pha_detrnd[hf_freqs_in_band].min() >= -5) and \
-                                        (hftf_pha_detrnd[hf_freqs_in_band].max() <= 5) else 'NO'
-                ctbto_inspec == (ctbto_inspec_lf == 'YES') and (ctbto_inspec_hf == 'YES')
+                # ctbto_inspec = 'YES' if (lftf_amp[lf_freqs_in_band].min() >= 0.95) and \
+                #                         (lftf_amp[lf_freqs_in_band].max() <= 1.05) and \
+                #                         (lftf_pha_detrnd[lf_freqs_in_band].min() >= -5) and \
+                #                         (lftf_pha_detrnd[lf_freqs_in_band].max() <= 5) and \
+                #                         (hftf_amp[hf_freqs_in_band].min() >= 0.95) and \
+                #                         (hftf_amp[hf_freqs_in_band].max() <= 1.05) and \
+                #                         (hftf_pha_detrnd[hf_freqs_in_band].min() >= -5) and \
+                #                         (hftf_pha_detrnd[hf_freqs_in_band].max() <= 5) else 'NO'
+                ctbto_inspec = (ctbto_inspec_lf == 'YES') and (ctbto_inspec_hf == 'YES')
                 if ctbto_inspec == 'NO':
                     print('\n', ' ' * ndnt + bold(
                         red('HEADS UP: Does not meet CTBTO IN_SPEC Criteria!')
@@ -441,18 +441,14 @@ def main(cl_args):
                 q330_gnom = ci.q330_gnom()
                 q330_gcal = ci.q330_gcalib()
 
-#               s1_sens = abs(new_resp[bin_1hz_ndx]) * \
-#                      ci.chn_stages.iloc[0].gnom * \
-#                      ci.chn_stages.iloc[0].gcalib
-#               s3_sens = ci.chn_stages.iloc[2].gnom * \
-#                       ci.chn_stages.iloc[2].gcalib
+                # copute sensitivity for 1st, 3rd, 4th stages
                 s1_sens = abs(new_resp[bin_1hz_ndx]) * sens_gnom * sens_gcal
                 s3_sens = q330_gnom * q330_gcal
 
                 s4_sens = Q330_FIR_GAIN_1HZ[int(ci.opsr)]
                 sys_sens = s1_sens * s3_sens * s4_sens
 
-                # convert cts/(m/s) to cts/m to nm/ct
+                # convert velocity (cts/(m/s)) to disp (cts/m) then to nm/ct
                 calib = 1 / (sys_sens * (2 * pi) / 1e9)
 
                 ims2_header = ims2_calibrate_result_msg_header(cal_start_time)
