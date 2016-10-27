@@ -531,6 +531,8 @@ def main(cl_args):
            for fname in output_filename_list:
               print(bold(' ' * (ndnt * 2) + fname))
 
+    input(bold('\nHit ENTER/RETURN to exit...'))
+
 
 def clean_analysis_files(filelist):
     """Deletes specific list of files form current directory.
