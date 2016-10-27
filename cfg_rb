@@ -783,7 +783,7 @@ class Configurator():
           self.tk_vars['station'].set(sta.upper())
           self.tk_vars['loc'].set(loc)
           self.tk_vars['sensor_port'].set(port.upper())
-          if datatype == 'lf':
+          if datatype.lower() == 'lf':
              self.tk_vars['lf_cal_date'].set(caldate)
              self.tk_vars['lf_qcal_file'].set(os.path.join(dirname(fname),
                                                           name + '.log'))
