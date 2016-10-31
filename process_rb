@@ -131,7 +131,7 @@ def main(cl_args):
                     resp_nom_dir=nom_paz_dir, db_dir=datascopedb_dir)
 
     else:
-       ci = CalInfo(comp=cl_args.comp.lower(), chancode=cl_args.chancode, 
+       ci = CalInfo(comp=cl_args.comp.lower(), chancode=cl_args.chancode,
                     config_file=cl_args.config)
 
     if not ci.ok:
@@ -402,7 +402,7 @@ def main(cl_args):
                 ctbto_inspec_lf = 'YES' if (lftf_amp[lf_freqs_in_band].min() >= 0.95) and \
                                            (lftf_amp[lf_freqs_in_band].max() <= 1.05) and \
                                            (lftf_pha_detrnd[lf_freqs_in_band].min() >= -5) and \
-                                           (lftf_pha_detrnd[lf_freqs_in_band].max() <= 5) else 'NO' 
+                                           (lftf_pha_detrnd[lf_freqs_in_band].max() <= 5) else 'NO'
 
                 ctbto_inspec_hf = 'YES' if (hftf_amp[hf_freqs_in_band].min() >= 0.95) and \
                                         (hftf_amp[hf_freqs_in_band].max() <= 1.05) and \
@@ -416,7 +416,10 @@ def main(cl_args):
                 #                         (hftf_amp[hf_freqs_in_band].max() <= 1.05) and \
                 #                         (hftf_pha_detrnd[hf_freqs_in_band].min() >= -5) and \
                 #                         (hftf_pha_detrnd[hf_freqs_in_band].max() <= 5) else 'NO'
-                ctbto_inspec = (ctbto_inspec_lf == 'YES') and (ctbto_inspec_hf == 'YES')
+                if (ctbto_inspec_lf == 'YES') and (ctbto_inspec_hf == 'YES'):
+                    ctbto_inspec = 'YES'
+                else:
+                    ctbto_inspec = 'NO'
                 if ctbto_inspec == 'NO':
                     print('\n', ' ' * ndnt + bold(
                         red('HEADS UP: Does not meet CTBTO IN_SPEC Criteria!')
