@@ -20,7 +20,9 @@ IMS2_*.txt
 *.txt
 *.ipynb
 
+# IDEs
 .idea/
+.vscode/
 
 # Distribution / packaging
 .Python
