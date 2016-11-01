@@ -16,6 +16,10 @@ testtree/*
 *.seed
 *.yaml
 IMS2_*.txt
+*.png
+*.txt
+
+.idea/*
 
 # Distribution / packaging
 .Python
