@@ -18,8 +18,9 @@ testtree/*
 IMS2_*.txt
 *.png
 *.txt
+*.ipynb
 
-.idea/*
+.idea/
 
 # Distribution / packaging
 .Python
