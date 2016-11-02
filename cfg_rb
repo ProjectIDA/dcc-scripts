@@ -473,14 +473,15 @@ class Configurator():
 
         if fname:
             self.load_config(fname)
+            self.set_new_file(fname)
             self.refresh_ui()
 
     def save_config_as(self):
 
         config_ok, errs = self.is_config_valid()
         if not config_ok:
-            #for err in errs:
-            #    print(err)
+            for err in errs:
+                print(err)
             showerror('Configuration Errors',
                       'You must fix the following errors before saving this configuration. \n\n' + \
                       reduce(lambda x,y: x + '\n\n- ' + y, errs[1:], '- '+errs[0])
