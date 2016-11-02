@@ -804,6 +804,8 @@ class Configurator():
                 loc = parts[1][-2:]
                 if parts[3] == 'B':
                     port = 'B'
+                    # ASSUMES PORT 'B' SENSORS OR CONFIGURED WITH '10' CHANNELS
+                    loc = '10'
                     caltype = parts[4]
                     caldate = '{}-{}-{}'.format(parts[5], parts[6][:2], parts[6][2:])
                 else:
