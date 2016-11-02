@@ -892,9 +892,9 @@ class Configurator():
                 title='Save APSurvey Analysis Configuration')
 
             if fname:
-                print('saving to:', fname)
                 self.ctrl.save_config_to_file(fname)
                 self.set_new_file(fname)
+                self.refresh_ui()
 
     def save_config(self):
 
