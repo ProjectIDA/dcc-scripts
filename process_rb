@@ -53,10 +53,12 @@ cfgparser.add_argument('comp', help='Component to analyze (z, 1, 2)',
                        choices=['z', '1', '2'])
 cfgparser.add_argument('chancode', help='Channel Code')
 cfgparser.add_argument('config', help='Configuration File (YAML)')
+cfgparser.set_defaults(mode='nodb')
 
 interparser = subparsers.add_parser('idadb', help='Use internal IDA Database.')
 interparser.add_argument('sta', help="IDA Station code", default='')
 interparser.add_argument('loc', help="IDA Location code", default='')
+interparser.set_defaults(mode='idadb')
 
 args = parser.parse_args()
 
@@ -75,6 +77,7 @@ from ida.calibration.process import prepare_cal_data, analyze_cal_component, \
 
 def main(cl_args):
     """Main function of script"""
+    print(str(cl_args))
 
     cal_raw_dir = os.environ.get('IDA_CAL_RAW_DIR')
     nom_paz_dir = os.environ.get('IDA_RESPONSES_NOM_DIR')
@@ -83,7 +86,7 @@ def main(cl_args):
 
     # check env for required vars
     env_ok = True
-    if not cl_args.config:
+    if cl_args.mode == 'idadb':
        # if not using config file, using IDA file struct and datascopedb and these must be set.
        if (not cal_raw_dir):
            print(red(bold('The root directory of raw calibration data must be specified with --cal-raw-dir ' + \
@@ -127,8 +130,8 @@ def main(cl_args):
            sys.exit(1)
 
        ci = CalInfo(sta=cl_args.sta.lower(), loc=cl_args.loc,
-                    cal_raw_dir=cal_raw_dir, resp_cur_dir=cur_paz_dir,
-                    resp_nom_dir=nom_paz_dir, db_dir=datascopedb_dir)
+                    cal_raw_dir=cal_raw_dir, cur_paz_dir=cur_paz_dir,
+                    nom_paz_dir=nom_paz_dir, db_dir=datascopedb_dir)
 
     else:
        ci = CalInfo(comp=cl_args.comp.lower(), chancode=cl_args.chancode,
@@ -179,7 +182,7 @@ def main(cl_args):
             samp_rate_lf, lf_start_time, lfinput, lfmeas, _, _, _, _, \
             freqs_lf, _, snr_lf, _ = prepare_cal_data(ci.lfpath, ci.lffile,
                                                       None, None, ci.sensor,
-                                                      ci.comp, ci.fullpaz)
+                                                      ci.comp, ci.fullpaz, ci.opsr)
             cal_start_time = lf_start_time
 
             # compute TF (and plot fig)
@@ -227,7 +230,7 @@ def main(cl_args):
                 samp_rate_lf, lf_start_time, lfinput, lfmeas, _, _, _, _, \
                 freqs_lf, freqs_hf, \
                 snr_lf, snr_hf = prepare_cal_data(ci.lfpath, ci.lffile, None, None,
-                                                  ci.sensor, ci.comp, fit_paz)
+                                                  ci.sensor, ci.comp, fit_paz, ci.opsr)
 
                 # compute new TF and plot fig
                 lftf_f, fit_lftf_amp, fit_lftf_pha, fit_lftf_pha_detrnd, \
@@ -268,7 +271,7 @@ def main(cl_args):
                     ci.comp)))
             _, _, _, _, samp_rate_hf, hf_start_time, hfinput, hfmeas, \
             _, freqs_hf, _, snr_hf = prepare_cal_data(None, None, ci.hfpath, ci.hffile,
-                                                      ci.sensor, ci.comp, new_paz)
+                                                      ci.sensor, ci.comp, new_paz, ci.opsr)
             cal_start_time = min(
                 cal_start_time,
                 hf_start_time) if cal_start_time else hf_start_time
@@ -313,7 +316,7 @@ def main(cl_args):
                     format(ci.comp)))
                 _, _, _, _, samp_rate_hf, hf_start_time, hfinput, hfmeas, \
                 _, freqs_hf, _, snr_hf = prepare_cal_data(None, None, ci.hfpath, ci.hffile,
-                                                          ci.sensor, ci.comp, fit_paz)
+                                                          ci.sensor, ci.comp, fit_paz, ci.opsr)
 
                 # comute TF (and plot fig)
                 hftf_f, fit_hftf_amp, fit_hftf_pha, fit_hftf_pha_detrnd, \
