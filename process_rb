@@ -77,7 +77,6 @@ from ida.calibration.process import prepare_cal_data, analyze_cal_component, \
 
 def main(cl_args):
     """Main function of script"""
-    print(str(cl_args))
 
     cal_raw_dir = os.environ.get('IDA_CAL_RAW_DIR')
     nom_paz_dir = os.environ.get('IDA_RESPONSES_NOM_DIR')
