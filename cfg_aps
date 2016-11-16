@@ -3,6 +3,7 @@
 import re
 from datetime import datetime
 import os
+import argparse
 from functools import reduce
 from os.path import abspath, dirname, join, exists, isfile, isdir
 from pathlib import Path
@@ -747,12 +748,13 @@ class ConfigController():
 
 class Configurator():
     """ A Gui application with three buttons"""
+
+    version = '1.0.0'
+    version_date = 'October, 2016'
+    appname = 'APSurvey Analysis Configuration Editor'
+
     def __init__(self):
         """ Inititalization the frame"""
-        self.version = '1.0.0'
-        self.version_date = 'October, 2016'
-
-        self.appname = 'APSurvey Analysis Configuration Editor'
         self.filename = '<untitled.yaml>'
         self.directory = '.'
 
@@ -1475,5 +1477,11 @@ class Configurator():
                                     "You will lose unsaved changes.\n\nDo you wish to Quit?"):
             self.root.destroy()
 
+
+version = '{} ({})'.format(Configurator.version, Configurator.version_date)
+parser = argparse.ArgumentParser(description=Configurator.appname)
+parser.add_argument('-v', '--version', action='version', version=version)
+
+args = parser.parse_args()
 
 app = Configurator()
