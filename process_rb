@@ -62,6 +62,7 @@ interparser.set_defaults(mode='idadb')
 
 args = parser.parse_args()
 
+from ida import IDA_PKG_VERSION_HASH_STR, IDA_PKG_VERSION_DATETIME
 from ida.tui import input_yn, select, SelectResult
 from ida.instruments import CALTYPE_RBLF, CALTYPE_RBHF, CALTYPE_RBLF_SAMPLERATE, \
        Q330_FIR_GAIN_1HZ, Q330_FIR_FILTER_DELAY, Q330_FIR_COEFFS
@@ -509,6 +510,8 @@ def main(cl_args):
             ofl.write('Files saved: \n')
             for fname in output_filename_list:
                ofl.write('   {}\n'.format(fname))
+            ofl.write('\nIDA Module Version: {}, ({})\n'.format(IDA_PKG_VERSION_HASH_STR,
+                                                                IDA_PKG_VERSION_DATETIME))
 
         # if IDA_CAL_ANALYSIS_DIR env var is set, prompt to 'publish' result files
         if os.environ.get('IDA_CAL_ANALYSIS_DIR'):
