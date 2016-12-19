@@ -30,6 +30,8 @@ import os.path
 
 from fabulous.color import red, bold, blue
 
+from ida import IDA_PKG_VERSION_HASH_STR, IDA_PKG_VERSION_DATETIME
+
 # set up logging
 class ConsoleLogFilter(logging.Filter):
     """Custom console log filter to add colors to msgs"""
@@ -71,7 +73,7 @@ def main():
     #       and check for respfile before constructing from trace metadata
     # TODO: Dpcument ENV VARS REQUIRED here
 
-    version = '1.0.0'
+    version = '1.0.1'
     parser = argparse.ArgumentParser(description="Process APSurvey calibration data.")
     parser.add_argument('config', action="store", help="Configuration file (YAML)")
     parser.add_argument('--only', action="store", default='both',
@@ -117,6 +119,10 @@ def main():
                     print(blue(bold('   Station sensor data files: ')))
                     for fname in config.waveform_files:
                         print(blue('                     ' + Path(fname).name))
+                    logger.info(' IDA Module Version: {} ({})'.format(
+                       IDA_PKG_VERSION_HASH_STR,
+                       IDA_PKG_VERSION_DATETIME)
+                    )
                     logger.info('    Summary results: ' + os.path.abspath(sumfn))
                     logger.info('   Detailed results: ' + os.path.abspath(detfn))
                     logger.info('           Log file: ' + logfile)
