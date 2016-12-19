@@ -381,7 +381,7 @@ class ConfigController():
         self.tk_vars['abs_starttime_iso'].set('')
         self.tk_vars['abs_endtime_iso'].set('')
 
-        self.tk_vars['arc_raw_dir'].set(os.environ.get('IDA_CAL_RAW_DIR', ''))
+        self.tk_vars['arc_raw_dir'].set(os.environ.get('IDA_ARCHIVE_RAW_DIR', ''))
         self.tk_vars['resp_file_dir'].set(os.environ.get('SEEDRESP', ''))
         self.tk_vars['ref_network'].set('')
         self.tk_vars['ref_station'].set('')
