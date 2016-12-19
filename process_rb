@@ -37,7 +37,7 @@ from numpy import pi, cos, sin, multiply, divide, median, polyfit, polyval
 from numpy import linspace, less, greater_equal, less_equal, logical_and
 
 
-version = '1.5.0'
+version = '1.5.1'
 
 epi = """This application will analyze the random binary
 calibration data obtained from the Q330 digitizer using IDA's qcal application."""
