@@ -29,41 +29,7 @@ import datetime
 
 from fabulous.color import red, green, bold
 
-
-version = '1.0.0'
-parser = argparse.ArgumentParser(description="Analyze Compact Trillium shake table data.")
-parser.add_argument('config', action="store", help="Configuration file (YAML)")
-parser.add_argument('--cal-raw-dir', action='store', default=os.environ.get('IDA_CAL_RAW_DIR'),
-                    help='Root directory of the raw calibration data. Value of env var ' + \
-                    '$IDA_CAL_RAW_DIR is the default.')
-parser.add_argument('--resp-file-dir', action='store', default=os.environ.get('SEEDRESP'),
-                    help='Directory containing SEED RESP files. Value of env var $SEEDRESP is the default.')
-parser.add_argument('--shaketable-subdir', action='store', default='shaketable',
-                    help='Subdirectory of CAL_RAW_DIR containing shake table data ' + \
-                    'directories. "shaketable" is the default.')
-parser.add_argument('-v', '--version', action='version', version=version)
-parser.add_argument('-d', '--debug', action='store_true', help='Enabled debug mode for verbose output.')
-
-args = parser.parse_args()
-debug = args.debug
-config_file = args.config
-cal_raw_dir = args.cal_raw_dir
-resp_file_dir = args.resp_file_dir
-shaketable_subdir = args.shaketable_subdir
-
-if not '.yaml' in config_file:
-   config_file += '.yaml'
-
-if (not cal_raw_dir):
-    print(red(bold('The root directory of raw calibration data must be specified with --cal-raw-dir ' + \
-                   'or by setting the IDA_CAL_RAW_DIR environment variable. ' + \
-                   'Within this root directory a "shaketable" subdirectory is assumed.')))
-    sys.exit(1)
-
-if (not resp_file_dir):
-    print(red(bold('The location of the sensor RESP files must be specific with --resp-file-dir ' + \
-                   'or by setting the SEEDRESP environment variable.')))
-    sys.exit(1)
+from ida import IDA_PKG_VERSION_HASH_STR, IDA_PKG_VERSION_DATETIME
 
 # set up logging
 class ConsoleLogFilter(logging.Filter):
@@ -78,63 +44,109 @@ class ConsoleLogFilter(logging.Filter):
       return True
 
 
-logfile = os.path.abspath(__file__ + '.log')
-# set up logging to file - see previous section for more details
-logging.basicConfig(level=logging.DEBUG, 
-                    format='%(asctime)s %(name)s %(levelname)s %(message)s',
-                    datefmt='%m-%d %H:%M:%S',
-                    filename=logfile,
-                    filemode='w')
+def setup_logging(log_file=(__file__ + '.log'), debug=False):
+    # set up logging
 
-chndlr = logging.StreamHandler()
-if debug:
-    chndlr.setLevel(logging.DEBUG)
-else:
-    chndlr.setLevel(logging.WARN)
-confmtr = logging.Formatter('%(levelname)s: %(message)s')
-chndlr.setFormatter(confmtr)
-chndlr.addFilter(ConsoleLogFilter())
+    logging.basicConfig(level=logging.DEBUG,
+                        format='%(asctime)s %(name)s %(levelname)s %(message)s',
+                        datefmt='%m-%d %H:%M:%S',
+                        filename=log_file,
+                        filemode='w')
 
-logging.getLogger('').addHandler(chndlr)
-logger = logging.getLogger('SHAKETABLE')
+    chndlr = logging.StreamHandler()
+    if debug:
+        chndlr.setLevel(logging.DEBUG)
+    else:
+        chndlr.setLevel(logging.WARN)
+    confmtr = logging.Formatter('%(levelname)s: %(message)s')
+    chndlr.setFormatter(confmtr)
+    chndlr.addFilter(ConsoleLogFilter())
 
-#   logger.setLevel(logging.DEBUG)  # allow control via handler(s)
-#   fhndlr = logging.FileHandler(logfile)
-#   fhndlr.setLevel(logging.DEBUG)
-#   filefmtr = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s: %(message)s')
-#   fhndlr.setFormatter(filefmtr)
-#   logger.addHandler(fhndlr)
-#   logger.addHandler(chndlr)
+    logging.getLogger('').addHandler(chndlr)
 
-logger.info('='*72)
-logger.info('Starting Shaketable analysis: ' + \
-            datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+    #   logger.setLevel(logging.DEBUG)  # allow control via handler(s)
+    #   fhndlr = logging.FileHandler(logfile)
+    #   fhndlr.setLevel(logging.DEBUG)
+    #   filefmtr = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s: %(message)s')
+    #   fhndlr.setFormatter(filefmtr)
+    #   logger.addHandler(fhndlr)
+    #   logger.addHandler(chndlr)
 
-from ida.calibration.shaketable import ShakeConfig
 
-config = ShakeConfig(config_file, cal_raw_dir, resp_file_dir,
-                     shaketable_subdir=shaketable_subdir, debug=debug, logger=logger)
+def main():
 
-if config.ok:
-     if not config.read_msfile():
-        logger.critical('Error reading miniseed file: ' + config.ms_filename)
+    version = '1.0.0'
+    parser = argparse.ArgumentParser(description="Analyze Compact Trillium shake table data.")
+    parser.add_argument('config', action="store", help="Configuration file (YAML)")
+    parser.add_argument('--cal-raw-dir', action='store', default=os.environ.get('IDA_CAL_RAW_DIR'),
+                        help='Root directory of the raw calibration data. Value of env var ' + \
+                        '$IDA_CAL_RAW_DIR is the default.')
+    parser.add_argument('--resp-file-dir', action='store', default=os.environ.get('SEEDRESP'),
+                        help='Directory containing SEED RESP files. Value of env var $SEEDRESP is the default.')
+    parser.add_argument('--shaketable-subdir', action='store', default='shaketable',
+                        help='Subdirectory of CAL_RAW_DIR containing shake table data ' + \
+                        'directories. "shaketable" is the default.')
+    parser.add_argument('-v', '--version', action='version', version=version)
+    parser.add_argument('-d', '--debug', action='store_true', help='Enabled debug mode for verbose output.')
+
+    args = parser.parse_args()
+    debug = args.debug
+    config_file = args.config
+    cal_raw_dir = args.cal_raw_dir
+    resp_file_dir = args.resp_file_dir
+    shaketable_subdir = args.shaketable_subdir
+
+    if not '.yaml' in config_file:
+       config_file += '.yaml'
+
+    if (not cal_raw_dir):
+        print(red(bold('The root directory of raw calibration data must be specified with --cal-raw-dir ' + \
+                       'or by setting the IDA_CAL_RAW_DIR environment variable. ' + \
+                       'Within this root directory a "shaketable" subdirectory is assumed.')))
         sys.exit(1)
 
-     if not config.prepare_traces():
-        logger.critical('Could not prepare traces. Quitting.')
+    if (not resp_file_dir):
+        print(red(bold('The location of the sensor RESP files must be specific with --resp-file-dir ' + \
+                       'or by setting the SEEDRESP environment variable.')))
         sys.exit(1)
 
-     plot_fns, ms_fns, resfn = config.analyze()
 
-     for fname in plot_fns:
-         print(fname)
-     print(ms_fns)
-     print(resfn)
-     done = input('Hit enter to exit...')
+    logfile = __file__ + '.log'
+    setup_logging(log_file=logfile, debug=debug)
+    logger = logging.getLogger('SHAKETABLE')
 
-else:
-   logger.critical('Quitting due to problems with configuration or environment.')
+    logger.info('='*72)
+    logger.info('Starting Shaketable analysis: ' + \
+                datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+    logger.info('ida module version: {} ({})'.format(IDA_PKG_VERSION_HASH_STR, IDA_PKG_VERSION_DATETIME))
 
-logger.info('Exiting: ' + datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
-logger.info('='*72)
+    from ida.calibration.shaketable import ShakeConfig
 
+    config = ShakeConfig(config_file, cal_raw_dir, resp_file_dir,
+                         shaketable_subdir=shaketable_subdir, debug=debug, logger=logger)
+
+    if config.ok:
+         if not config.read_msfile():
+            logger.critical('Error reading miniseed file: ' + config.ms_filename)
+            sys.exit(1)
+
+         if not config.prepare_traces():
+            logger.critical('Could not prepare traces. Quitting.')
+            sys.exit(1)
+
+         plot_fns, ms_fns, resfn = config.analyze()
+
+         for fname in plot_fns:
+             print(fname)
+         print(ms_fns)
+         print(resfn)
+         done = input('Hit enter to exit...')
+
+    else:
+       logger.critical('Quitting due to problems with configuration or environment.')
+
+    logger.info('Exiting: ' + datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+    logger.info('='*72)
+
+if __name__ == '__main__':
+    main()
