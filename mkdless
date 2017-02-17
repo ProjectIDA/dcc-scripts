@@ -1,12 +1,14 @@
 #!/bin/csh -f
+#
 # Added to GIT Repo 2017-02-17
+#
 # mkdless,v 1.9 2015/11/23 20:25:03 dauerbach Exp $
 # Wrapper script to generate dataless SEED from IDA database,
 # while preserving everything for posterity
 
-set release  = 1.3.0                  # version ident for this script
+set release  = 1.10.0                  # version ident for this script
 set date     = `date +%Y:%j-%H:%M:%S` # For time stamping log messages
-set dbdir    = /ida/dcc/db            # Directory with the Datascope db
+set dbdir    = $IDA_DATASCOPEDB_DIR   # Directory with the Datascope db
 set dbtag    = IDA                    # The db we will use
 set db       = ${dbdir}/${dbtag}      # The db name as expected by the program
 set base     = `pwd`                  # Working in current directory
@@ -19,6 +21,7 @@ set respdir  = ${root}/RESP           # subdir for channel RESP files
 set chatty = 1
 set fail    = 0
 set seed_list = ()
+set nonida = 0
 
 
 while ($#argv)
@@ -36,14 +39,17 @@ while ($#argv)
 	endif
     else if ("$argv[1]" == "-a") then
         # create new dataless seeds for ALL stations
-	set seed_list = `awk '{print $1}' $dbdir/IDA.chan | sort | uniq`
+       set seed_list = `awk '{print $1}' $dbdir/IDA.chan | sort | uniq`
+    else if ("$argv[1]" == "-n") then
+        # if priocessing Non-DMC datascope database
+        set dbdir    = $IDA_NON_DMC_DATASCOPEDB_DIR   # Directory with the Datascope db
+        set db       = ${dbdir}/${dbtag}
     else
         echo "ERROR: unrecognized argument '$argv[1]'"
         set fail = 1
     endif
     shift
 end
-
 
 # append NETWORK to list of stations (if supplied), 
 # so we can just loop over podir/run_pod for each
@@ -54,11 +60,15 @@ set seed_list = ( $seed_list NETWORK )
 if ($fail) then
     echo "mkdless release: $release"
     echo ""
-    echo "Usage: mkdless [ -q ] [ -a | -s STA1[,STA2] ]"
-    echo "       -a : produce dataless for all STATIONS in IDA.chan table"
+    echo "Usage: mkdless [ -q ] [ -a | -s STA1[,STA2] ] [ -n ]"
+    echo "       -a : produce individual dataless for all STATIONS in $IDA_DATASCOPEDB_DIR/IDA.chan table"
     echo "       -s STA1[,STA2] : produce dataless for each STATION specified bvy code"
-    echo "       Network dataless always produced."
-    echo "Script will generate a local subdirectory containing dataless SEED plus input files"
+    echo "       -n : produce dataless based on non-DMC datascope DB at: $IDA_NON_DMC_DATASCOPEDB_DIR"
+    echo ""
+    echo "       Full II network dataless always produced."
+    echo ""
+    echo "       Script will generate a local subdirectory containing dataless SEED plus input files"
+    echo ""
     exit 1
 endif
 
