@@ -155,8 +155,7 @@ def main(cl_args):
               bold(blue(cur_dir)))
 
         # copy in starting reponse file
-        aname = Path(ci.respfn).stem + '_start_{}'.format(ci.comp) + Path(
-            ci.respfn).suffix
+        aname = Path(ci.respfn).stem + '_start_{}'.format(ci.comp) + Path(ci.respfn).suffix
         if 'ipaz' not in aname:
             aname = aname + '.ipaz'
         shutil.copy2(ci.respfn, os.path.join(cur_dir, aname))
@@ -185,59 +184,68 @@ def main(cl_args):
                                                       ci.comp, ci.fullpaz, ci.opsr)
             cal_start_time = lf_start_time
 
-            # compute TF (and plot fig)
+            # compute LF TF (and plot fig)
             lftf_f, lftf_amp, lftf_pha, lftf_pha_detrnd, \
             _, lf_fig_start = gen_tf_and_fig(ci, samp_rate_lf,
                                              lfinput,
                                              lfmeas, CALTYPE_RBLF,
                                              green_tol_limits,
                                              grey_tol_limits)
+            
+            # construct filename for starting response plot 
             fname = '{}_{}_{}_tf_lf_start_{}.png'.format(ci.sensor.lower(),
                                                          ci.sta.lower(), ci.loc,
                                                          ci.comp)
+            # save plot and add to list of output files
             fnpath = os.path.join(cur_dir, fname)
             lf_fig_start.savefig(fnpath, dpi=400)
             output_filename_list.append(fnpath)
 
+            # prompt user for action
             action = fit_menu(
                 [('F', 'Fit New LOW FREQ Response'),
                  ('A', 'Accept Current LOW FREQ Response')]).upper()
+            
             if action == 'Q':
+                # if 'Q' quitting, get rid of output files and quit
                 clean_analysis_files(output_filename_list)
                 user_quit()
 
+            # fitting loop while user wants to try a new fit 
             while action == 'F':
 
+                # prompt for list of poles/zeros to perturb
                 res, _ = ci.select_perturb_map(CALTYPE_RBLF)
                 if res == SelectResult.quit:
-                    print(' ' * ndnt + bold(red('User quit.')))
-                    sys.exit(1)
+                    clean_analysis_files(output_filename_list)
+                    user_quit()
 
                 ci.print_info()
 
                 print(' '*ndnt + bold('\nFitting new LOW FREQ reponse for: {}'.format(ci.comp)))
-                # contruct complex TF to minimize when for fitting
-                lftf = multiply(lftf_amp, (
-                    cos(lftf_pha * pi / 180) + 1j * sin(lftf_pha * pi / 180)))
-                # fit new poles and zeros
+                
+                # construct complex form of TF to minimize when for fitting
+                lftf = multiply(lftf_amp, (cos(lftf_pha * pi / 180) + 1j * sin(lftf_pha * pi / 180)))
+                
+                # fit new poles and zeros and set gain to 1
                 fit_paz = analyze_cal_component(ci.fullpaz, ci.lfpert,
                                                 ci.hfpert, ci.opsr, lftf_f,
                                                 lftf, None, None, CALTYPE_RBLF)
                 fit_paz.h0 = 1
 
-                print(' '*ndnt + \
-                      bold('Recomputing LOW FREQ TF with new fit response for: {}'.format(ci.comp)))
-                samp_rate_lf, lf_start_time, lfinput, lfmeas, _, _, _, _, \
-                freqs_lf, freqs_hf, \
+                print(' '*ndnt + bold('Recomputing LOW FREQ TF with new fit response for: {}'.format(ci.comp)))
+
+                # compute freq response with new fit_paz
+                samp_rate_lf, lf_start_time, lfinput, lfmeas, _, _, _, _, freqs_lf, freqs_hf, \
                 snr_lf, snr_hf = prepare_cal_data(ci.lfpath, ci.lffile, None, None,
                                                   ci.sensor, ci.comp, fit_paz, ci.opsr)
 
-                # compute new TF and plot fig
+                # compute new TF with new fit_paz and plot fig
                 lftf_f, fit_lftf_amp, fit_lftf_pha, fit_lftf_pha_detrnd, \
-                  fit_lftf_coh, lf_fig_fit = gen_tf_and_fig(
-                     ci, samp_rate_lf, lfinput, lfmeas, CALTYPE_RBLF,
-                     green_tol_limits, grey_tol_limits)
+                fit_lftf_coh, lf_fig_fit = gen_tf_and_fig(ci, samp_rate_lf, lfinput, lfmeas, CALTYPE_RBLF,
+                                                          green_tol_limits, grey_tol_limits)
 
+                # prompt user for action
                 action = fit_menu([('F', 'Fit New LOW FREQ Response'),
                                    ('A', 'Accept Current LOW FREQ Response'),
                                    ('S', 'Use Starting Response')]).upper()
@@ -245,8 +253,12 @@ def main(cl_args):
                     clean_analysis_files(output_filename_list)
                     user_quit()
 
+                # accepting new fit...
                 if action == 'A':
+                    # save fit_paz as starting point for HF analysis
                     new_paz = fit_paz
+                    
+                    # save LF TF for CTBTO 'inspec' calculation and plot to output file list
                     lftf_amp = fit_lftf_amp
                     lftf_pha = fit_lftf_pha
                     lftf_pha_detrnd = fit_lftf_pha_detrnd
@@ -255,7 +267,9 @@ def main(cl_args):
                     fnpath = os.path.join(cur_dir, fname)
                     lf_fig_fit.savefig(fnpath, dpi=400)
                     output_filename_list.append(fnpath)
+                    
                 elif action == 'S':
+                    # using starting paz instead of fit
                     new_paz = ci.fullpaz
 
                 plt.close(lf_fig_fit)
@@ -276,25 +290,33 @@ def main(cl_args):
                 cal_start_time,
                 hf_start_time) if cal_start_time else hf_start_time
 
-            # compute TF (and plot fig)
+            # compute HF TF (and plot fig)
             hftf_f, hftf_amp, hftf_pha, hftf_pha_detrnd, hftf_coh, hf_fig_start = gen_tf_and_fig(
                 ci, samp_rate_hf, hfinput, hfmeas, CALTYPE_RBHF,
                 green_tol_limits, grey_tol_limits)
+
+            # construct filename for starting response plot 
             fname = '{}_{}_{}_tf_hf_start_{}.png'.format(ci.sensor.lower(),
                                                          ci.sta.lower(), ci.loc,
                                                          ci.comp)
+            # save plot and add to list of output files
             fnpath = os.path.join(cur_dir, fname)
             hf_fig_start.savefig(fnpath, dpi=400)
             output_filename_list.append(fnpath)
 
+            # prompt user for action
             action = fit_menu([('F', 'Fit New HIGH FREQ Response'), (
                 'A', 'Accept Current HIGH FREQ Response')]).upper()
+
             if action == 'Q':
+                # if 'Q' quitting, get rid of output files and quit
                 clean_analysis_files(output_filename_list)
                 user_quit()
 
+            # fitting loop while user wants to try a new fit 
             while action == 'F':
 
+                # prompt for list of poles/zeros to perturb from paz resulting from LF fit/analysis
                 res, err = ci.select_perturb_map(CALTYPE_RBHF, paz=new_paz)
                 if res == SelectResult.quit:
                     clean_analysis_files(output_filename_list)
@@ -302,29 +324,31 @@ def main(cl_args):
 
                 ci.print_info()
 
-                print(' ' * ndnt + bold(
-                    '\nFitting new HIGH FREQ reponse for: {}'.format(ci.comp)))
-                hftf = multiply(hftf_amp, (
-                    cos(hftf_pha * pi / 180) + 1j * sin(hftf_pha * pi / 180)))
+                print(' ' * ndnt + bold('\nFitting new HIGH FREQ reponse for: {}'.format(ci.comp)))
+
+                # construct complex form of HF TF to minimize when for fitting
+                hftf = multiply(hftf_amp, (cos(hftf_pha * pi / 180) + 1j * sin(hftf_pha * pi / 180)))
+
+                # fit new poles and zeros and set gain to 1
                 fit_paz = analyze_cal_component(new_paz, ci.lfpert, ci.hfpert,
                                                 ci.opsr, None, None, hftf_f,
                                                 hftf, CALTYPE_RBHF)
                 fit_paz.h0 = 1
 
-                print(' ' * ndnt + bold(
-                    'Recomputing HIGH FREQ TF with new fit response for: {}'.
-                    format(ci.comp)))
+                print(' ' * ndnt + bold('Recomputing HIGH FREQ TF with new fit response for: {}'.format(ci.comp)))
+
+                # compute freq response with new fit_paz
                 _, _, _, _, samp_rate_hf, hf_start_time, hfinput, hfmeas, \
                 _, freqs_hf, _, snr_hf = prepare_cal_data(None, None, ci.hfpath, ci.hffile,
                                                           ci.sensor, ci.comp, fit_paz, ci.opsr)
 
-                # comute TF (and plot fig)
+                # compute new TF with new fit_paz and plot fig
                 hftf_f, fit_hftf_amp, fit_hftf_pha, fit_hftf_pha_detrnd, \
-                    fit_hftf_coh, hf_fig_fit = gen_tf_and_fig(
-                        ci, samp_rate_hf, hfinput, hfmeas, CALTYPE_RBHF,
-                        green_tol_limits, grey_tol_limits
+                fit_hftf_coh, hf_fig_fit = gen_tf_and_fig(ci, samp_rate_hf, hfinput, hfmeas, CALTYPE_RBHF,
+                                                          green_tol_limits, grey_tol_limits
                     )
 
+                # prompt user for action
                 action = fit_menu([('F', 'Fit New HIGH FREQ Response'),
                                    ('A', 'Accept Current HIGH FREQ Response'),
                                    ('S', 'Use Starting Response')]).upper()
@@ -333,7 +357,10 @@ def main(cl_args):
                     user_quit()
 
                 if action == 'A':
+                    # save fit_paz as final fit paz
                     new_paz = fit_paz
+                    
+                    # save HF TF for CTBTO 'inspec' calculation and plot to output file list
                     hftf_amp = fit_hftf_amp
                     hftf_pha = fit_hftf_pha
                     hftf_pha_detrnd = fit_hftf_pha_detrnd
@@ -343,31 +370,31 @@ def main(cl_args):
                     hf_fig_fit.savefig(fnpath, dpi=400)
                     output_filename_list.append(fnpath)
                 elif action == 'S':
-                    pass  # new_paz is already output from LF analisys or initial ci.fullpaz
+                    pass  # new_paz is already set from LF analysis or initial ci.fullpaz. Same for HF TF
 
                 plt.close(hf_fig_fit)
 
             plt.close(hf_fig_start)
 
+        # save new paz file
         new_fn = os.path.join(cur_dir, ci.new_filename_stem() + '.ipaz')
         new_paz.save(new_fn)
         output_filename_list.append(new_fn)
-        print('\n' + ' ' * ndnt +
-              bold('Response saved to file for: {}'.format(ci.comp)),
-              bold(blue(new_fn)))
+        print('\n' + ' ' * ndnt +bold('Response saved to file for: {}'.format(ci.comp)), bold(blue(new_fn)))
 
+        
         if (new_paz != ci.fullpaz) or \
             (ci.is_ctbto() and (not ci.omit_lf) and (not ci.omit_hf)):
             # need to compute freq response for comparison plots (if response changed)
-            # or for ctbto regardless of change
-            print(' ' * ndnt + bold(
-                'Computing frequency response for: {}'.format(ci.comp)))
+            # OR for ctbto EVEN IF NO CHANGE
+            print(' ' * ndnt + bold('Computing frequency response for: {}'.format(ci.comp)))
+            
             # lets find "nice" number for resp length: i.e. a multiple of 20 * sample rate.
             # So 0.05 and 1 hz in freqs exactly.
             resp_len = 360000
-            freqs, _ = linspace(
-                0, ci.opsr / 2, resp_len + 1,
-                retstep=True)  # must start with 0hz
+            freqs, _ = linspace(0, ci.opsr / 2, resp_len + 1, retstep=True)  # must start with 0hz
+            
+            # compare orig and new freq responses and calculate amp and pha deviations
             bl_resp, new_resp, adev, pdev, _, _ = compare_component_response(
                 freqs,
                 ci.fullpaz,
@@ -376,6 +403,7 @@ def main(cl_args):
                 mode='vel',
                 phase_detrend=True)
 
+            # if new response, generate amp and pha response and deviation plots 
             if new_paz != ci.fullpaz:
                 # only do comparison plots if response changed
                 amp_fn = os.path.join(
@@ -396,12 +424,16 @@ def main(cl_args):
                 pha_fig.savefig(pha_fn, dpi=400)
                 output_filename_list.append(pha_fn)
 
+            # can only provide CTBTO analysis IF both LF and HF have been analyzed
             if ci.is_ctbto() and (not ci.omit_lf) and (not ci.omit_hf):
 
+                # compute freq bands for comparison
                 hf_freqs_in_band = less_equal(hftf_f, 0.9 * 0.5 * ci.opsr)
                 lf_freqs_in_band = less_equal(lftf_f, 0.9 * 0.5 *
                                               CALTYPE_RBLF_SAMPLERATE)
 
+                # check that new TF is 'inspec'. 
+                # For IDA that is amp within 5% of 1.0 and pha within 5-degrees of 0.0
                 ctbto_inspec_lf = 'YES' if (lftf_amp[lf_freqs_in_band].min() >= 0.95) and \
                                            (lftf_amp[lf_freqs_in_band].max() <= 1.05) and \
                                            (lftf_pha_detrnd[lf_freqs_in_band].min() >= -5) and \
@@ -411,18 +443,13 @@ def main(cl_args):
                                         (hftf_amp[hf_freqs_in_band].max() <= 1.05) and \
                                         (hftf_pha_detrnd[hf_freqs_in_band].min() >= -5) and \
                                         (hftf_pha_detrnd[hf_freqs_in_band].max() <= 5) else 'NO'
-                # ctbto_inspec = 'YES' if (lftf_amp[lf_freqs_in_band].min() >= 0.95) and \
-                #                         (lftf_amp[lf_freqs_in_band].max() <= 1.05) and \
-                #                         (lftf_pha_detrnd[lf_freqs_in_band].min() >= -5) and \
-                #                         (lftf_pha_detrnd[lf_freqs_in_band].max() <= 5) and \
-                #                         (hftf_amp[hf_freqs_in_band].min() >= 0.95) and \
-                #                         (hftf_amp[hf_freqs_in_band].max() <= 1.05) and \
-                #                         (hftf_pha_detrnd[hf_freqs_in_band].min() >= -5) and \
-                #                         (hftf_pha_detrnd[hf_freqs_in_band].max() <= 5) else 'NO'
+
                 if (ctbto_inspec_lf == 'YES') and (ctbto_inspec_hf == 'YES'):
                     ctbto_inspec = 'YES'
                 else:
                     ctbto_inspec = 'NO'
+                    
+                # alert operator if not 'inspec' for CTBTO
                 if ctbto_inspec == 'NO':
                     print('\n', ' ' * ndnt + bold(
                         red('HEADS UP: Does not meet CTBTO IN_SPEC Criteria!')
@@ -447,16 +474,16 @@ def main(cl_args):
                 q330_gnom = ci.q330_gnom()
                 q330_gcal = ci.q330_gcalib()
 
-                # copute sensitivity for 1st, 3rd, 4th stages
+                # compute sensitivity for 1st, 3rd, 4th stages
                 s1_sens = abs(new_resp[bin_1hz_ndx]) * sens_gnom * sens_gcal
                 s3_sens = q330_gnom * q330_gcal
-
                 s4_sens = Q330_FIR_GAIN_1HZ[int(ci.opsr)]
                 sys_sens = s1_sens * s3_sens * s4_sens
 
                 # convert velocity (cts/(m/s)) to disp (cts/m) then to nm/ct
                 calib = 1 / (sys_sens * (2 * pi) / 1e9)
 
+                # construct CTBTO IMS message components
                 ims2_header = ims2_calibrate_result_msg_header(cal_start_time)
                 comp_info = ims2_calibrate_result_msg_comp_info(
                     ci.sta.upper(), ci.chan, ctbto_inspec, calib, calper)
@@ -471,6 +498,7 @@ def main(cl_args):
                                                         'Q330 Fir filter @ {}Hz'.format(ci.opsr),
                                                         Q330_FIR_COEFFS[int(ci.opsr)])
 
+                # save IMS message HDR
                 ims_msg_hdr_fn = os.path.join(
                     cur_dir, 'IMS2_CR_{}_{}_{}_HDR.txt'.format(
                         ci.sta.upper(),
@@ -479,6 +507,7 @@ def main(cl_args):
                     ofl.write(ims2_header + '\n')
                     output_filename_list.append(ims_msg_hdr_fn)
 
+                # save IMS message bloick for current sensor component
                 ims_msg_comp_fn = os.path.join(
                     cur_dir, 'IMS2_CR_{}_{}_{}_{}.txt'.format(
                         ci.sta.upper(),
@@ -490,6 +519,7 @@ def main(cl_args):
                     ofl.write(digi_info + '\n')
                     output_filename_list.append(ims_msg_comp_fn)
 
+                # save IMS message footer
                 ims_msg_footer_fn = os.path.join(
                     cur_dir, 'IMS2_CR_{}_{}_{}_FOOT.txt'.format(
                         ci.sta.upper(),
@@ -499,10 +529,12 @@ def main(cl_args):
                     output_filename_list.append(ims_msg_footer_fn)
 
         elif ci.is_ctbto() and (ci.omit_lf or ci.omit_hf):
+            # CTBTO analysis requires analysis of both LF and HF data
             print(' ' * ndnt + bold(
                 red('WARNING: Can not produce CTBTO results without both LF and HF analysis'
                    )))
 
+        # construct and output analysis log file
         logfn = os.path.join(cur_dir, ci.new_filename_stem() + '.log')
         with open(logfn, 'wt') as ofl:
             ofl.write(str(ci))
@@ -520,6 +552,7 @@ def main(cl_args):
         else:
            analysis_path = None
 
+        # if running in IDA environment, offer use to publish to IDA analysis dir
         if (ci.mode == 'interactive') and analysis_path and \
            (input_yn('\n' + ' ' * ndnt +
            'Publish {} component results to  {}  (y/n) ? :'.format(
