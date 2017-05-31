@@ -6,6 +6,9 @@ __pycache__/
 *.ipaz
 testtree/*
 
+# vim swp files
+*.swp
+
 # C extensions
 *.so
 
