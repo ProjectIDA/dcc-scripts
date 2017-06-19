@@ -75,6 +75,7 @@ set host  = ringsub.iris.washington.edu
 set port  = 16105
 
 set syncdir = /ida/tmp/daily/SYNC
+set aslsyncdir = /sync   # directory for ASL to pick up sync files to know what to pull from DMC for IDA/II
 
 # for some reason -S does not work well with -w, so let's just cd to syncdir
 cd $syncdir
@@ -134,6 +135,12 @@ if ($status == 0) then			# yes, all data sent to DMC, move them to DONE
   else
     mv $syncdir/statefile.$jdate $syncdir/DONE.statefile
   endif
+
+  # DOING THIS WEEKLY IN r2q_sync
+  # # copy sync files to $aslsyncdir for ASL/DQA to pickup
+  # if (-d $aslsyncdir) then
+  #   cp $syncdir/*.sync $aslsyncdir
+  # endif
 
   if (-f $syncdir/DONE.statefile/r2q_send.log.$jdate) then
     cat /tmp/ms2dmc.log.$$ >> $syncdir/DONE.statefile/r2q_send.log.$jdate
