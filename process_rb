@@ -460,12 +460,13 @@ def main(cl_args):
                         print(red('HF is out of spec (amp: 0.95 to 1.05; pha -5 to +5)'))
 
                 # compute new a0 (using pre-normalized response)
-                calper = 1.0
+                # at calibration ***period*** (CALPER) in seconds requested
+                calper = ci.ctbto_calper 
                 bin_calper_ndx = min([
                     freq[0] for freq in enumerate(freqs)
                     if freq[1] >= (1 / calper)
                 ])
-                resp_at_calper = compute_response(calper, new_paz)
+                resp_at_calper = compute_response(1.0 / calper, new_paz)
                 a0 = 1 / abs(resp_at_calper[0])
 
                 # system sens to compute calib
