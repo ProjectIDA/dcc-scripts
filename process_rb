@@ -459,15 +459,15 @@ def main(cl_args):
                     if ctbto_inspec_hf != 'YES':
                         print(red('HF is out of spec (amp: 0.95 to 1.05; pha -5 to +5)'))
 
-                # compute new a0 (using pre-normalized response)
-                # at calibration ***period*** (CALPER) in seconds requested
-                calper = ci.ctbto_calper 
+                # compute new a0 at 1 sec (using pre-normalized response)
+                resp_at_1hz = compute_response(1.0, new_paz)
+                a0 = 1 / abs(resp_at_1hz[0])
+
+                # get bin of response at calibration ***period*** (CALPER) in seconds requested
                 bin_calper_ndx = min([
                     freq[0] for freq in enumerate(freqs)
-                    if freq[1] >= (1 / calper)
+                    if freq[1] >= (1 / ci.ctbto_calper)
                 ])
-                resp_at_calper = compute_response(1.0 / calper, new_paz)
-                a0 = 1 / abs(resp_at_calper[0])
 
                 # system sens to compute calib
                 sens_gnom = ci.sensor_gnom()
@@ -487,10 +487,10 @@ def main(cl_args):
                 # construct CTBTO IMS message components
                 ims2_header = ims2_calibrate_result_msg_header(cal_start_time)
                 comp_info = ims2_calibrate_result_msg_comp_info(
-                    ci.sta.upper(), ci.chan, ctbto_inspec, calib, calper)
+                    ci.sta.upper(), ci.chan, ctbto_inspec, calib, ci.ctbto_calper)
                 sensor_info = ims2_paz2_msg(ci.sta.upper(), ci.loc, ci.chan,
                                             ci.sensor.upper(), cal_start_time,
-                                            ci.opsr, calib, calper, new_paz,
+                                            ci.opsr, calib, ci.ctbto_calper, new_paz,
                                             a0 * sens_gnom * sens_gcal)
                 digi_info = ims2_dig2_msg(2, q330_gnom * q330_gcal,
                                           ci.opsr, 'Q330') + '\n' + \
