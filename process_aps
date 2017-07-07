@@ -81,7 +81,7 @@ def main():
                         help="Dataset to analyze even if both are enabled in config file.")
     parser.add_argument('-v', '--version', action='version', version=version)
     parser.add_argument('-d', '--debug', action='store_true',
-                        help='Enable DEBUG mode for verbose output.')
+                        help='Enable DEBUG mode for more verbose output.')
 
     args = parser.parse_args()
 
