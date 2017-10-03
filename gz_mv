@@ -1,0 +1,55 @@
+#!/bin/tcsh
+#
+# gz_mv is to delete/move the gz files from /ida/stage/[station] to
+# /ida/stage/0_DONE/[station] without any more checking of these gz files.
+#
+# The last file will be saved in /ida/stage/[station].
+#
+
+if ($#argv != 1) then
+  echo ""
+  echo "usage: gz_mv station"
+  echo "example: gz_mv aak"
+  echo ""
+  echo "gz_mv is to delete/move the gz files from /ida/stage/[station] to"
+  echo "/ida/stage/0_DONE/[station] without any checking of these gz files."
+  echo "The time span of each of these files will be logged in /ida/stage/0_INFO/[station].list.mv"
+  echo ""
+  echo "The last gz file will be saved in /ida/stage/[station]."
+  echo ""
+  exit
+endif
+
+set sta = $1
+
+set today = `date "+%Y%j"`
+
+set STAGEDIR = /ida/stage
+set DONEDIR  = /ida/stage/0_DONE
+set INFODIR  = /ida/stage/0_INFO
+cd $STAGEDIR
+
+cd $sta
+set GZLIST  = /tmp/$sta.gzlist.$$
+set gzlist2 = /tmp/$sta.gzlist2.$$
+rm -f $GZLIST $gzlist2
+ls *.gz >& $GZLIST
+
+set f1 = `tail -1 $GZLIST`		# get last file
+grep -v $f1 $GZLIST > $gzlist2		# rm last file from list
+if (! -z $gzlist2) then
+  if (! -d $DONEDIR/$sta) mkdir -p $DONEDIR/$sta
+  touch $INFODIR/$sta.list.mv
+  echo $today ------------------- by gz_mv >> $INFODIR/$sta.list.mv
+  foreach ff (`cat $gzlist2`)
+    echo -n $ff " " >> $INFODIR/$sta.list.mv
+    cat $ff | idaspan -oneline rev=10 >> $INFODIR/$sta.list.mv
+    mv $ff $DONEDIR/$sta 		# can be changed to "rm -f $ff"
+  end
+else
+  echo "Nothing to be moved to $DONEDIR/$sta
+endif
+
+rm -f $GZLIST $gzlist2
+
+

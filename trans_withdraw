@@ -1,0 +1,13 @@
+#! /bin/tcsh
+#
+# this script displays channels listed in IDA.withdraw with human time
+#
+set ff = /ida/dcc/db/DMC/IDA.withdraw
+
+foreach x ("`cat $ff`")
+  set t1 = `echo $x | awk '{print $4}'`
+  set t2 = `echo $x | awk '{print $5}'`
+  set tt1 = `etoh $t1`
+  set tt2 = `etoh $t2`
+  echo $x $tt1 $tt2 | awk '{printf "%-4s  %3s  %02d  %s %s\n", $1,$2,$3,$6,$7}'
+end

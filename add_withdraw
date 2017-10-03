@@ -1,0 +1,134 @@
+#!/bin/tcsh
+#
+echo ""
+echo "  Usage:"
+echo ""
+echo "  % add_withdraw"
+echo "  Station (eg. aak):"
+echo "  Channel (eg. bhz00):"
+echo "  withdraw starts at (yyyyjjj-hh:mm:ss):"
+echo "  withdraw ends at (yyyyjjj-hh:mm:ss):"
+echo ""
+echo "  add_withdraw adds bad data segments to a database table, /ida/dcc/db/DMC/IDA.withdraw."
+echo "  These bad segments will be excluded in the process of r2q_proc and will not be sent to DMC."
+echo "  add_withdraw asks for station, channel, the start time and the end time of bad data segments."
+echo "  The wild card '*' can be used in channel input, but is only allowed in the orientation components,"
+echo "  1,2,z.  The channels with wild card could be one of these:" 
+echo ""
+echo "  BB*00, BB*10, BH*00, BH*10, LH*00, LH*10, VH*00, VH*10, LN*00, EN*00"
+echo ""
+echo "  and 'all' for all channels."
+echo ""
+echo "  For barometer channels and channels from BFO, please enter channel names without wildcard."
+echo "  If not sure if wildcard will be accepted, enter the channel names without wildcard."
+echo ""
+echo "  <CTRL>-C to stop the script."
+echo ""
+
+echo -n 'Station (eg. aak, ONE station only): '; set sta = "$<"
+while ($sta == "") 
+  echo -n 'Please enter the station name: '; set sta = "$<"
+  if ($sta != "") break
+end
+  
+echo -n 'Channel (eg. bhz00, entries can be separated by commas or spaces, or "all" for all channels): '; set chan = "$<"
+while ("$chan" == "")
+  echo -n 'Please enter the channel(s) to be excluded: '; set chan = "$<"
+  echo chan is "$chan"
+  if ("$chan" != "") break
+end
+
+echo -n 'withdraw starts at (yyyyjjj-hh:mm:ss): '; set t1 = "$<"
+while ($t1 == "")
+  echo -n 'Please enter a valid time stamp for start time: '; set t1 = "$<"
+  if ($t1 != "") break
+end
+
+echo -n 'withdraw ends at (yyyyjjj-hh:mm:ss): '; set t2 = "$<"
+while ($t2 == "")
+  echo -n 'Please enter a valid time stamp for end time or "-" for an open end time: '; set t2 = "$<"
+  if ($t2 != "") break
+end
+
+set sta = `echo $sta | lcase`
+set CHlist = `echo "$chan" | sed 's/,/ /g' | lcase`
+
+set chan1 = ""
+@ count = 1
+
+while ($count <= $#CHlist)
+  set cc = `echo "$CHlist" | awk '{print $'$count'}'`
+  set nc = `echo "$cc" | wc -c | awk '{print $1-1}'`
+  if ( ($nc != 5) && ("$cc" != 'all') ) then
+    echo 'add: invalid entry for channel,' "$cc"
+    exit 99
+  endif
+  echo "$cc" | grep "\*" >& /dev/null
+  set mystatus = $status
+
+  if ( $mystatus == 0 ) then		# found a wildcard
+    set ch = `echo "$cc" | cut -c1-2 | lcase`
+    set lc = `echo "$cc" | cut -c4-5`
+    if ($ch == 'bb') then
+      if ($lc == '00') set chan1 = "$chan1"',bh100,bh200,bhz00,lh100,lh200,lhz00,vh100,vh200,vhz00'
+      if ($lc == '10') then
+	if (($sta == 'lvz') || ($sta == 'tly') || ($sta == 'aru')) then
+          set chan1 = "$chan1"',sh100,sh200,shz00'
+	else
+          set chan1 = "$chan1"',bh110,bh210,bhz10,lh110,lh210,lhz10,vh110,vh210,vhz10'
+	endif
+      endif
+    endif
+    if ($ch == 'bh') then
+      if ($lc == '00') set chan1 = "$chan1"',bh100,bh200,bhz00'
+      if ($lc == '10') then
+	if (($sta == 'lvz') || ($sta == 'tly') || ($sta == 'aru')) then
+	  set chan1 = "$chan1"',sh100,sh200,shz00'
+	else
+	  set chan1 = "$chan1"',bh110,bh210,bhz10'
+	endif
+      endif
+    endif
+    if ($ch == 'lh') then
+      if ($lc == '00') set chan1 = "$chan1"',lh100,lh200,lhz00'
+      if ($lc == '10') set chan1 = "$chan1"',lh110,lh210,lhz10'
+    endif
+    if ($ch == 'vh') then
+      if ($lc == '00') set chan1 = "$chan1"',vh100,vh200,vhz00'
+      if ($lc == '10') set chan1 = "$chan1"',vh110,vh210,vhz10'
+    endif
+    if ($ch == 'ln') set chan1 = "$chan1"',ln100,ln200,lnz00'
+    if ($ch == 'en') set chan1 = "$chan1"',en100,en200,enz00'
+  else					# cases without wildcard
+    if ($cc == 'all') then
+      set chan1 = 'all'
+      break
+    else
+      if ($cc == 'bb100') then
+        set chan1 = "$chan1"',bh100,lh100,vh100'
+      else if ($cc == 'bb200') then
+        set chan1 = "$chan1"',bh200,lh200,vh200'
+      else if ($cc == 'bbz00') then
+        set chan1 = "$chan1"',bhz00,lhz00,vhz00'
+      else if ($cc == 'bb110') then
+        set chan1 = "$chan1"',bh110,lh110,vh110'
+      else if ($cc == 'bb210') then
+        set chan1 = "$chan1"',bh210,lh210,vh210'
+      else if ($cc == 'bbz10') then
+        set chan1 = "$chan1"',bhz10,lhz10,vhz10'
+      else
+        set chan1 = "$chan1","$cc"	# loop thru each entry
+      endif
+    endif
+  endif
+  @ count ++
+end
+
+if ($chan1 != 'all') set chan1 = `echo "$chan1" | cut -c2-`
+
+echo ""
+echo calling add_rec ...
+echo [add_rec $sta $chan1 "$t1" "$t2"]
+add_rec $sta $chan1 "$t1" "$t2"
+
+exit

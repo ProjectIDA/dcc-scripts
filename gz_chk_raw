@@ -1,0 +1,100 @@
+#!/bin/tcsh
+#
+# gz_chk_raw is to check gz/GZ files in /ida/archive/raw for a given sta/year/day - 
+#
+#  1. check non-standard file names, such as ????????????????????????-1.gz
+#  2. check the continuity of the files, ie missing gz/GZ files
+#  3. check size of these gz/GZ files, ie 3000 records per uncompressed file
+#
+
+if ($#argv != 2) then
+    echo usage: gz_chk_raw sta jdate
+    echo example: gz_chk_raw aak 2014106
+    exit 1
+endif
+
+set sta = $1
+set jdate = $2
+
+set year  = `echo $jdate | cut -c1-4`
+set day   = `echo $jdate | cut -c5-7`
+set ARCHDIR = /ida/archive/raw
+
+cd $ARCHDIR/$sta/$year/$day >& /dev/null
+set mystatus = $status
+if ($mystatus != 0) then
+    echo "  Can not cd to $sta/$year/$day."
+    exit 1
+endif
+
+#
+# check non-standard file names
+#
+set tmp1 = /tmp/list.$$.1
+set tmp2 = /tmp/list.$$.2
+set tmp3 = /tmp/list.$$.3
+rm -f $tmp1 $tmp2 $tmp3
+
+ls *.gz *.GZ >& $tmp1
+ls ????????????????????????.gz ????????????????????????.GZ >& $tmp2 
+
+diff $tmp1 $tmp2 >& /dev/null
+ 
+if ($status != 0 ) then
+    echo "  $sta/$year/$day	Non-standard filenames found"
+endif
+
+if (-z $tmp2) then
+    echo "  $sta/$year/$day	No file"
+    rm -f $tmp1 $tmp2
+    exit 1
+endif
+
+#
+# check the continuity of filenames
+#
+set f1 = `head -1 $tmp2`
+set n1 = `/ida/dcc/bin/gz_counter $f1:r | awk '{print $2}'`	# get number from the first filename
+grep -v $f1 $tmp2 > $tmp3				# rm 1st file from list
+
+foreach f2 (`cat $tmp3`)
+    set n2 = `/ida/dcc/bin/gz_counter $f2:r | awk '{print $2}'`
+    @ n3 = ( $n2 - $n1 ) - 3000
+    if ( $n3 > 0 ) then
+        @ nf = $n3 / 3000 
+        echo "  $sta/$year/$day	GAPS found btw $f1($n1) & $f2($n2): $n3 recs == $nf file(s)"
+    else if ($n3 < 0) then
+        if ($n2 == 0) then
+            echo "  $sta/$year/$day	COUNTER RESET btw $f1($n1) & $f2($n2)"
+        else
+            echo "  $sta/$year/$day	UNKNOWN situation btw $f1($n1) & $f2($n2)"
+        endif
+    endif
+    set f1 = $f2
+    set n1 = $n2
+end
+
+#
+# check file size, excluding the Russian stations because of lack of 100Hz data
+#
+if ( ($sta == 'aru') || ($sta == 'kiv') || ($sta == 'lvz') || ($sta == 'obn') || ($sta == 'tly') ) then
+    rm $tmp1 $tmp2 $tmp3
+    exit
+endif
+
+foreach file (`cat $tmp2`)
+    gzip -dc $file >& /tmp/junk$$
+    if ($status != 0) then
+        echo -n "  $sta/$year/$day/$file can not be uncompressed   "
+        tail -1 /tmp/junk$$
+    else
+        set nrec = `ls -l /tmp/junk$$ | awk '{printf "%d\n",$5/1024}'`
+        if ( ($nrec - 3000 ) != 0 ) then
+            echo "  $sta/$year/$day	$file INCOMPLETE (rec=$nrec)"
+        endif
+    endif
+    rm /tmp/junk$$
+end
+
+rm -f $tmp1 $tmp2 $tmp3 /tmp/junk$$
+

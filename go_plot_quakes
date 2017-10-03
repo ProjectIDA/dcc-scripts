@@ -1,0 +1,12 @@
+#! /bin/csh
+# -----------------------------------------------------------------------
+# # driver script to use cron to invoke Matlab.  Matlab in turn will run
+# # the script driver_plot_quakes.m
+# # -----------------------------------------------------------------------
+#
+cd /ida/dcc/matlab
+##matlab -nodisplay -nosplash -r driver_plot_quakes
+matlab -nodisplay -nosplash -mwvisual 0x22 -r driver_plot_quakes
+#
+# exit(0)
+#

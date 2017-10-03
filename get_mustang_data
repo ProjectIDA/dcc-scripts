@@ -1,0 +1,30 @@
+#! /bin/csh -f
+
+#=============================================================================================
+# script to access MUSTANG QC data computed at the IRIS DMC and prepare a graphical display.
+#=============================================================================================
+
+if ($#argv < 4) then
+    echo "usage: get_mustang_data station measurement startdate enddate"
+    echo "example: get_mustang_data PFO percent_availability 2013-12-01 2013-12-31"
+    echo "example: get_mustang_data ERM max_stalta 2012-01-01 2012-06-30"
+    exit(1)
+endif
+
+set sta=$1
+set meas=$2
+set sd=$3
+set ed=$4
+
+#curl -u qat:c3ntipede 'http://service.iris.edu/mustangbeta/measurements/1/query?net=II&metric='$meas'&station='$sta'&timewindow='$sd','$ed | xmllint -format - > input
+curl 'http://service.iris.edu/mustang/measurements/1/query?net=II&metric='$meas'&station='$sta'&timewindow='$sd','$ed | xmllint -format - > input
+
+grep $meas input | grep -v LOG | sed 's/"/ /g' | sed 's/=/ /g' | sed 's/<//g' | sed 's/>//g' > input.txt
+
+# The file named input.txt must then be parsed by the Matlab script plot_mustang_data.m.
+echo ""
+echo ""
+echo "The output file input.txt must be processed by the Matlab script plot_mustang_data.m."
+echo ""
+
+exit

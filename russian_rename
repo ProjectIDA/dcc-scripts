@@ -1,0 +1,47 @@
+#
+if ($#argv != 3) then
+  echo "Usage: russian_rename station Jday1 Jday2"
+  echo "Example: russian_rename aru 2013319 2013341"
+  exit
+endif
+
+set sta = $1
+set jd1 = $2
+set jd2 = $3
+
+set y1 = `echo $jd1 | cut -c1-4`
+set d1 = `echo $jd1 | cut -c5-7`
+set y2 = `echo $jd2 | cut -c1-4`
+set d2 = `echo $jd2 | cut -c5-7`
+
+if ($y1 != $y2) then
+  echo "across year boundary, do it manually for now!"
+  exit
+endif 
+
+set xx = `date "+%m/%d/%Y"`
+set rfile = /tmp/R.$$
+rm -f $rfile 
+echo "" > $rfile
+echo "jchang	$xx" >> $rfile 
+echo "" >> $rfile
+echo "Russian telemetry data - without 40Hz" >> $rfile 
+echo "" >> $rfile
+
+set dir = /ida/archive/raw/$sta/$y1
+cd $dir
+
+@ d0 = $d1
+while ($d0 <= $d2)
+    if (! -d $d0/.history) mkdir -p $d0/.history
+    if (-f $d0/.history/README) then
+        cat /tmp/R.$$ >> $d0/.history/README
+    else
+        cp -p /tmp/R.$$ $d0/.history/README
+    endif
+    mv $d0/????????????????????????.gz $d0/.history
+    echo $status $d0
+    @ d0 ++
+end
+
+rm /tmp/R.$$

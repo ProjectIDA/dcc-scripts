@@ -1,0 +1,11 @@
+#! /bin/csh -f
+#=====================================================================
+# check_Parrivals:
+#
+# script to evaluate plots produced by cron and placed in subdir
+# PLOTS.quakes under /ida/dcc/qc/PLOTS.
+#=====================================================================
+cd /ida/dcc/qc/PLOTS
+#
+#matlab -nodesktop -nosplash -r DataJudger
+matlab -nodesktop -nosplash -r "addpath('/ida/dcc/matlab'); DataJudger({'/ida/dcc/qc/PLOTS/PLOTS.quakes', '/ida/dcc/qc/MISC_DATA/Parrival_info.txt'})"

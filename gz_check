@@ -1,0 +1,161 @@
+#!/bin/tcsh
+#
+# gz_check is to check the health of gz files in /ida/stage/[station]
+#
+# It outputs the following information:
+#
+#   1. time period of data coverage from the gz/GZ files in /ida/stage/[station].
+#   2. the delay of gz files (real time), if more then 4 hours.
+#   3. the number records of gz files if they do not have 3000 records.
+#   4. gaps among gz files, ie the number of missing gz files.
+#   5. any counter reset, ie the sequence number is reset to ZERO.
+#   6. any unknown situation.
+#
+# /ida/stage/0_INFO/0_NOT_RESDY_LIST contains stations with incomplete real time data files,
+# these are Russian stations and ALE. 
+#
+# If everything is ok, ie, without falling into situations of #2, #3, #4, #6, files will be
+# moved to /ida/stage/0_DONE/[station], except the last one.
+#
+# Two routines are called in this script, gz_gap (script) and gz_counter (bin).
+#   gz_gap outputs the time lag between the last gz file and the current time.
+#   gz_counter outputs the counter in decimal. 
+#
+
+set path = ($path /ida/dcc/bin /ida/dcc/scripts)
+
+set LOG = /tmp/gz_check.$$
+
+rm -f $LOG
+touch $LOG
+
+set today = `date "+%Y%j"`
+echo /ida/stage of $today ==================================================== >> $LOG
+echo "(X) - stations with incomplete gz files: Russian stations and ALE.  File sizes are not checked." >> $LOG
+echo "(O) - stations with normal gz files, ie 3000 records per file." >> $LOG
+echo "" >> $LOG
+echo "For stations without any EXTRA notes, gz files will be moved to /ida/stage/0_DONE/[sta]" >> $LOG
+echo "and these files are logged in /ida/stage/0_INFO/[sta].list.mv for reviewing." >> $LOG
+echo "" >> $LOG
+echo "Files in /ida/stage/0_DONE should be removed periodically." >> $LOG
+echo "NOTE: These gz files can be deleted directly from /ida/stage instead of being moved to 0_DONE/." >> $LOG 
+echo ========================================================================== >> $LOG
+echo "" >> $LOG
+
+set admin = 'ezak@ucsd.edu,dauerbach@ucsd.edu'
+
+set STAGEDIR = /ida/stage
+set DONEDIR  = /ida/stage/0_DONE
+set INFODIR  = /ida/stage/0_INFO
+cd $STAGEDIR
+
+foreach sta ([a-z]*)
+      set moving = 1
+      grep " $sta " $INFODIR/0_NOT_READY_LIST >& /dev/null
+      if ($status == 0) then
+        set incomplete = X
+      else
+        set incomplete = O
+      endif
+
+      echo checking "$sta" '('$incomplete')' | awk '{printf "%s %-4s %s ", $1,$2,$3}' >>& $LOG
+      cd $sta
+      set GZLIST  = /tmp/$sta.gzlist.$$
+      set gzlist1 = /tmp/$sta.gzlist1.$$
+      set gzlist2 = /tmp/$sta.gzlist2.$$
+      rm -f $GZLIST $gzlist1 $gzlist2
+      ls *.gz *.GZ >& $GZLIST
+
+      grep "No match" $GZLIST >& /dev/null
+      if ($status == 0) then
+          echo " (NO FILES found)" >> $LOG
+          rm $GZLIST
+          cd ..
+          continue
+      else 
+          set f1 = `head -1 $GZLIST`
+          set f2 = `tail -1 $GZLIST`
+          set tt1 = `cat $f1 | idaspan |head -1`
+          set tt2 = `cat $f2 | idaspan |tail -1`
+          echo -n " "$tt1 '-' $tt2 "   " >> $LOG	#1
+
+          set ONE = ""
+          set nn = `wc -l $GZLIST | awk '{print $1}'`
+          if ($nn == 1) set ONE = "ONE file only"
+
+          set sgap = `gz_gap $STAGEDIR $sta`
+          if ($status == 9) then			#2
+            echo " ... "has not been updated for "$sgap" "$ONE" >> $LOG
+            set moving = 0
+          else
+            echo " ..." "$ONE" >> $LOG
+          endif
+      endif
+
+      set f1 = `head -1 $GZLIST`        	# get number from 1st file
+      set n1 = `gz_counter $f1:r | awk '{print $2}'`
+      grep -v $f1 $GZLIST > $gzlist1		# rm first file from list
+
+      if ($nn > 1) then
+        foreach file (`cat $gzlist1`)
+          set n2 = `gz_counter $file:r | awk '{print $2}'`
+          @ n3 = ( $n2 - $n1 ) - 3000
+
+          if ( $n3 > 0 ) then
+            @ nf = $n3 / 3000 
+            echo "  $sta  GAPS in FILEnames btw $f1($n1) & $file($n2): $n3 recs == $nf file(s)" >> $LOG	#4
+            set moving = 0
+          else if ($n3 < 0) then
+            if ($n2 == 0) then
+              echo "  $sta  COUNTER RESET btw $f1($n1) & $file($n2)" >> $LOG	#5
+            else
+              set F1 = `echo $f1 | ucase`
+              set F2 = `echo $file | ucase`
+              if ($F1 != $F2) echo "  $sta  UNKNOWN situation, please check btw $f1($n1) & $file($n2)" >> $LOG	#6
+              set moving = 0
+            endif
+          endif
+
+          set f1 = $file
+          @ n1 = $n2
+        end
+      endif
+
+      if ($incomplete == 'O') then		# do not check stations with incomplete files
+          foreach file (`cat $GZLIST`)
+            gzip -dc $file >& /tmp/junk$$
+            if ($status != 0) then		# ???
+              echo "  $sta  $file can not be uncompressed " >> $LOG
+              set moving = 0
+            else	
+              set nrec = `ls -l /tmp/junk$$ | awk '{printf "%d\n",$5/1024}'`
+              if ( ($nrec - 3000 ) != 0 ) then
+                echo "  $sta  $file found INCOMPLETE (rec=$nrec)" >> $LOG	#3
+                set moving = 0
+              endif
+            endif
+            rm /tmp/junk$$
+          end
+      endif
+
+      if ($moving) then
+        set f1 = `tail -1 $GZLIST`		# get last file
+        grep -v $f1 $GZLIST > $gzlist2	# rm last file from list
+        if (! -z $gzlist2) then
+          if (! -d $DONEDIR/$sta) mkdir -p $DONEDIR/$sta 
+          touch $INFODIR/$sta.list.mv
+          echo $today -------------------  >> $INFODIR/$sta.list.mv
+          foreach ff (`cat $gzlist2`)
+            echo -n $ff " " >> $INFODIR/$sta.list.mv
+            cat $ff | idaspan -oneline rev=10 >> $INFODIR/$sta.list.mv
+            mv $ff $DONEDIR/$sta 		# can be changed to "rm -f $ff"
+          end
+        endif
+      endif
+      rm -f $GZLIST $gzlist1 $gzlist2
+      cd ..
+
+end
+Mail -s "GZFILENAME info (VM) @ $today" $admin < $LOG
+rm $LOG
+

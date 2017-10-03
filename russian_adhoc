@@ -1,0 +1,24 @@
+#!/bin/csh -f
+
+# russian_adhoc
+
+if ($#argv < 1) then
+  echo 'usage: russian_adhoc station_name'
+  echo 'example: russian_adhoc aru'
+  exit
+endif
+
+set stat=$1
+set sta=`echo $stat | lcase`
+
+set teedir=/usr/nrts/$sta/tee
+
+foreach f (" `ls *.GZ` ")
+	echo $f
+	set uc_name=`echo $f | sed 's/\.GZ//'`
+	set lc_name=`echo $uc_name | lcase`
+	gunzip $f
+	mv $uc_name $teedir/$lc_name
+end
+
+

@@ -1,0 +1,182 @@
+#!/bin/csh
+
+# get_caldata (linux version)
+
+if ($#argv < 1) then
+  echo 'usage: get_caldata cal_data_dir_absolute_path [delay time]'
+  echo 'example: get_caldata /ida/cal/raw/tau/sts1/rbhf/2012-0111'
+  echo 'example: get_caldata /ida/cal/raw/tau/sts1/rbhf/2012-0111 10'
+  exit
+endif
+
+set datadir=$1
+set outdirtree=/home/response/calib/data
+set outdirtree=/home/pdavis/tmp
+set outdirtree=/ida/cal/rb_testdata
+
+set tshift=0
+if ( $#argv > 1 ) then
+	set tshift=$2
+endif
+
+#----------------------------------------------------------
+# parse name:
+#----------------------------------------------------------
+
+set sta=`echo $datadir | sed 's#/# #g' | awk '{print $4}'`
+
+set outdirtree1=`echo $outdirtree $sta | awk '{printf "%s/%s",$1,$2}'`
+if (! -e $outdirtree1) then
+	echo $outdirtree1 does not exist, exiting.
+	exit(1)
+endif
+
+#----------------------------------------------
+# determine if this is hi or lo, and the instrument type:
+#----------------------------------------------
+
+set mystr=`echo $datadir | sed 's#/# #g' | awk '{print $6}'`
+set hilo=`echo $mystr | awk '{printf "%s", substr($1,3,2)}'`
+set mystr=`echo $datadir | sed 's#/# #g' | awk '{print $5}'`
+set seis=`echo $mystr | awk '{printf "%s", substr($1,1,4)}'`
+set seis=`echo $seis | sed 's/gura/cmg/'`
+
+if ($hilo == "lf") then
+	echo Assuming LF
+else if ($hilo == "hf") then
+	echo Assuming HF
+else
+	echo Cannot tell HF or LF.  Exiting.
+	exit(1)
+endif
+
+#----------------------------------------------
+# get Julian date:
+#----------------------------------------------
+set cssfile=$datadir/css.wfdisc
+if ( ! -e $cssfile ) then
+	echo $cssfile does not exist.  Exiting.
+endif
+
+if ( $osname == 'solaris' ) then
+	set dateseg=`wdtime -j < $cssfile | head -1 | awk '{printf "%s",substr($3,1,8)}'`
+	set dateseg=`echo $dateseg | sed 's/:/-/'`
+else 
+	set t=`awk '{print $3}' $cssfile | head -1`
+	set dateseg=`etoh $t | sed 's/:/-/' | cut -c1-8`
+endif
+
+
+if ($hilo == "lf") then
+	set newdir=`echo $outdirtree1 $dateseg $seis | awk '{printf "%s/%s.lp.%s",$1,$2,$3}'`
+else if ($hilo == "hf") then
+	set newdir=`echo $outdirtree1 $dateseg $seis | awk '{printf "%s/%s.sp.%s",$1,$2,$3}'`
+endif
+
+if ( -e $newdir ) then
+	echo $newdir already exists.  Exiting.
+	exit(1)
+endif
+
+mkdir $newdir
+cd $newdir
+cp $cssfile .
+ln -s $datadir/data data
+
+#----------------------------------------------
+# work out time of signal start:
+#----------------------------------------------
+
+grep ccs css.wfdisc > tmp.wfdisc
+grep ccf css.wfdisc >> tmp.wfdisc
+
+# and build a Matlab file to detect beginning, end of RB series:
+
+echo "function go" > go.m
+echo "addpath('/home/pdavis/matlab');" >> go.m
+echo "seis = '"$seis"';" >> go.m
+echo "wf = readcss3wf('tmp');" >> go.m
+echo "data = readcss3('tmp.wfdisc', wf.sta, wf.chan , wf.time, wf.endtime);" >> go.m
+echo "tshift = " $tshift ";" >> go.m
+echo "ntshift = floor( tshift * data.sr );" >> go.m
+echo "md = abs(data.ts(ntshift+1:data.npts));" >> go.m
+echo "ddm = medfilt1(md, 7);" >> go.m
+echo "ddm = ddm / max(ddm);" >> go.m
+echo "ns = find( ddm > 0.1 );" >> go.m
+#echo "n1=max( min(ns)-ntshift, 1);" >> go.m
+echo "n1=max( min(ns)+ntshift, 1);" >> go.m
+#echo "n2=max(ns)-ntshift;" >> go.m
+echo "n2=max(ns)+ntshift;" >> go.m
+echo "clear wf;" >> go.m
+echo "wf = readcss3wf('css');" >> go.m
+echo "for i=1:length(wf)" >> go.m
+echo "        s = upper( wf(i).chan(3) );" >> go.m
+echo "        data = readcss3('css.wfdisc', wf(i).sta, wf(i).chan, wf(i).time, wf(i).endtime);" >> go.m
+echo "        [fname, factor] = get_outfile( s, seis, data.sr );" >> go.m
+echo "" >> go.m
+echo "        if data.sr > 1.1" >> go.m
+echo "              ntmp = floor( data.sr * 1800 ) + n1;" >> go.m
+echo "              n2 = min(n2, ntmp);" >> go.m
+echo "        end" >> go.m
+echo "" >> go.m
+echo "        fp = fopen(fname, 'w');" >> go.m
+echo "        d = factor * data.ts(n1:n2);" >> go.m
+##echo "        fwrite(fp, d, 'float32', 0, 'b');" >> go.m
+echo "        fwrite(fp, d, 'float32');" >> go.m
+##------------------------------------------------------
+echo "		subplot(2,1,1)" >> go.m
+echo "		plot(d);" >> go.m
+echo "		subplot(2,1,2)" >> go.m
+echo "		plot(d(1:1000));" >> go.m
+echo "		pause(5);" >> go.m
+##------------------------------------------------------
+echo "        fclose(fp);" >> go.m
+echo "end" >> go.m
+echo "quit;" >> go.m
+echo "end" >> go.m
+echo "" >> go.m
+echo "function [fname, factor] = get_outfile( s, seis, samprate )" >> go.m
+echo "" >> go.m
+echo "" >> go.m
+echo "factor = 1.0;" >> go.m
+echo "if ( strcmp(s, 'S' ) | strcmp(s, 'F' ) )" >> go.m
+echo "  fname1='O';" >> go.m
+echo "  if ( strcmp(seis, 'gs13') | strcmp(seis, 'tril') )" >> go.m
+echo "        factor = -1;" >> go.m
+echo "  end" >> go.m
+echo "elseif ( strcmp(s, 'Z' ))" >> go.m
+echo "  fname1='Z';" >> go.m
+echo "elseif ( strcmp(s, '1' ) | strcmp(s, 'N' ) )" >> go.m
+echo "  fname1='N';" >> go.m
+echo "  if ( strcmp(seis, 'sts1') )" >> go.m
+echo "        factor = -1;" >> go.m
+echo "  end" >> go.m
+echo "elseif ( strcmp(s, '2' ) | strcmp(s, 'E' ))" >> go.m
+echo "  fname1='E';" >> go.m
+echo "  if ( strcmp(seis, 'sts1') )" >> go.m
+echo "        factor = -1;" >> go.m
+echo "  end" >> go.m
+echo "end" >> go.m
+echo "" >> go.m
+echo "if ( samprate > 1 )" >> go.m
+echo "  fname2 = sprintf('%.2f', 1 / samprate);" >> go.m
+echo "else" >> go.m
+echo "  fname2 = sprintf('%.1f', samprate);" >> go.m
+echo "end" >> go.m
+echo "" >> go.m
+echo "fname = sprintf('%s-%s', fname1, fname2);" >> go.m
+echo "end" >> go.m
+
+matlab -nodesktop -nosplash -r go
+
+ls -l
+
+exit
+
+
+# clean up
+#rm -rf *.w go.m out >& /dev/null
+rm -rf *.w  >& /dev/null
+
+
+exit

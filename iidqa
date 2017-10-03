@@ -1,0 +1,45 @@
+#!/bin/bash
+
+if [ $# != 4 ]; then
+   errormsg='  Wrong number of parameters. Expected 4.'
+fi
+
+sta=$1
+chan=$2
+start=$3
+end=$4
+
+if [[ ! "$start" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then 
+   errormsg='  Invalid EndDate format. Expcected YYY-MM-DD'
+fi
+
+if [[ ! "$end" =~ ^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$ ]]; then
+   errormsg='  Invalid EndDate format. Expcected YYY-MM-DD'
+fi
+
+if [ "$errormsg" ]; then 
+  echo "$errormsg"
+  echo ""
+  echo "  Run dqa4h.py to query an II station for one or more channels for a spcific metric for a specific time window"
+  echo ""
+  echo "  Usage: iidqa sta chan StartDate EndDate"
+  echo ""
+  echo "  example: iidqa borg  bhz  2016-01-01 2016-01-31"
+  echo "  example: iidqa borg  bh%  2016-01-01 2016-01-31"
+  echo "  example: iidqa borg  %h1  2016-01-01 2016-01-31"
+  echo "  example: iidqa borg  %%z  2016-01-01 2016-01-31"
+  echo ""
+  echo "  Notes:"
+  echo "     A '%' wildcard(s) may be used in the channel"
+  echo "     Channels may specified without a location. "
+  echo "         Data for all locations will be retrieved."
+  echo "     StartDate and EndDate must be in YYYY-MM-DD format"
+  echo ""
+  exit
+fi
+
+STA=`echo $sta | tr '[:lower:]' '[:upper:]'`
+CHAN=`echo $chan | tr '[:lower:]' '[:upper:]'`
+
+cmd="-w http://dqa.ucsd.edu/dqa -n II -s $STA -c $CHAN -m NLNMDeviationMetric:200-500 -f CSV -b $start -e $end"
+./dqa4h.py $cmd | grep "$STA"

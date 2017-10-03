@@ -1,0 +1,10 @@
+#! /bin/csh -f
+#=====================================================================
+# check_surfacewaves:
+#
+# script to evaluate plots produced by cron and placed in subdir
+# PLOTS.sensor_comparison under /ida/dcc/qc/PLOTS.
+#=====================================================================
+cd /ida/dcc/qc/PLOTS
+#
+matlab -nodesktop -nosplash -r "DataJudger({'/ida/dcc/qc/PLOTS/PLOTS.sensor_comparison', '/ida/dcc/qc/MISC_DATA/sensor_comparison_results.txt'})"

@@ -1,0 +1,106 @@
+#!/bin/tcsh
+#
+# mod_withdraw modifies the endtime of a selected data segment in IDA.withdraw
+#
+#
+echo ""
+echo "  Usage:"
+echo ""
+echo "  % mod_withdraw"
+echo "  Station (eg. aak):"
+echo "  Channel (eg. bhz00):"
+echo ""
+echo "  mod_withdraw modifies the endtime of a selected data segment in IDA.withdraw"
+echo "  First, it lists the bad data segments for a given station/channel."
+echo "  The channel list includes data streams with different sampling rates."
+echo ""
+echo "  <CTRL-C> to stop the script."
+echo ""
+
+set db = /ida/dcc/db/DMC
+
+echo -n 'Station (eg. aak): '; set sta = "$<"
+while ($sta == "")
+  echo -n 'Station: '; set sta = "$<"
+end
+set STA = `echo $sta | ucase`
+
+echo -n 'Channel (eg. bhz00): '; set chan = "$<"
+while ($chan == "")
+  echo ""
+  dbsubset $db/IDA.withdraw "sta=='$STA'" | dbselect - sta chan loccode 'yearday(time)' 'strtime(time)'  'yearday(endtime)' 'strtime(endtime)' | awk '{printf "%4s  %3s%02d  %7d-%012s  %7d-%012s\n",$1,$2,$3,$4,$6,$7,$9}'
+  
+  echo ""
+  echo -n 'Channel: '; set chan = "$<"
+end
+
+set ch  = `echo $chan | lcase | cut -c2-3`
+set lc  = `echo $chan | cut -c4-5`
+
+set hlist = /tmp/hlist.$$	# list with human time 
+set mlist = /tmp/mlist.$$	# list with epoch time
+
+REPEAT:
+rm -f $hlist $mlist
+dbsubset $db/IDA.withdraw "sta=='$STA' && chan =~ /.$ch/ && loccode == '$lc'" | dbselect - sta chan loccode 'yearday(time)' 'strtime(time)'  'yearday(endtime)' 'strtime(endtime)' | awk '{printf "%4s  %3s%02d  %7d-%012s  %7d-%012s\n",$1,$2,$3,$4,$6,$7,$9}' > $hlist
+
+dbsubset $db/IDA.withdraw "sta=='$STA' && chan =~ /.$ch/ && loccode == '$lc'" | dbselect - sta chan loccode time endtime > $mlist
+
+#
+# if nothing found, exit
+#
+if (-z $hlist) then
+  echo "Nothing is listed for $STA/$chan"
+  rm -f $hlist $mlist
+  exit
+endif
+
+#
+# list the channels
+#
+echo ""
+@ icount = 1
+foreach x ("`cat $hlist`")
+  echo $icount "$x"
+  @ icount ++
+end
+
+echo ""
+echo -n 'Which one to modify? "all" for all listed channels. "done" to exit. '; set ans = "$<"
+set ans = `echo $ans | lcase`
+
+if ($ans == 'done') then
+  rm -f $hlist $mlist
+  exit
+endif
+
+if ($ans == 'all') then
+  set chx = $ch
+  set loc = $lc
+else
+  set str = `head -$ans $mlist | tail -1` 
+  set chx = `echo $str | awk '{print $2}'`
+  set loc = `echo $str | awk '{print $3}'`
+  set tm1 = `echo $str | awk '{print $4}'`
+endif
+
+echo -n 'Enter the new endtime (yyyyjjj-hh:mm:ss or "-" for open end): '; set ttt = "$<"
+
+if ($ttt == ''-'') then
+  set newtm2 = 9999999999.99900
+else
+  set jd = `echo $ttt | awk -F'-' '{print $1}'`
+  set tt = `echo $ttt | awk -F'-' '{print $2}'`
+  set newtm2 = `htoe $jd $tt | awk '{print $1}'`
+endif
+
+if ($ans == 'all') then
+  dbsubset $db/IDA.withdraw "sta=='$STA' && chan =~ /.$chx/ && loccode == '$loc'" | dbset -C - endtime '*' $newtm2
+else
+  dbsubset $db/IDA.withdraw "sta=='$STA' && chan == '$chx' && loccode == '$loc' && time == '$tm1'" | dbset -C - endtime '*' $newtm2
+endif
+
+goto REPEAT
+
+rm -f $hlist $mlist
+

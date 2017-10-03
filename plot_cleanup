@@ -1,0 +1,26 @@
+#! /bin/csh -f
+#=====================================================================
+# plot_cleanup
+#
+# script to move plot files that have already been reviewed from the
+# review area to a holding dir pending deletion.
+#=====================================================================
+
+set PLOT_DIR=/ida/dcc/qc/PLOTS
+set RESULTS_DIR=/ida/dcc/qc/MISC_DATA
+
+cd $PLOT_DIR
+
+# build list of files to move:
+
+echo -n tmp1.$$
+foreach f ("Parrival_info.txt  sensor_comparison_results.txt  surfacewave_info.txt")
+	set myfile=`echo $RESULTS_DIR $f | awk '{printf "%s/%s",$1,$2}'`
+	grep -v 'No Status' $myfile >> tmp1.$$
+end
+cat tmp1.$$ | awk '{printf "mv %s/%s %s/REVIEWED\n",$2,$1,$2}' > tmp2.$$
+
+source tmp2.$$
+rm -rf tmp1.$$ tmp2.$$
+
+exit(0)

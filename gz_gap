@@ -1,0 +1,80 @@
+#
+# called by gz_check
+# gz_gap outputs the time lag (in seconds) between the most recent gz file and the current time
+#
+if ($#argv != 2) then
+  echo usage: gz_gap dir sta
+  echo example: gz_gap /ida/stage aak
+  exit
+endif
+
+cd $1			# /ida/stage
+set sta  = $2
+
+set year = `date "+%Y"`
+set now  = `date "+%Y%j %H:%M:%S"`
+set sec0 = `htoe $now | awk '{print $1}'`
+
+  set TT = `ls -lt $sta/*.gz $sta/*.GZ | head -1 | awk '{print $6,$7,$8}'`
+  if ($TT[1] == 'Jan') then
+    set mo1 = 1
+  else if ($TT[1] == 'Feb') then
+    set mo1 = 2
+  else if ($TT[1] == 'Mar') then
+    set mo1 = 3
+  else if ($TT[1] == 'Apr') then
+    set mo1 = 4
+  else if ($TT[1] == 'May') then
+    set mo1 = 5
+  else if ($TT[1] == 'Jun') then
+    set mo1 = 6
+  else if ($TT[1] == 'Jul') then
+    set mo1 = 7
+  else if ($TT[1] == 'Aug') then
+    set mo1 = 8
+  else if ($TT[1] == 'Sep') then
+    set mo1 = 9
+  else if ($TT[1] == 'Oct') then
+    set mo1 = 10
+  else if ($TT[1] == 'Nov') then
+    set mo1 = 11
+  else if ($TT[1] == 'Dec') then
+    set mo1 = 12
+  endif
+
+set dy1 = `echo $TT[2]`
+set mm1 = `echo $TT[3]`
+
+set sec1 = `$ANTELOPE/bin/epoch $mo1/$dy1/$year $mm1 | awk '{print $1}'`
+@ sdiff = `echo $sec0 $sec1 | awk '{print $1-$2}'`
+
+#echo year is $year
+#echo now is $now
+#echo sec0 is $sec0
+#echo TT is $TT[1]
+#echo mo1 is $mo1
+#echo dy1 is $dy1
+#echo mm1 is $mm1
+#echo sec1 is $sec1
+#echo sdiff is $sdiff
+
+if ($sdiff < 0) then		# should not get here
+  @ year = $year - 1
+  set sec1 = `$ANTELOPE/bin/epoch $mo1/$dy1/$year $mm1 | awk '{print $1}'`
+  @ sdiff = `echo $sec0 $sec1 | awk '{print $1-$2}'`
+endif
+
+if ($sdiff >= 14400) then
+  set str = `etoh code=2 $sdiff`
+  set yr  = `echo $str | cut -c1-2 | awk '{printf "%d\n", $1}'`
+  set day = `echo $str | cut -c4-6 | awk '{printf "%d\n", $1}'`
+  set hr  = `echo $str | cut -c8-9 | awk '{printf "%d\n", $1}'`
+  if ($yr == '0') then
+    echo $day days and $hr hours
+  else
+    echo $yr years, $day days and $hr hours
+  endif
+  exit 9
+else
+  exit 0
+endif

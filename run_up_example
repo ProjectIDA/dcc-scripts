@@ -1,0 +1,14 @@
+#! /bin/sh -f
+export PATH=$PATH:/usr/local/bin
+MONTH=`date --date="$(date +%Y-%m-15) last month" +'%m'`
+YEAR=`date -d 'last month' +'%Y'`
+DAY=`date -d "-$(date +%d) day" +'%d'`
+echo $MONTH
+echo $YEAR
+echo $DAY
+pwd
+matlab -nodisplay -r "cd('/ida/dcc/matlab'); up_example($YEAR,$MONTH,1,$YEAR,$MONTH,$DAY)"
+cd -
+
+
+

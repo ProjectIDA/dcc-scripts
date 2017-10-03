@@ -1,0 +1,91 @@
+#!/bin/tcsh
+#
+# add_rec adds records of a bad data segment in a database table,
+# /ida/dcc/db/DMC/IDA.withdraw.
+#
+#
+if ($#argv != 4) then
+  echo ""
+  echo "  add_rec adds records of bad data segments in /ida/dcc/db/DMC/IDA.withdraw"
+  echo ""
+  echo "  Usage: add_rec sta chan time1 time2"
+  echo ""
+  echo "  example: add_rec pfo bhz10       2014100-10:20:30 2014101-00:00:00"
+  echo "  example: add_rec pfo bhz10,bhz00 2014100-10:20:30 2014101-00:00:00"
+  echo "  example: add_rec pfo all         2014100-10:20:30 2014101-00:00:00"
+  echo ""
+  echo "  'all' is to take all channels for a given station in a given period."
+  echo ""
+  exit
+endif
+
+set sta = $1
+set chan = $2
+set t1 = $3
+set t2 = $4
+
+set STA = `echo $sta | ucase`
+
+set jd1 = `echo $t1 | awk -F'-' '{print $1}'` 
+set tt1 = `echo $t1 | awk -F'-' '{print $2}'` 
+set tm1 = `htoe $jd1 $tt1 | awk '{print $1}'`
+
+if ($t2 == ''-'') then
+  set tm2 = 9999999999.99900
+  set t2 = 'no_endtime'
+else
+  set jd2 = `echo $t2 | awk -F'-' '{print $1}'` 
+  set tt2 = `echo $t2 | awk -F'-' '{print $2}'` 
+  set tm2 = `htoe $jd2 $tt2 | awk '{print $1}'`
+endif
+
+set db = /ida/dcc/db/DMC/
+
+set Alist = `dbsubset $db/IDA.seed2dmc "sta=='$STA' && (endtime>=$tm1 && time<=$tm2)" | dbselect - chan loccode | awk '{print $1$2}'| grep -v vm`
+
+set CHlist = `echo $chan | sed 's/,/ /g'`
+if ($chan == 'all') set CHlist = "$Alist"
+
+rm -f /tmp/jlist.$$
+touch /tmp/jlist.$$
+
+foreach CH ($CHlist)
+  set ch = `echo $CH | cut -c1-3`
+  set lc = `echo $CH | cut -c4-5`
+  echo $Alist | grep $CH >& /dev/null
+
+  if ($status != 0) then
+    echo ""
+    echo $STA $CH is not in the channel list, $db/IDA.seed2dmc 
+    echo $db/IDA.withdraw is NOT updated.
+    exit
+  else
+    echo $STA $CH $t1 $t2 >> /tmp/jlist.$$
+  endif
+end
+
+if (! -z /tmp/jlist.$$) then
+  echo ""
+  echo The followings will be added to $db/IDA.withdraw
+  echo ""
+  cat /tmp/jlist.$$
+endif
+rm /tmp/jlist.$$
+
+echo ""
+echo -n 'Is this correct? '; set ans = "$<"
+set ans = `echo $ans | cut -c1-1 | lcase`
+if ($ans == 'y') then
+  foreach CH ($CHlist)
+    set ch = `echo $CH | cut -c1-3`
+    set lc = `echo $CH | cut -c4-5`
+    echo $STA $ch $lc $tm1 $tm2 | awk '{printf "%-6s %-8s %-2s %17.5f %17.5f\n", $1,$2,$3,$4,$5}' >> $db/IDA.withdraw
+  end
+  dbsort -u -o $db/IDA.withdraw
+  echo ""
+  echo $db/IDA.withdraw is updated.
+else
+  echo ""
+  echo $db/IDA.withdraw is NOT updated.
+endif
+

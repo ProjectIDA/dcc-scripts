@@ -1,0 +1,32 @@
+#
+# VI_withdraw is to modify /ida/dcc/db/DMC/IDA.withdraw with vi.
+#
+set dbdir     = /ida/dcc/db/DMC
+set dbfile    = IDA.withdraw
+set dbfile_bk = $dbfile.`date +%s`
+
+echo ""
+echo -n 'Do you want to modify the entries in $dbdir/$dbfile? '; set ans = "$<"
+set ans = `echo $ans | lcase | cut -c1-1`
+if ($ans != 'y') then
+  echo ""
+  echo "Exiting without editing."
+  echo "If you want to modify $dbdir/$dbfile, rerun the script and answer yes."
+  exit
+else
+  cd $dbdir
+  cp -p $dbfile /tmp/$dbfile_bk
+  echo ""
+  echo Modifying $dbdir/$dbfile ...
+  sleep 3
+  vi $dbfile
+  echo ""
+  echo 'Here are the changes between new (<) and old (>)'
+  echo ""
+  diff $dbfile /tmp/$dbfile_bk
+  echo ""
+  echo "If it looks correct, please delete /tmp/$dbfile_bk"
+  echo "Otherwise, retrieve the original file from /tmp/$dbfile_bk "
+  echo ""
+endif
+

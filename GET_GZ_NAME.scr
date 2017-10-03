@@ -1,0 +1,37 @@
+#
+# This script is to list gz filenames between two gz files
+# It is useful to list missing gz files to get from a remote station.
+#
+# It requires two routines, hex2dec and dec2hex.
+#
+if ($#argv != 3) then
+  echo usage: GET_GZ_NAME.scr previous_gz_filename last_gz_filename number_of_gzfile_to_get
+  echo example: GET_GZ_NAME.scr 4612e00900000000006e8cc8.gz NULL 19
+  echo example: GET_GZ_NAME.scr 4612e00900000000006e8cc8.gz 4612e00900000000006f6b70.gz 0
+  exit
+endif
+
+set previous = $1
+set last     = $2
+set nfiles   = $3
+
+set path = ($path /ida/dcc/bin)
+
+set f1   = `echo $previous | cut -c1-16`
+set hex1 = `echo $previous | cut -c17-24`
+set n1   = `hex2dec $hex1 | awk '{print $2}'`
+
+if ($last != 'NULL') then
+  set f2   = `echo $last | cut -c1-16`
+  set hex2 = `echo $last | cut -c17-24`
+  set n2   = `hex2dec $hex2 | awk '{print $2}'`
+  @ nfiles = ( $n2 - $n1 ) / 3000
+endif
+
+set m1 = 1
+while ($m1 <= $nfiles)
+  @ n1 = $n1 + 3000
+  set fname = `dec2hex $n1 | awk '{print $2}'`
+  echo $f1$fname.gz
+  @ m1 ++
+end

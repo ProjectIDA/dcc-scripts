@@ -1,0 +1,96 @@
+#! /bin/csh -f
+#
+# $Id: run.r2q,v 1.7 2015/11/18 18:52:54 dauerbach Exp $
+#
+# Wrapper for daily processing of IDA10 Tee files to miniseed and taggin a 'Q'
+# Currently (2015-11-16) set up in crontab to run daily @ ~4am local time.
+#
+
+if ($#argv != 1) then
+    echo usage: run.r2q jdate
+    echo example: run.r2q 2014112
+    exit
+endif
+
+set jdate = $1
+if ($jdate == 'today') then
+    set jdate = `date "+%Y%j"`
+    @ jdate = $jdate - 1
+endif
+
+set admin = 'ezak@ucsd.edu,dauerbach@ucsd.edu'
+set path = (/ida/local/scripts $path)
+set db = /ida/dcc/db/DMC
+
+set list = `awk '{print $1}' $db/IDA.seed2dmc | sort -u | grep -v NRIL | grep -v ABKT`
+if ($status != 0) then 
+   echo "run.r2q: Error reading 'IDA.seed2dmc' file"
+   goto failure
+endif
+
+set LOG = /tmp/r2q_proc.LOG
+
+rm -f $LOG
+if ($status != 0) then
+   echo "run.r2q: Error deleting previous 'r2q_proc.LOG' file"
+   goto failure
+endif
+
+touch $LOG
+if ($status != 0) then
+   echo "run.r2q: Error initializing new $LOG file"
+   goto failure
+endif
+
+echo "" > $LOG
+echo "This report is available at idadcc:/tmp/r2q_proc.LOG.  It's updated daily." >> $LOG
+echo "Please look for lines marked with 'withdraw' or 'ERROR'." >> $LOG
+echo "" >> $LOG
+echo "Data from channels marked 'withdraw' will not be sent to DMC." >> $LOG
+echo "To examine data from these channels, run 'r2q_proc' with -x option." >> $LOG
+echo "" >> $LOG
+echo "" >> $LOG
+
+foreach sta ($list)
+   echo "r2q_proc $sta $jdate" >> $LOG
+   time r2q_proc $sta $jdate >>& $LOG
+
+   if ($status != 0) then
+      echo "run.r2q: Error processing $sta for $jdate"
+      goto failure
+   endif
+
+end
+
+Mail -s "Daily process info for $jdate" $admin < $LOG 
+if ($status != 0) then
+    echo "run.r2q: Error sending email to $admin for $jdate" >> $LOG
+    goto failure
+endif
+
+exit (0)
+
+
+failure:
+   echo "run.r2q: Execution failed."
+   exit (1)
+
+
+#
+# $Log: run.r2q,v $
+# Revision 1.7  2015/11/18 18:52:54  dauerbach
+# run.r2q: remove debugging code
+#
+# Revision 1.6  2015/11/18 18:46:52  dauerbach
+# additional adjustments to err checking for run.r2q, r2q_proc, gz_chk_raw
+#
+# Revision 1.5  2015/11/16 23:22:19  dauerbach
+# add to failure err msgs
+#
+# Revision 1.4  2015/11/16 21:54:43  dauerbach
+# Initial cvs load for production /ida/dcc/scripts r2q_proc & r2q_dataseg
+#
+# Revision 1.3  2015/11/16 20:09:28  dauerbach
+# Trying to get CVS keywords right, again
+#
+#
