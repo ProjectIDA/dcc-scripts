@@ -12,7 +12,8 @@ if __name__ == '__main__':
     COH_VAR = 'coh'
     parser = argparse.ArgumentParser(description="Plot a variable from APS anaysis 'Detail' results file")
     parser.add_argument('variable', choices=[AMP_VAR, ANG_VAR, COH_VAR], help='Variable to plot')
-    parser.add_argument('res_file', help='path of detailed results file')
+    parser.add_argument('res_file', help='Path of aps analysis detailed results file')
+    parser.add_argument('-a', '--all', action='store_true', help='Include values from ALL segments') #, dest='savepng')
     parser.add_argument('-s', '--save', action='store_true', help='Save plot to PNG file') #, dest='savepng')
     args = parser.parse_args()
 
@@ -34,7 +35,7 @@ if __name__ == '__main__':
             comment = (len(line) == 0) or (line.strip()[0] == '#')
             if not comment:
                 parts = line.split()
-                used = parts[12].upper() == 'OK'
+                used = args.all or (parts[12].upper() == 'OK')
                 if used:
                     sta = parts[0]
                     key = "{}-{}-{}".format(parts[1], parts[2], parts[3])
@@ -66,7 +67,7 @@ if __name__ == '__main__':
         plt.ylim( (ymin - yaxbuf, ymax + yaxbuf ) )
         plt.xlabel('Time')
         plt.ylabel(args.variable.upper())
-        plt.legend(loc='upper center', ncol=3, fontsize='small', handlelength=4.0)
+        plt.legend(loc='best', ncol=3, fontsize='small', handlelength=4.0)
         if args.save:
             plt.savefig(os.path.splitext(detfn)[0] + '-' + args.variable.upper() + '.png', dpi=300)
         plt.show()
