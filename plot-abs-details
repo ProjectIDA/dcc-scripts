@@ -1,0 +1,73 @@
+#!/usr/bin/env python
+import sys
+import argparse
+import os
+from datetime import datetime
+import matplotlib.pyplot as plt
+
+if __name__ == '__main__':
+
+    AMP_VAR = 'amp'
+    ANG_VAR = 'ang'
+    COH_VAR = 'coh'
+    parser = argparse.ArgumentParser(description="Plot a variable from APS anaysis 'Detail' results file")
+    parser.add_argument('variable', choices=[AMP_VAR, ANG_VAR, COH_VAR], help='Variable to plot')
+    parser.add_argument('res_file', help='path of detailed results file')
+    parser.add_argument('-s', '--save', action='store_true', help='Save plot to PNG file') #, dest='savepng')
+    args = parser.parse_args()
+
+    detfn = args.res_file
+    if not os.path.exists(detfn):
+        print('ERROR {}: File not found: {}'.format(__file__, detfn))
+        sys.exit(1)
+
+    with open(detfn, 'rt') as detfl:
+
+        times = {}
+        data = {
+            AMP_VAR : {},
+            ANG_VAR : {},
+            COH_VAR : {}
+            }
+
+        for line in detfl:
+            comment = (len(line) == 0) or (line.strip()[0] == '#')
+            if not comment:
+                parts = line.split()
+                used = parts[12].upper() == 'OK'
+                if used:
+                    sta = parts[0]
+                    key = "{}-{}-{}".format(parts[1], parts[2], parts[3])
+                    if not times.get(key, None):
+                        times[key] = []
+                        data[AMP_VAR][key] = []
+                        data[ANG_VAR][key] = []
+                        data[COH_VAR][key] = []
+                    times[key].append(datetime.fromtimestamp(float(parts[5])))
+                    data[AMP_VAR][key].append(float(parts[6]))
+                    data[ANG_VAR][key].append(float(parts[7]))
+                    data[COH_VAR][key].append(float(parts[10]))
+
+        plt.figure(1, figsize=(14, 6))
+
+        for key in sorted(times.keys()):
+            if key.upper().startswith('REF-PRI'):
+                style = '-'
+            elif key.upper().startswith('REF-SEC'):
+                style = '-.';
+            else:
+                style = ':'
+
+            plt.plot(times[key], data[args.variable][key], style, label=key, linewidth=1.75)
+
+        plt.suptitle(sta.upper() + ' APS ' + args.variable.upper() + ' Ratios')
+        ymin, ymax = plt.ylim()
+        yaxbuf = (ymax - ymin) *.05
+        plt.ylim( (ymin - yaxbuf, ymax + yaxbuf ) )
+        plt.xlabel('Time')
+        plt.ylabel(args.variable.upper())
+        plt.legend(loc='upper center', ncol=3, fontsize='small', handlelength=4.0)
+        if args.save:
+            plt.savefig(os.path.splitext(detfn)[0] + '-' + args.variable.upper() + '.png', dpi=300)
+        plt.show()
+        plt.close()
