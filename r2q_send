@@ -17,7 +17,7 @@ if ($#argv != 1) then
   echo "  records from the local computer to a remote Data Managment Center.'  Users will need"
   echo "  to contact DMC to get assigned host and port for such transfering before using it."
   echo ""
-  echo "  IDA has been assigned to use port 16105 for sending files to ringsub.iris.washington.edu"
+  echo "  IDA has been assigned to use port 16100 for sending files to ringsub.iris.washington.edu"
   echo ""
   echo "  To keep track the status of data transmission, miniseed2dmc creates a statefile in a local"
   echo "  working directory.  It also creates a SYNC file in the same directory to display/track the"
@@ -72,7 +72,7 @@ set dir   = /ida/tmp/daily/miniseed/$jdate
 # host and port are assigned by DMC
 #
 set host  = ringsub.iris.washington.edu
-set port  = 16105
+set port  = 16100
 
 set syncdir = /ida/tmp/daily/SYNC
 set aslsyncdir = /sync   # directory for ASL to pick up sync files to know what to pull from DMC for IDA/II
