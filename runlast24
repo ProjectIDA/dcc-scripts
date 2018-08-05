@@ -18,323 +18,323 @@ if ($status != 0) then
 endif
 
 
-last24 server=idahub.ucsd.edu sta=aak  chan=lhz lcode=00 file=aak-lhz00.gif  thumbnail=aak-lhz00_s.gif  clip=6 ratio=0.0065 cache=cache/aak-lhz00
-last24 server=idahub.ucsd.edu sta=aak  chan=lh1 lcode=00 file=aak-lh100.gif  thumbnail=aak-lh100_s.gif  clip=6 ratio=0.0065 cache=cache/aak-lh100
-last24 server=idahub.ucsd.edu sta=aak  chan=lh2 lcode=00 file=aak-lh200.gif  thumbnail=aak-lh200_s.gif  clip=6 ratio=0.0065 cache=cache/aak-lh200
-last24 server=idahub.ucsd.edu sta=aak  chan=lhz lcode=10 file=aak-lhz10.gif  thumbnail=aak-lhz10_s.gif  clip=6 ratio=0.0100 cache=cache/aak-lhz10
-last24 server=idahub.ucsd.edu sta=aak  chan=lh1 lcode=10 file=aak-lh110.gif  thumbnail=aak-lh110_s.gif  clip=6 ratio=0.0100 cache=cache/aak-lh110
-last24 server=idahub.ucsd.edu sta=aak  chan=lh2 lcode=10 file=aak-lh210.gif  thumbnail=aak-lh210_s.gif  clip=6 ratio=0.0100 cache=cache/aak-lh210
+last24 port=39137 server=idahub.ucsd.edu sta=aak  chan=lhz lcode=00 file=aak-lhz00.gif  thumbnail=aak-lhz00_s.gif  clip=6 ratio=0.0065 cache=cache/aak-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=aak  chan=lh1 lcode=00 file=aak-lh100.gif  thumbnail=aak-lh100_s.gif  clip=6 ratio=0.0065 cache=cache/aak-lh100
+last24 port=39137 server=idahub.ucsd.edu sta=aak  chan=lh2 lcode=00 file=aak-lh200.gif  thumbnail=aak-lh200_s.gif  clip=6 ratio=0.0065 cache=cache/aak-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=aak  chan=lhz lcode=10 file=aak-lhz10.gif  thumbnail=aak-lhz10_s.gif  clip=6 ratio=0.0100 cache=cache/aak-lhz10
+last24 port=39137 server=idahub.ucsd.edu sta=aak  chan=lh1 lcode=10 file=aak-lh110.gif  thumbnail=aak-lh110_s.gif  clip=6 ratio=0.0100 cache=cache/aak-lh110
+last24 port=39137 server=idahub.ucsd.edu sta=aak  chan=lh2 lcode=10 file=aak-lh210.gif  thumbnail=aak-lh210_s.gif  clip=6 ratio=0.0100 cache=cache/aak-lh210
 
-last24 server=idahub.ucsd.edu sta=abpo chan=lhz lcode=00 file=abpo-lhz00.gif thumbnail=abpo-lhz00_s.gif clip=6 ratio=0.0010 cache=cache/abpo-lhz00
-last24 server=idahub.ucsd.edu sta=abpo chan=lh1 lcode=00 file=abpo-lh100.gif thumbnail=abpo-lh100_s.gif clip=6 ratio=0.0010 cache=cache/abpo-lh100
-last24 server=idahub.ucsd.edu sta=abpo chan=lh2 lcode=00 file=abpo-lh200.gif thumbnail=abpo-lh200_s.gif clip=6 ratio=0.0010 cache=cache/abpo-lh200
-last24 server=idahub.ucsd.edu sta=abpo chan=lhz lcode=10 file=abpo-lhz10.gif thumbnail=abpo-lhz10_s.gif clip=6 ratio=0.0010 cache=cache/abpo-lhz10
-last24 server=idahub.ucsd.edu sta=abpo chan=lh1 lcode=10 file=abpo-lh110.gif thumbnail=abpo-lh110_s.gif clip=6 ratio=0.0010 cache=cache/abpo-lh110
-last24 server=idahub.ucsd.edu sta=abpo chan=lh2 lcode=10 file=abpo-lh210.gif thumbnail=abpo-lh210_s.gif clip=6 ratio=0.0010 cache=cache/abpo-lh210
+last24 port=39137 server=idahub.ucsd.edu sta=abpo chan=lhz lcode=00 file=abpo-lhz00.gif thumbnail=abpo-lhz00_s.gif clip=6 ratio=0.0010 cache=cache/abpo-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=abpo chan=lh1 lcode=00 file=abpo-lh100.gif thumbnail=abpo-lh100_s.gif clip=6 ratio=0.0010 cache=cache/abpo-lh100
+last24 port=39137 server=idahub.ucsd.edu sta=abpo chan=lh2 lcode=00 file=abpo-lh200.gif thumbnail=abpo-lh200_s.gif clip=6 ratio=0.0010 cache=cache/abpo-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=abpo chan=lhz lcode=10 file=abpo-lhz10.gif thumbnail=abpo-lhz10_s.gif clip=6 ratio=0.0010 cache=cache/abpo-lhz10
+last24 port=39137 server=idahub.ucsd.edu sta=abpo chan=lh1 lcode=10 file=abpo-lh110.gif thumbnail=abpo-lh110_s.gif clip=6 ratio=0.0010 cache=cache/abpo-lh110
+last24 port=39137 server=idahub.ucsd.edu sta=abpo chan=lh2 lcode=10 file=abpo-lh210.gif thumbnail=abpo-lh210_s.gif clip=6 ratio=0.0010 cache=cache/abpo-lh210
 
-#last24 server=idahub.ucsd.edu sta=ale  chan=lhz lcode=00 file=ale-lhz00.gif  thumbnail=ale-lhz00_s.gif  clip=6 ratio=0.0065 cache=cache/ale-lhz00
-#last24 server=idahub.ucsd.edu sta=ale  chan=lh1 lcode=00 file=ale-lh100.gif  thumbnail=ale-lh100_s.gif  clip=6 ratio=0.0065 cache=cache/ale-lh100
-#last24 server=idahub.ucsd.edu sta=ale  chan=lh2 lcode=00 file=ale-lh200.gif  thumbnail=ale-lh200_s.gif  clip=6 ratio=0.0065 cache=cache/ale-lh200
-last24 server=idahub.ucsd.edu sta=ale  chan=lhz lcode=10 file=ale-lhz10.gif  thumbnail=ale-lhz10_s.gif  clip=6 ratio=0.0040 cache=cache/ale-lhz10
-last24 server=idahub.ucsd.edu sta=ale  chan=lh1 lcode=10 file=ale-lh110.gif  thumbnail=ale-lh110_s.gif  clip=6 ratio=0.0040 cache=cache/ale-lh110
-last24 server=idahub.ucsd.edu sta=ale  chan=lh2 lcode=10 file=ale-lh210.gif  thumbnail=ale-lh210_s.gif  clip=6 ratio=0.0040 cache=cache/ale-lh210
+#last24 port=39137 server=idahub.ucsd.edu sta=ale  chan=lhz lcode=00 file=ale-lhz00.gif  thumbnail=ale-lhz00_s.gif  clip=6 ratio=0.0065 cache=cache/ale-lhz00
+#last24 port=39137 server=idahub.ucsd.edu sta=ale  chan=lh1 lcode=00 file=ale-lh100.gif  thumbnail=ale-lh100_s.gif  clip=6 ratio=0.0065 cache=cache/ale-lh100
+#last24 port=39137 server=idahub.ucsd.edu sta=ale  chan=lh2 lcode=00 file=ale-lh200.gif  thumbnail=ale-lh200_s.gif  clip=6 ratio=0.0065 cache=cache/ale-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=ale  chan=lhz lcode=10 file=ale-lhz10.gif  thumbnail=ale-lhz10_s.gif  clip=6 ratio=0.0040 cache=cache/ale-lhz10
+last24 port=39137 server=idahub.ucsd.edu sta=ale  chan=lh1 lcode=10 file=ale-lh110.gif  thumbnail=ale-lh110_s.gif  clip=6 ratio=0.0040 cache=cache/ale-lh110
+last24 port=39137 server=idahub.ucsd.edu sta=ale  chan=lh2 lcode=10 file=ale-lh210.gif  thumbnail=ale-lh210_s.gif  clip=6 ratio=0.0040 cache=cache/ale-lh210
 
-last24 server=idahub.ucsd.edu sta=aru  chan=lhz lcode=00 file=aru-lhz00.gif  thumbnail=aru-lhz00_s.gif  clip=6 ratio=0.0035 cache=cache/aru-lhz00
-last24 server=idahub.ucsd.edu sta=aru  chan=lh1 lcode=00 file=aru-lh100.gif  thumbnail=aru-lh100_s.gif  clip=6 ratio=0.0035 cache=cache/aru-lhz00
-last24 server=idahub.ucsd.edu sta=aru  chan=lh2 lcode=00 file=aru-lh200.gif  thumbnail=aru-lh200_s.gif  clip=6 ratio=0.0035 cache=cache/aru-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=aru  chan=lhz lcode=00 file=aru-lhz00.gif  thumbnail=aru-lhz00_s.gif  clip=6 ratio=0.0035 cache=cache/aru-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=aru  chan=lh1 lcode=00 file=aru-lh100.gif  thumbnail=aru-lh100_s.gif  clip=6 ratio=0.0035 cache=cache/aru-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=aru  chan=lh2 lcode=00 file=aru-lh200.gif  thumbnail=aru-lh200_s.gif  clip=6 ratio=0.0035 cache=cache/aru-lhz00
 
-last24 server=idahub.ucsd.edu sta=ascn chan=lhz lcode=00 file=ascn-lhz00.gif thumbnail=ascn-lhz00_s.gif clip=6 ratio=0.000001 cache=cache/ascn-lhz00
-last24 server=idahub.ucsd.edu sta=ascn chan=lh1 lcode=00 file=ascn-lh100.gif thumbnail=ascn-lh100_s.gif clip=6 ratio=0.0005 cache=cache/ascn-lh100
-last24 server=idahub.ucsd.edu sta=ascn chan=lh2 lcode=00 file=ascn-lh200.gif thumbnail=ascn-lh200_s.gif clip=6 ratio=0.0005 cache=cache/ascn-lh200
-last24 server=idahub.ucsd.edu sta=ascn chan=lhz lcode=10 file=ascn-lhz10.gif thumbnail=ascn-lhz10_s.gif clip=6 ratio=0.0010 cache=cache/ascn-lhz10
-last24 server=idahub.ucsd.edu sta=ascn chan=lh1 lcode=10 file=ascn-lh110.gif thumbnail=ascn-lh110_s.gif clip=6 ratio=0.0010 cache=cache/ascn-lh110
-last24 server=idahub.ucsd.edu sta=ascn chan=lh2 lcode=10 file=ascn-lh210.gif thumbnail=ascn-lh210_s.gif clip=6 ratio=0.0010 cache=cache/ascn-lh210
+last24 port=39137 server=idahub.ucsd.edu sta=ascn chan=lhz lcode=00 file=ascn-lhz00.gif thumbnail=ascn-lhz00_s.gif clip=6 ratio=0.000001 cache=cache/ascn-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=ascn chan=lh1 lcode=00 file=ascn-lh100.gif thumbnail=ascn-lh100_s.gif clip=6 ratio=0.0005 cache=cache/ascn-lh100
+last24 port=39137 server=idahub.ucsd.edu sta=ascn chan=lh2 lcode=00 file=ascn-lh200.gif thumbnail=ascn-lh200_s.gif clip=6 ratio=0.0005 cache=cache/ascn-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=ascn chan=lhz lcode=10 file=ascn-lhz10.gif thumbnail=ascn-lhz10_s.gif clip=6 ratio=0.0010 cache=cache/ascn-lhz10
+last24 port=39137 server=idahub.ucsd.edu sta=ascn chan=lh1 lcode=10 file=ascn-lh110.gif thumbnail=ascn-lh110_s.gif clip=6 ratio=0.0010 cache=cache/ascn-lh110
+last24 port=39137 server=idahub.ucsd.edu sta=ascn chan=lh2 lcode=10 file=ascn-lh210.gif thumbnail=ascn-lh210_s.gif clip=6 ratio=0.0010 cache=cache/ascn-lh210
 
-last24 server=idahub.ucsd.edu sta=bfo  chan=lhz lcode=00 file=bfo-lhz00.gif  thumbnail=bfo-lhz00_s.gif  clip=6 ratio=0.0020 cache=cache/bfo-lhz00
-last24 server=idahub.ucsd.edu sta=bfo  chan=lhn lcode=00 file=bfo-lhn00.gif  thumbnail=bfo-lhn00_s.gif  clip=6 ratio=0.0020 cache=cache/bfo-lhn00
-last24 server=idahub.ucsd.edu sta=bfo  chan=lhe lcode=00 file=bfo-lhe00.gif  thumbnail=bfo-lhe00_s.gif  clip=6 ratio=0.0020 cache=cache/bfo-lhe00
+last24 port=39137 server=idahub.ucsd.edu sta=bfo  chan=lhz lcode=00 file=bfo-lhz00.gif  thumbnail=bfo-lhz00_s.gif  clip=6 ratio=0.0020 cache=cache/bfo-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=bfo  chan=lhn lcode=00 file=bfo-lhn00.gif  thumbnail=bfo-lhn00_s.gif  clip=6 ratio=0.0020 cache=cache/bfo-lhn00
+last24 port=39137 server=idahub.ucsd.edu sta=bfo  chan=lhe lcode=00 file=bfo-lhe00.gif  thumbnail=bfo-lhe00_s.gif  clip=6 ratio=0.0020 cache=cache/bfo-lhe00
 
-last24 server=idahub.ucsd.edu sta=borg chan=lhz lcode=00 file=borg-lhz00.gif thumbnail=borg-lhz00_s.gif clip=6 ratio=0.0015 cache=cache/borg-lhz00
-last24 server=idahub.ucsd.edu sta=borg chan=lh1 lcode=00 file=borg-lh100.gif thumbnail=borg-lh100_s.gif clip=6 ratio=0.0015 cache=cache/borg-lh100
-last24 server=idahub.ucsd.edu sta=borg chan=lh2 lcode=00 file=borg-lh200.gif thumbnail=borg-lh200_s.gif clip=6 ratio=0.0015 cache=cache/borg-lh200
-last24 server=idahub.ucsd.edu sta=borg chan=lhz lcode=10 file=borg-lhz10.gif thumbnail=borg-lhz10_s.gif clip=6 ratio=0.0015 cache=cache/borg-lhz10
-last24 server=idahub.ucsd.edu sta=borg chan=lh1 lcode=10 file=borg-lh110.gif thumbnail=borg-lh110_s.gif clip=6 ratio=0.0015 cache=cache/borg-lh110
-last24 server=idahub.ucsd.edu sta=borg chan=lh2 lcode=10 file=borg-lh210.gif thumbnail=borg-lh210_s.gif clip=6 ratio=0.0015 cache=cache/borg-lh210
+last24 port=39137 server=idahub.ucsd.edu sta=borg chan=lhz lcode=00 file=borg-lhz00.gif thumbnail=borg-lhz00_s.gif clip=6 ratio=0.0015 cache=cache/borg-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=borg chan=lh1 lcode=00 file=borg-lh100.gif thumbnail=borg-lh100_s.gif clip=6 ratio=0.0015 cache=cache/borg-lh100
+last24 port=39137 server=idahub.ucsd.edu sta=borg chan=lh2 lcode=00 file=borg-lh200.gif thumbnail=borg-lh200_s.gif clip=6 ratio=0.0015 cache=cache/borg-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=borg chan=lhz lcode=10 file=borg-lhz10.gif thumbnail=borg-lhz10_s.gif clip=6 ratio=0.0015 cache=cache/borg-lhz10
+last24 port=39137 server=idahub.ucsd.edu sta=borg chan=lh1 lcode=10 file=borg-lh110.gif thumbnail=borg-lh110_s.gif clip=6 ratio=0.0015 cache=cache/borg-lh110
+last24 port=39137 server=idahub.ucsd.edu sta=borg chan=lh2 lcode=10 file=borg-lh210.gif thumbnail=borg-lh210_s.gif clip=6 ratio=0.0015 cache=cache/borg-lh210
 
-last24 server=idahub.ucsd.edu sta=brvk chan=lhz lcode=00 file=brvk-lhz00.gif thumbnail=brvk-lhz00_s.gif clip=6 ratio=0.0040 cache=cache/brvk-lhz00
-last24 server=idahub.ucsd.edu sta=brvk chan=lh1 lcode=00 file=brvk-lh100.gif thumbnail=brvk-lh100_s.gif clip=6 ratio=0.0040 cache=cache/brvk-lh100
-last24 server=idahub.ucsd.edu sta=brvk chan=lh2 lcode=00 file=brvk-lh200.gif thumbnail=brvk-lh200_s.gif clip=6 ratio=0.0040 cache=cache/brvk-lh200
-last24 server=idahub.ucsd.edu sta=brvk chan=lhz lcode=10 file=brvk-lhz10.gif thumbnail=brvk-lhz10_s.gif clip=6 ratio=0.0100 cache=cache/brvk-lhz10
-last24 server=idahub.ucsd.edu sta=brvk chan=lh1 lcode=10 file=brvk-lh110.gif thumbnail=brvk-lh110_s.gif clip=6 ratio=0.0100 cache=cache/brvk-lh110
-last24 server=idahub.ucsd.edu sta=brvk chan=lh2 lcode=10 file=brvk-lh210.gif thumbnail=brvk-lh210_s.gif clip=6 ratio=0.0100 cache=cache/brvk-lh210
+last24 port=39137 server=idahub.ucsd.edu sta=brvk chan=lhz lcode=00 file=brvk-lhz00.gif thumbnail=brvk-lhz00_s.gif clip=6 ratio=0.0040 cache=cache/brvk-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=brvk chan=lh1 lcode=00 file=brvk-lh100.gif thumbnail=brvk-lh100_s.gif clip=6 ratio=0.0040 cache=cache/brvk-lh100
+last24 port=39137 server=idahub.ucsd.edu sta=brvk chan=lh2 lcode=00 file=brvk-lh200.gif thumbnail=brvk-lh200_s.gif clip=6 ratio=0.0040 cache=cache/brvk-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=brvk chan=lhz lcode=10 file=brvk-lhz10.gif thumbnail=brvk-lhz10_s.gif clip=6 ratio=0.0100 cache=cache/brvk-lhz10
+last24 port=39137 server=idahub.ucsd.edu sta=brvk chan=lh1 lcode=10 file=brvk-lh110.gif thumbnail=brvk-lh110_s.gif clip=6 ratio=0.0100 cache=cache/brvk-lh110
+last24 port=39137 server=idahub.ucsd.edu sta=brvk chan=lh2 lcode=10 file=brvk-lh210.gif thumbnail=brvk-lh210_s.gif clip=6 ratio=0.0100 cache=cache/brvk-lh210
 
-last24 server=idahub.ucsd.edu sta=cmla chan=lhz lcode=00 file=cmla-lhz00.gif thumbnail=cmla-lhz00_s.gif clip=6 ratio=0.0008 cache=cache/cmla-lhz00
-last24 server=idahub.ucsd.edu sta=cmla chan=lh1 lcode=00 file=cmla-lh100.gif thumbnail=cmla-lh100_s.gif clip=6 ratio=0.0008 cache=cache/cmla-lh100
-last24 server=idahub.ucsd.edu sta=cmla chan=lh2 lcode=00 file=cmla-lh200.gif thumbnail=cmla-lh200_s.gif clip=6 ratio=0.0008 cache=cache/cmla-lh200
-last24 server=idahub.ucsd.edu sta=cmla chan=lhz lcode=10 file=cmla-lhz10.gif thumbnail=cmla-lhz10_s.gif clip=6 ratio=0.0008 cache=cache/cmla-lhz10
-last24 server=idahub.ucsd.edu sta=cmla chan=lh1 lcode=10 file=cmla-lh110.gif thumbnail=cmla-lh110_s.gif clip=6 ratio=0.0008 cache=cache/cmla-lh110
-last24 server=idahub.ucsd.edu sta=cmla chan=lh2 lcode=10 file=cmla-lh210.gif thumbnail=cmla-lh210_s.gif clip=6 ratio=0.0008 cache=cache/cmla-lh210
+last24 port=39137 server=idahub.ucsd.edu sta=cmla chan=lhz lcode=00 file=cmla-lhz00.gif thumbnail=cmla-lhz00_s.gif clip=6 ratio=0.0008 cache=cache/cmla-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=cmla chan=lh1 lcode=00 file=cmla-lh100.gif thumbnail=cmla-lh100_s.gif clip=6 ratio=0.0008 cache=cache/cmla-lh100
+last24 port=39137 server=idahub.ucsd.edu sta=cmla chan=lh2 lcode=00 file=cmla-lh200.gif thumbnail=cmla-lh200_s.gif clip=6 ratio=0.0008 cache=cache/cmla-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=cmla chan=lhz lcode=10 file=cmla-lhz10.gif thumbnail=cmla-lhz10_s.gif clip=6 ratio=0.0008 cache=cache/cmla-lhz10
+last24 port=39137 server=idahub.ucsd.edu sta=cmla chan=lh1 lcode=10 file=cmla-lh110.gif thumbnail=cmla-lh110_s.gif clip=6 ratio=0.0008 cache=cache/cmla-lh110
+last24 port=39137 server=idahub.ucsd.edu sta=cmla chan=lh2 lcode=10 file=cmla-lh210.gif thumbnail=cmla-lh210_s.gif clip=6 ratio=0.0008 cache=cache/cmla-lh210
 
-last24 server=idahub.ucsd.edu sta=coco chan=lhz lcode=00 file=coco-lhz00.gif thumbnail=coco-lhz00_s.gif clip=6 ratio=0.0010 cache=cache/coco-lhz00
-last24 server=idahub.ucsd.edu sta=coco chan=lh1 lcode=00 file=coco-lh100.gif thumbnail=coco-lh100_s.gif clip=6 ratio=0.0010 cache=cache/coco-lh100
-last24 server=idahub.ucsd.edu sta=coco chan=lh2 lcode=00 file=coco-lh200.gif thumbnail=coco-lh200_s.gif clip=6 ratio=0.0010 cache=cache/coco-lh200
-last24 server=idahub.ucsd.edu sta=coco chan=lhz lcode=10 file=coco-lhz10.gif thumbnail=coco-lhz10_s.gif clip=6 ratio=0.0005 cache=cache/coco-lhz10
-last24 server=idahub.ucsd.edu sta=coco chan=lh1 lcode=10 file=coco-lh110.gif thumbnail=coco-lh110_s.gif clip=6 ratio=0.0005 cache=cache/coco-lh110
-last24 server=idahub.ucsd.edu sta=coco chan=lh2 lcode=10 file=coco-lh210.gif thumbnail=coco-lh210_s.gif clip=6 ratio=0.0005 cache=cache/coco-lh210
+last24 port=39137 server=idahub.ucsd.edu sta=coco chan=lhz lcode=00 file=coco-lhz00.gif thumbnail=coco-lhz00_s.gif clip=6 ratio=0.0010 cache=cache/coco-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=coco chan=lh1 lcode=00 file=coco-lh100.gif thumbnail=coco-lh100_s.gif clip=6 ratio=0.0010 cache=cache/coco-lh100
+last24 port=39137 server=idahub.ucsd.edu sta=coco chan=lh2 lcode=00 file=coco-lh200.gif thumbnail=coco-lh200_s.gif clip=6 ratio=0.0010 cache=cache/coco-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=coco chan=lhz lcode=10 file=coco-lhz10.gif thumbnail=coco-lhz10_s.gif clip=6 ratio=0.0005 cache=cache/coco-lhz10
+last24 port=39137 server=idahub.ucsd.edu sta=coco chan=lh1 lcode=10 file=coco-lh110.gif thumbnail=coco-lh110_s.gif clip=6 ratio=0.0005 cache=cache/coco-lh110
+last24 port=39137 server=idahub.ucsd.edu sta=coco chan=lh2 lcode=10 file=coco-lh210.gif thumbnail=coco-lh210_s.gif clip=6 ratio=0.0005 cache=cache/coco-lh210
 
-last24 server=idahub.ucsd.edu sta=dgar chan=lhz lcode=00 file=dgar-lhz00.gif thumbnail=dgar-lhz00_s.gif clip=6 ratio=0.0003 cache=cache/dgar-lhz00
-last24 server=idahub.ucsd.edu sta=dgar chan=lh1 lcode=00 file=dgar-lh100.gif thumbnail=dgar-lh100_s.gif clip=6 ratio=0.0003 cache=cache/dgar-lh100
-last24 server=idahub.ucsd.edu sta=dgar chan=lh2 lcode=00 file=dgar-lh200.gif thumbnail=dgar-lh200_s.gif clip=6 ratio=0.0003 cache=cache/dgar-lh200
-last24 server=idahub.ucsd.edu sta=dgar chan=lhz lcode=10 file=dgar-lhz10.gif thumbnail=dgar-lhz10_s.gif clip=6 ratio=0.0003 cache=cache/dgar-lhz10
-last24 server=idahub.ucsd.edu sta=dgar chan=lh1 lcode=10 file=dgar-lh110.gif thumbnail=dgar-lh110_s.gif clip=6 ratio=0.0003 cache=cache/dgar-lh110
-last24 server=idahub.ucsd.edu sta=dgar chan=lh2 lcode=10 file=dgar-lh210.gif thumbnail=dgar-lh210_s.gif clip=6 ratio=0.0003 cache=cache/dgar-lh210
+last24 port=39137 server=idahub.ucsd.edu sta=dgar chan=lhz lcode=00 file=dgar-lhz00.gif thumbnail=dgar-lhz00_s.gif clip=6 ratio=0.0003 cache=cache/dgar-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=dgar chan=lh1 lcode=00 file=dgar-lh100.gif thumbnail=dgar-lh100_s.gif clip=6 ratio=0.0003 cache=cache/dgar-lh100
+last24 port=39137 server=idahub.ucsd.edu sta=dgar chan=lh2 lcode=00 file=dgar-lh200.gif thumbnail=dgar-lh200_s.gif clip=6 ratio=0.0003 cache=cache/dgar-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=dgar chan=lhz lcode=10 file=dgar-lhz10.gif thumbnail=dgar-lhz10_s.gif clip=6 ratio=0.0003 cache=cache/dgar-lhz10
+last24 port=39137 server=idahub.ucsd.edu sta=dgar chan=lh1 lcode=10 file=dgar-lh110.gif thumbnail=dgar-lh110_s.gif clip=6 ratio=0.0003 cache=cache/dgar-lh110
+last24 port=39137 server=idahub.ucsd.edu sta=dgar chan=lh2 lcode=10 file=dgar-lh210.gif thumbnail=dgar-lh210_s.gif clip=6 ratio=0.0003 cache=cache/dgar-lh210
 
-last24 server=idahub.ucsd.edu sta=efi chan=lhz lcode=00 file=efi-lhz00.gif thumbnail=efi-lhz00_s.gif clip=6 ratio=0.0005 cache=cache/efi-lhz00
-last24 server=idahub.ucsd.edu sta=efi chan=lh1 lcode=00 file=efi-lh100.gif thumbnail=efi-lh100_s.gif clip=6 ratio=0.0005 cache=cache/efi-lh100
-last24 server=idahub.ucsd.edu sta=efi chan=lh2 lcode=00 file=efi-lh200.gif thumbnail=efi-lh200_s.gif clip=6 ratio=0.0005 cache=cache/efi-lh200
-last24 server=idahub.ucsd.edu sta=efi chan=lhz lcode=10 file=efi-lhz10.gif thumbnail=efi-lhz10_s.gif clip=6 ratio=0.0007 cache=cache/efi-lhz10
-last24 server=idahub.ucsd.edu sta=efi chan=lh1 lcode=10 file=efi-lh110.gif thumbnail=efi-lh110_s.gif clip=6 ratio=0.0007 cache=cache/efi-lh110
-last24 server=idahub.ucsd.edu sta=efi chan=lh2 lcode=10 file=efi-lh210.gif thumbnail=efi-lh210_s.gif clip=6 ratio=0.0007 cache=cache/efi-lh210
+last24 port=39137 server=idahub.ucsd.edu sta=efi chan=lhz lcode=00 file=efi-lhz00.gif thumbnail=efi-lhz00_s.gif clip=6 ratio=0.0005 cache=cache/efi-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=efi chan=lh1 lcode=00 file=efi-lh100.gif thumbnail=efi-lh100_s.gif clip=6 ratio=0.0005 cache=cache/efi-lh100
+last24 port=39137 server=idahub.ucsd.edu sta=efi chan=lh2 lcode=00 file=efi-lh200.gif thumbnail=efi-lh200_s.gif clip=6 ratio=0.0005 cache=cache/efi-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=efi chan=lhz lcode=10 file=efi-lhz10.gif thumbnail=efi-lhz10_s.gif clip=6 ratio=0.0007 cache=cache/efi-lhz10
+last24 port=39137 server=idahub.ucsd.edu sta=efi chan=lh1 lcode=10 file=efi-lh110.gif thumbnail=efi-lh110_s.gif clip=6 ratio=0.0007 cache=cache/efi-lh110
+last24 port=39137 server=idahub.ucsd.edu sta=efi chan=lh2 lcode=10 file=efi-lh210.gif thumbnail=efi-lh210_s.gif clip=6 ratio=0.0007 cache=cache/efi-lh210
 
-last24 server=idahub.ucsd.edu sta=erm chan=lhz lcode=00 file=erm-lhz00.gif thumbnail=erm-lhz00_s.gif clip=6 ratio=0.0010 cache=cache/erm-lhz00
-last24 server=idahub.ucsd.edu sta=erm chan=lh1 lcode=00 file=erm-lh100.gif thumbnail=erm-lh100_s.gif clip=6 ratio=0.0010 cache=cache/erm-lh100
-last24 server=idahub.ucsd.edu sta=erm chan=lh2 lcode=00 file=erm-lh200.gif thumbnail=erm-lh200_s.gif clip=6 ratio=0.0010 cache=cache/erm-lh200
-last24 server=idahub.ucsd.edu sta=erm chan=lhz lcode=10 file=erm-lhz10.gif thumbnail=erm-lhz10_s.gif clip=6 ratio=0.0010 cache=cache/erm-lhz10
-last24 server=idahub.ucsd.edu sta=erm chan=lh1 lcode=10 file=erm-lh110.gif thumbnail=erm-lh110_s.gif clip=6 ratio=0.0010 cache=cache/erm-lh110
-last24 server=idahub.ucsd.edu sta=erm chan=lh2 lcode=10 file=erm-lh210.gif thumbnail=erm-lh210_s.gif clip=6 ratio=0.0010 cache=cache/erm-lh210
+last24 port=39137 server=idahub.ucsd.edu sta=erm chan=lhz lcode=00 file=erm-lhz00.gif thumbnail=erm-lhz00_s.gif clip=6 ratio=0.0010 cache=cache/erm-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=erm chan=lh1 lcode=00 file=erm-lh100.gif thumbnail=erm-lh100_s.gif clip=6 ratio=0.0010 cache=cache/erm-lh100
+last24 port=39137 server=idahub.ucsd.edu sta=erm chan=lh2 lcode=00 file=erm-lh200.gif thumbnail=erm-lh200_s.gif clip=6 ratio=0.0010 cache=cache/erm-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=erm chan=lhz lcode=10 file=erm-lhz10.gif thumbnail=erm-lhz10_s.gif clip=6 ratio=0.0010 cache=cache/erm-lhz10
+last24 port=39137 server=idahub.ucsd.edu sta=erm chan=lh1 lcode=10 file=erm-lh110.gif thumbnail=erm-lh110_s.gif clip=6 ratio=0.0010 cache=cache/erm-lh110
+last24 port=39137 server=idahub.ucsd.edu sta=erm chan=lh2 lcode=10 file=erm-lh210.gif thumbnail=erm-lh210_s.gif clip=6 ratio=0.0010 cache=cache/erm-lh210
 
-last24 server=idahub.ucsd.edu sta=esk chan=lhz lcode=00 file=esk-lhz00.gif thumbnail=esk-lhz00_s.gif clip=6 ratio=0.0008 cache=cache/esk-lhz00
-last24 server=idahub.ucsd.edu sta=esk chan=lh1 lcode=00 file=esk-lh100.gif thumbnail=esk-lh100_s.gif clip=6 ratio=0.0008 cache=cache/esk-lh100
-last24 server=idahub.ucsd.edu sta=esk chan=lh2 lcode=00 file=esk-lh200.gif thumbnail=esk-lh200_s.gif clip=6 ratio=0.0008 cache=cache/esk-lh200
-last24 server=idahub.ucsd.edu sta=esk chan=lhz lcode=10 file=esk-lhz10.gif thumbnail=esk-lhz10_s.gif clip=6 ratio=0.0008 cache=cache/esk-lhz10
-last24 server=idahub.ucsd.edu sta=esk chan=lh1 lcode=10 file=esk-lh110.gif thumbnail=esk-lh110_s.gif clip=6 ratio=0.0008 cache=cache/esk-lh110
-last24 server=idahub.ucsd.edu sta=esk chan=lh2 lcode=10 file=esk-lh210.gif thumbnail=esk-lh210_s.gif clip=6 ratio=0.0008 cache=cache/esk-lh210
+last24 port=39137 server=idahub.ucsd.edu sta=esk chan=lhz lcode=00 file=esk-lhz00.gif thumbnail=esk-lhz00_s.gif clip=6 ratio=0.0008 cache=cache/esk-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=esk chan=lh1 lcode=00 file=esk-lh100.gif thumbnail=esk-lh100_s.gif clip=6 ratio=0.0008 cache=cache/esk-lh100
+last24 port=39137 server=idahub.ucsd.edu sta=esk chan=lh2 lcode=00 file=esk-lh200.gif thumbnail=esk-lh200_s.gif clip=6 ratio=0.0008 cache=cache/esk-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=esk chan=lhz lcode=10 file=esk-lhz10.gif thumbnail=esk-lhz10_s.gif clip=6 ratio=0.0008 cache=cache/esk-lhz10
+last24 port=39137 server=idahub.ucsd.edu sta=esk chan=lh1 lcode=10 file=esk-lh110.gif thumbnail=esk-lh110_s.gif clip=6 ratio=0.0008 cache=cache/esk-lh110
+last24 port=39137 server=idahub.ucsd.edu sta=esk chan=lh2 lcode=10 file=esk-lh210.gif thumbnail=esk-lh210_s.gif clip=6 ratio=0.0008 cache=cache/esk-lh210
 
-last24 server=idahub.ucsd.edu sta=ffc chan=lhz lcode=00 file=ffc-lhz00.gif thumbnail=ffc-lhz00_s.gif clip=6 ratio=0.0020 cache=cache/ffc-lhz00
-last24 server=idahub.ucsd.edu sta=ffc chan=lh1 lcode=00 file=ffc-lh100.gif thumbnail=ffc-lh100_s.gif clip=6 ratio=0.0020 cache=cache/ffc-lh100
-last24 server=idahub.ucsd.edu sta=ffc chan=lh2 lcode=00 file=ffc-lh200.gif thumbnail=ffc-lh200_s.gif clip=6 ratio=0.0020 cache=cache/ffc-lh200
-last24 server=idahub.ucsd.edu sta=ffc chan=lhz lcode=10 file=ffc-lhz10.gif thumbnail=ffc-lhz10_s.gif clip=6 ratio=0.0020 cache=cache/ffc-lhz10
-last24 server=idahub.ucsd.edu sta=ffc chan=lh1 lcode=10 file=ffc-lh110.gif thumbnail=ffc-lh110_s.gif clip=6 ratio=0.0020 cache=cache/ffc-lh110
-last24 server=idahub.ucsd.edu sta=ffc chan=lh2 lcode=10 file=ffc-lh210.gif thumbnail=ffc-lh210_s.gif clip=6 ratio=0.0020 cache=cache/ffc-lh210
+last24 port=39137 server=idahub.ucsd.edu sta=ffc chan=lhz lcode=00 file=ffc-lhz00.gif thumbnail=ffc-lhz00_s.gif clip=6 ratio=0.0020 cache=cache/ffc-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=ffc chan=lh1 lcode=00 file=ffc-lh100.gif thumbnail=ffc-lh100_s.gif clip=6 ratio=0.0020 cache=cache/ffc-lh100
+last24 port=39137 server=idahub.ucsd.edu sta=ffc chan=lh2 lcode=00 file=ffc-lh200.gif thumbnail=ffc-lh200_s.gif clip=6 ratio=0.0020 cache=cache/ffc-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=ffc chan=lhz lcode=10 file=ffc-lhz10.gif thumbnail=ffc-lhz10_s.gif clip=6 ratio=0.0020 cache=cache/ffc-lhz10
+last24 port=39137 server=idahub.ucsd.edu sta=ffc chan=lh1 lcode=10 file=ffc-lh110.gif thumbnail=ffc-lh110_s.gif clip=6 ratio=0.0020 cache=cache/ffc-lh110
+last24 port=39137 server=idahub.ucsd.edu sta=ffc chan=lh2 lcode=10 file=ffc-lh210.gif thumbnail=ffc-lh210_s.gif clip=6 ratio=0.0020 cache=cache/ffc-lh210
 
-last24 server=idahub.ucsd.edu sta=hope chan=lhz lcode=00 file=hope-lhz00.gif thumbnail=hope-lhz00_s.gif clip=6 ratio=0.0010 cache=cache/hope-lhz00
-last24 server=idahub.ucsd.edu sta=hope chan=lh1 lcode=00 file=hope-lh100.gif thumbnail=hope-lh100_s.gif clip=6 ratio=0.0010 cache=cache/hope-lh100
-last24 server=idahub.ucsd.edu sta=hope chan=lh2 lcode=00 file=hope-lh200.gif thumbnail=hope-lh200_s.gif clip=6 ratio=0.0010 cache=cache/hope-lh200
-last24 server=idahub.ucsd.edu sta=hope chan=lhz lcode=10 file=hope-lhz10.gif thumbnail=hope-lhz10_s.gif clip=6 ratio=0.0010 cache=cache/hope-lhz10
-last24 server=idahub.ucsd.edu sta=hope chan=lh1 lcode=10 file=hope-lh110.gif thumbnail=hope-lh110_s.gif clip=6 ratio=0.0010 cache=cache/hope-lh110
-last24 server=idahub.ucsd.edu sta=hope chan=lh2 lcode=10 file=hope-lh210.gif thumbnail=hope-lh210_s.gif clip=6 ratio=0.0010 cache=cache/hope-lh210
+last24 port=39137 server=idahub.ucsd.edu sta=hope chan=lhz lcode=00 file=hope-lhz00.gif thumbnail=hope-lhz00_s.gif clip=6 ratio=0.0010 cache=cache/hope-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=hope chan=lh1 lcode=00 file=hope-lh100.gif thumbnail=hope-lh100_s.gif clip=6 ratio=0.0010 cache=cache/hope-lh100
+last24 port=39137 server=idahub.ucsd.edu sta=hope chan=lh2 lcode=00 file=hope-lh200.gif thumbnail=hope-lh200_s.gif clip=6 ratio=0.0010 cache=cache/hope-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=hope chan=lhz lcode=10 file=hope-lhz10.gif thumbnail=hope-lhz10_s.gif clip=6 ratio=0.0010 cache=cache/hope-lhz10
+last24 port=39137 server=idahub.ucsd.edu sta=hope chan=lh1 lcode=10 file=hope-lh110.gif thumbnail=hope-lh110_s.gif clip=6 ratio=0.0010 cache=cache/hope-lh110
+last24 port=39137 server=idahub.ucsd.edu sta=hope chan=lh2 lcode=10 file=hope-lh210.gif thumbnail=hope-lh210_s.gif clip=6 ratio=0.0010 cache=cache/hope-lh210
 
-last24 server=idahub.ucsd.edu sta=jts chan=lhz lcode=00 file=jts-lhz00.gif thumbnail=jts-lhz00_s.gif clip=6 ratio=0.0030 cache=cache/jts-lhz00
-last24 server=idahub.ucsd.edu sta=jts chan=lh1 lcode=00 file=jts-lh100.gif thumbnail=jts-lh100_s.gif clip=6 ratio=0.0003 cache=cache/jts-lh100
-last24 server=idahub.ucsd.edu sta=jts chan=lh2 lcode=00 file=jts-lh200.gif thumbnail=jts-lh200_s.gif clip=6 ratio=0.0003 cache=cache/jts-lh200
-last24 server=idahub.ucsd.edu sta=jts chan=lhz lcode=10 file=jts-lhz10.gif thumbnail=jts-lhz10_s.gif clip=6 ratio=0.0030 cache=cache/jts-lhz10
-last24 server=idahub.ucsd.edu sta=jts chan=lh1 lcode=10 file=jts-lh110.gif thumbnail=jts-lh110_s.gif clip=6 ratio=0.0030 cache=cache/jts-lh110
-last24 server=idahub.ucsd.edu sta=jts chan=lh2 lcode=10 file=jts-lh210.gif thumbnail=jts-lh210_s.gif clip=6 ratio=0.0030 cache=cache/jts-lh210
+last24 port=39137 server=idahub.ucsd.edu sta=jts chan=lhz lcode=00 file=jts-lhz00.gif thumbnail=jts-lhz00_s.gif clip=6 ratio=0.0030 cache=cache/jts-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=jts chan=lh1 lcode=00 file=jts-lh100.gif thumbnail=jts-lh100_s.gif clip=6 ratio=0.0003 cache=cache/jts-lh100
+last24 port=39137 server=idahub.ucsd.edu sta=jts chan=lh2 lcode=00 file=jts-lh200.gif thumbnail=jts-lh200_s.gif clip=6 ratio=0.0003 cache=cache/jts-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=jts chan=lhz lcode=10 file=jts-lhz10.gif thumbnail=jts-lhz10_s.gif clip=6 ratio=0.0030 cache=cache/jts-lhz10
+last24 port=39137 server=idahub.ucsd.edu sta=jts chan=lh1 lcode=10 file=jts-lh110.gif thumbnail=jts-lh110_s.gif clip=6 ratio=0.0030 cache=cache/jts-lh110
+last24 port=39137 server=idahub.ucsd.edu sta=jts chan=lh2 lcode=10 file=jts-lh210.gif thumbnail=jts-lh210_s.gif clip=6 ratio=0.0030 cache=cache/jts-lh210
 
-last24 server=idahub.ucsd.edu sta=kapi chan=lhz lcode=00 file=kapi-lhz00.gif thumbnail=kapi-lhz00_s.gif clip=6 ratio=0.0055 cache=cache/kapi-lhz00
-last24 server=idahub.ucsd.edu sta=kapi chan=lh1 lcode=00 file=kapi-lh100.gif thumbnail=kapi-lh100_s.gif clip=6 ratio=0.0055 cache=cache/kapi-lh100
-last24 server=idahub.ucsd.edu sta=kapi chan=lh2 lcode=00 file=kapi-lh200.gif thumbnail=kapi-lh200_s.gif clip=6 ratio=0.0055 cache=cache/kapi-lh200
-last24 server=idahub.ucsd.edu sta=kapi chan=lhz lcode=10 file=kapi-lhz10.gif thumbnail=kapi-lhz10_s.gif clip=6 ratio=0.0055 cache=cache/kapi-lhz10
-last24 server=idahub.ucsd.edu sta=kapi chan=lh1 lcode=10 file=kapi-lh110.gif thumbnail=kapi-lh110_s.gif clip=6 ratio=0.0055 cache=cache/kapi-lh110
-last24 server=idahub.ucsd.edu sta=kapi chan=lh2 lcode=10 file=kapi-lh210.gif thumbnail=kapi-lh210_s.gif clip=6 ratio=0.0055 cache=cache/kapi-lh210
+last24 port=39137 server=idahub.ucsd.edu sta=kapi chan=lhz lcode=00 file=kapi-lhz00.gif thumbnail=kapi-lhz00_s.gif clip=6 ratio=0.0055 cache=cache/kapi-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=kapi chan=lh1 lcode=00 file=kapi-lh100.gif thumbnail=kapi-lh100_s.gif clip=6 ratio=0.0055 cache=cache/kapi-lh100
+last24 port=39137 server=idahub.ucsd.edu sta=kapi chan=lh2 lcode=00 file=kapi-lh200.gif thumbnail=kapi-lh200_s.gif clip=6 ratio=0.0055 cache=cache/kapi-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=kapi chan=lhz lcode=10 file=kapi-lhz10.gif thumbnail=kapi-lhz10_s.gif clip=6 ratio=0.0055 cache=cache/kapi-lhz10
+last24 port=39137 server=idahub.ucsd.edu sta=kapi chan=lh1 lcode=10 file=kapi-lh110.gif thumbnail=kapi-lh110_s.gif clip=6 ratio=0.0055 cache=cache/kapi-lh110
+last24 port=39137 server=idahub.ucsd.edu sta=kapi chan=lh2 lcode=10 file=kapi-lh210.gif thumbnail=kapi-lh210_s.gif clip=6 ratio=0.0055 cache=cache/kapi-lh210
 
-last24 server=idahub.ucsd.edu sta=kdak chan=lhz lcode=00 file=kdak-lhz00.gif thumbnail=kdak-lhz00_s.gif clip=6 ratio=0.0025 cache=cache/kdak-lhz00
-last24 server=idahub.ucsd.edu sta=kdak chan=lh1 lcode=00 file=kdak-lh100.gif thumbnail=kdak-lh100_s.gif clip=6 ratio=0.0025 cache=cache/kdak-lh100
-last24 server=idahub.ucsd.edu sta=kdak chan=lh2 lcode=00 file=kdak-lh200.gif thumbnail=kdak-lh200_s.gif clip=6 ratio=0.0025 cache=cache/kdak-lh200
-last24 server=idahub.ucsd.edu sta=kdak chan=lhz lcode=10 file=kdak-lhz10.gif thumbnail=kdak-lhz10_s.gif clip=6 ratio=0.0025 cache=cache/kdak-lhz10
-last24 server=idahub.ucsd.edu sta=kdak chan=lh1 lcode=10 file=kdak-lh110.gif thumbnail=kdak-lh110_s.gif clip=6 ratio=0.0025 cache=cache/kdak-lh110
-last24 server=idahub.ucsd.edu sta=kdak chan=lh2 lcode=10 file=kdak-lh210.gif thumbnail=kdak-lh210_s.gif clip=6 ratio=0.0025 cache=cache/kdak-lh210
+last24 port=39137 server=idahub.ucsd.edu sta=kdak chan=lhz lcode=00 file=kdak-lhz00.gif thumbnail=kdak-lhz00_s.gif clip=6 ratio=0.0025 cache=cache/kdak-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=kdak chan=lh1 lcode=00 file=kdak-lh100.gif thumbnail=kdak-lh100_s.gif clip=6 ratio=0.0025 cache=cache/kdak-lh100
+last24 port=39137 server=idahub.ucsd.edu sta=kdak chan=lh2 lcode=00 file=kdak-lh200.gif thumbnail=kdak-lh200_s.gif clip=6 ratio=0.0025 cache=cache/kdak-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=kdak chan=lhz lcode=10 file=kdak-lhz10.gif thumbnail=kdak-lhz10_s.gif clip=6 ratio=0.0025 cache=cache/kdak-lhz10
+last24 port=39137 server=idahub.ucsd.edu sta=kdak chan=lh1 lcode=10 file=kdak-lh110.gif thumbnail=kdak-lh110_s.gif clip=6 ratio=0.0025 cache=cache/kdak-lh110
+last24 port=39137 server=idahub.ucsd.edu sta=kdak chan=lh2 lcode=10 file=kdak-lh210.gif thumbnail=kdak-lh210_s.gif clip=6 ratio=0.0025 cache=cache/kdak-lh210
 
-last24 server=idahub.ucsd.edu sta=kiv chan=lhz lcode=00 file=kiv-lhz00.gif thumbnail=kiv-lhz00_s.gif clip=6 ratio=0.0050 cache=cache/kiv-lhz00
-last24 server=idahub.ucsd.edu sta=kiv chan=lh1 lcode=00 file=kiv-lh100.gif thumbnail=kiv-lh100_s.gif clip=6 ratio=0.0050 cache=cache/kiv-lh100
-last24 server=idahub.ucsd.edu sta=kiv chan=lh2 lcode=00 file=kiv-lh200.gif thumbnail=kiv-lh200_s.gif clip=6 ratio=0.0050 cache=cache/kiv-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=kiv chan=lhz lcode=00 file=kiv-lhz00.gif thumbnail=kiv-lhz00_s.gif clip=6 ratio=0.0050 cache=cache/kiv-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=kiv chan=lh1 lcode=00 file=kiv-lh100.gif thumbnail=kiv-lh100_s.gif clip=6 ratio=0.0050 cache=cache/kiv-lh100
+last24 port=39137 server=idahub.ucsd.edu sta=kiv chan=lh2 lcode=00 file=kiv-lh200.gif thumbnail=kiv-lh200_s.gif clip=6 ratio=0.0050 cache=cache/kiv-lh200
 
-last24 server=idahub.ucsd.edu sta=kurk chan=lhz lcode=00 file=kurk-lhz00.gif thumbnail=kurk-lhz00_s.gif clip=6 ratio=0.0050 cache=cache/kurk-lhz00
-last24 server=idahub.ucsd.edu sta=kurk chan=lh1 lcode=00 file=kurk-lh100.gif thumbnail=kurk-lh100_s.gif clip=6 ratio=0.0050 cache=cache/kurk-lh100
-last24 server=idahub.ucsd.edu sta=kurk chan=lh2 lcode=00 file=kurk-lh200.gif thumbnail=kurk-lh200_s.gif clip=6 ratio=0.0050 cache=cache/kurk-lh200
-last24 server=idahub.ucsd.edu sta=kurk chan=lhz lcode=10 file=kurk-lhz10.gif thumbnail=kurk-lhz10_s.gif clip=6 ratio=0.0050 cache=cache/kurk-lhz10
-last24 server=idahub.ucsd.edu sta=kurk chan=lh1 lcode=10 file=kurk-lh110.gif thumbnail=kurk-lh110_s.gif clip=6 ratio=0.0050 cache=cache/kurk-lh110
-last24 server=idahub.ucsd.edu sta=kurk chan=lh2 lcode=10 file=kurk-lh210.gif thumbnail=kurk-lh210_s.gif clip=6 ratio=0.0050 cache=cache/kurk-lh210
+last24 port=39137 server=idahub.ucsd.edu sta=kurk chan=lhz lcode=00 file=kurk-lhz00.gif thumbnail=kurk-lhz00_s.gif clip=6 ratio=0.0050 cache=cache/kurk-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=kurk chan=lh1 lcode=00 file=kurk-lh100.gif thumbnail=kurk-lh100_s.gif clip=6 ratio=0.0050 cache=cache/kurk-lh100
+last24 port=39137 server=idahub.ucsd.edu sta=kurk chan=lh2 lcode=00 file=kurk-lh200.gif thumbnail=kurk-lh200_s.gif clip=6 ratio=0.0050 cache=cache/kurk-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=kurk chan=lhz lcode=10 file=kurk-lhz10.gif thumbnail=kurk-lhz10_s.gif clip=6 ratio=0.0050 cache=cache/kurk-lhz10
+last24 port=39137 server=idahub.ucsd.edu sta=kurk chan=lh1 lcode=10 file=kurk-lh110.gif thumbnail=kurk-lh110_s.gif clip=6 ratio=0.0050 cache=cache/kurk-lh110
+last24 port=39137 server=idahub.ucsd.edu sta=kurk chan=lh2 lcode=10 file=kurk-lh210.gif thumbnail=kurk-lh210_s.gif clip=6 ratio=0.0050 cache=cache/kurk-lh210
 
-last24 server=idahub.ucsd.edu sta=kwjn chan=lhz lcode=00 file=kwjn-lhz00.gif thumbnail=kwjn-lhz00_s.gif clip=6 ratio=0.0003 cache=cache/kwjn-lhz00
-last24 server=idahub.ucsd.edu sta=kwjn chan=lh1 lcode=00 file=kwjn-lh100.gif thumbnail=kwjn-lh100_s.gif clip=6 ratio=0.0003 cache=cache/kwjn-lh100
-last24 server=idahub.ucsd.edu sta=kwjn chan=lh2 lcode=00 file=kwjn-lh200.gif thumbnail=kwjn-lh200_s.gif clip=6 ratio=0.0003 cache=cache/kwjn-lh200
-last24 server=idahub.ucsd.edu sta=kwjn chan=lhz lcode=10 file=kwjn-lhz10.gif thumbnail=kwjn-lhz10_s.gif clip=6 ratio=0.0003 cache=cache/kwjn-lhz10
-last24 server=idahub.ucsd.edu sta=kwjn chan=lh1 lcode=10 file=kwjn-lh110.gif thumbnail=kwjn-lh110_s.gif clip=6 ratio=0.0003 cache=cache/kwjn-lh110
-last24 server=idahub.ucsd.edu sta=kwjn chan=lh2 lcode=10 file=kwjn-lh210.gif thumbnail=kwjn-lh210_s.gif clip=6 ratio=0.0003 cache=cache/kwjn-lh210
+last24 port=39137 server=idahub.ucsd.edu sta=kwjn chan=lhz lcode=00 file=kwjn-lhz00.gif thumbnail=kwjn-lhz00_s.gif clip=6 ratio=0.0003 cache=cache/kwjn-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=kwjn chan=lh1 lcode=00 file=kwjn-lh100.gif thumbnail=kwjn-lh100_s.gif clip=6 ratio=0.0003 cache=cache/kwjn-lh100
+last24 port=39137 server=idahub.ucsd.edu sta=kwjn chan=lh2 lcode=00 file=kwjn-lh200.gif thumbnail=kwjn-lh200_s.gif clip=6 ratio=0.0003 cache=cache/kwjn-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=kwjn chan=lhz lcode=10 file=kwjn-lhz10.gif thumbnail=kwjn-lhz10_s.gif clip=6 ratio=0.0003 cache=cache/kwjn-lhz10
+last24 port=39137 server=idahub.ucsd.edu sta=kwjn chan=lh1 lcode=10 file=kwjn-lh110.gif thumbnail=kwjn-lh110_s.gif clip=6 ratio=0.0003 cache=cache/kwjn-lh110
+last24 port=39137 server=idahub.ucsd.edu sta=kwjn chan=lh2 lcode=10 file=kwjn-lh210.gif thumbnail=kwjn-lh210_s.gif clip=6 ratio=0.0003 cache=cache/kwjn-lh210
 
-last24 server=idahub.ucsd.edu sta=lvz chan=lhz lcode=00 file=lvz-lhz00.gif thumbnail=lvz-lhz00_s.gif clip=6 ratio=0.0010 cache=cache/lvz-lhz00
-last24 server=idahub.ucsd.edu sta=lvz chan=lh1 lcode=00 file=lvz-lh100.gif thumbnail=lvz-lh100_s.gif clip=6 ratio=0.0010 cache=cache/lvz-lh100
-last24 server=idahub.ucsd.edu sta=lvz chan=lh2 lcode=00 file=lvz-lh200.gif thumbnail=lvz-lh200_s.gif clip=6 ratio=0.0010 cache=cache/lvz-lh200
-last24 server=idahub.ucsd.edu sta=lvz chan=lhz lcode=10 file=lvz-lhz10.gif thumbnail=lvz-lhz10_s.gif clip=6 ratio=0.0010 cache=cache/lvz-lhz10
-last24 server=idahub.ucsd.edu sta=lvz chan=lh1 lcode=10 file=lvz-lh110.gif thumbnail=lvz-lh110_s.gif clip=6 ratio=0.0010 cache=cache/lvz-lh110
-last24 server=idahub.ucsd.edu sta=lvz chan=lh2 lcode=10 file=lvz-lh210.gif thumbnail=lvz-lh210_s.gif clip=6 ratio=0.0010 cache=cache/lvz-lh210
+last24 port=39137 server=idahub.ucsd.edu sta=lvz chan=lhz lcode=00 file=lvz-lhz00.gif thumbnail=lvz-lhz00_s.gif clip=6 ratio=0.0010 cache=cache/lvz-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=lvz chan=lh1 lcode=00 file=lvz-lh100.gif thumbnail=lvz-lh100_s.gif clip=6 ratio=0.0010 cache=cache/lvz-lh100
+last24 port=39137 server=idahub.ucsd.edu sta=lvz chan=lh2 lcode=00 file=lvz-lh200.gif thumbnail=lvz-lh200_s.gif clip=6 ratio=0.0010 cache=cache/lvz-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=lvz chan=lhz lcode=10 file=lvz-lhz10.gif thumbnail=lvz-lhz10_s.gif clip=6 ratio=0.0010 cache=cache/lvz-lhz10
+last24 port=39137 server=idahub.ucsd.edu sta=lvz chan=lh1 lcode=10 file=lvz-lh110.gif thumbnail=lvz-lh110_s.gif clip=6 ratio=0.0010 cache=cache/lvz-lh110
+last24 port=39137 server=idahub.ucsd.edu sta=lvz chan=lh2 lcode=10 file=lvz-lh210.gif thumbnail=lvz-lh210_s.gif clip=6 ratio=0.0010 cache=cache/lvz-lh210
 
-last24 server=idahub.ucsd.edu sta=mbar chan=lhz lcode=00 file=mbar-lhz00.gif thumbnail=mbar-lhz00_s.gif clip=6 ratio=0.0050 cache=cache/mbar-lhz00
-last24 server=idahub.ucsd.edu sta=mbar chan=lh1 lcode=00 file=mbar-lh100.gif thumbnail=mbar-lh100_s.gif clip=6 ratio=0.0005 cache=cache/mbar-lh100
-last24 server=idahub.ucsd.edu sta=mbar chan=lh2 lcode=00 file=mbar-lh200.gif thumbnail=mbar-lh200_s.gif clip=6 ratio=0.0005 cache=cache/mbar-lh200
-last24 server=idahub.ucsd.edu sta=mbar chan=lhz lcode=10 file=mbar-lhz10.gif thumbnail=mbar-lhz10_s.gif clip=6 ratio=0.0050 cache=cache/mbar-lhz10
-last24 server=idahub.ucsd.edu sta=mbar chan=lh1 lcode=10 file=mbar-lh110.gif thumbnail=mbar-lh110_s.gif clip=6 ratio=0.0050 cache=cache/mbar-lh110
-last24 server=idahub.ucsd.edu sta=mbar chan=lh2 lcode=10 file=mbar-lh210.gif thumbnail=mbar-lh210_s.gif clip=6 ratio=0.0050 cache=cache/mbar-lh210
+last24 port=39137 server=idahub.ucsd.edu sta=mbar chan=lhz lcode=00 file=mbar-lhz00.gif thumbnail=mbar-lhz00_s.gif clip=6 ratio=0.0050 cache=cache/mbar-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=mbar chan=lh1 lcode=00 file=mbar-lh100.gif thumbnail=mbar-lh100_s.gif clip=6 ratio=0.0005 cache=cache/mbar-lh100
+last24 port=39137 server=idahub.ucsd.edu sta=mbar chan=lh2 lcode=00 file=mbar-lh200.gif thumbnail=mbar-lh200_s.gif clip=6 ratio=0.0005 cache=cache/mbar-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=mbar chan=lhz lcode=10 file=mbar-lhz10.gif thumbnail=mbar-lhz10_s.gif clip=6 ratio=0.0050 cache=cache/mbar-lhz10
+last24 port=39137 server=idahub.ucsd.edu sta=mbar chan=lh1 lcode=10 file=mbar-lh110.gif thumbnail=mbar-lh110_s.gif clip=6 ratio=0.0050 cache=cache/mbar-lh110
+last24 port=39137 server=idahub.ucsd.edu sta=mbar chan=lh2 lcode=10 file=mbar-lh210.gif thumbnail=mbar-lh210_s.gif clip=6 ratio=0.0050 cache=cache/mbar-lh210
 
-last24 server=idahub.ucsd.edu sta=msey chan=lhz lcode=00 file=msey-lhz00.gif thumbnail=msey-lhz00_s.gif clip=6 ratio=0.0020 cache=cache/msey-lhz00
-last24 server=idahub.ucsd.edu sta=msey chan=lh1 lcode=00 file=msey-lh100.gif thumbnail=msey-lh100_s.gif clip=6 ratio=0.0020 cache=cache/msey-lh100
-last24 server=idahub.ucsd.edu sta=msey chan=lh2 lcode=00 file=msey-lh200.gif thumbnail=msey-lh200_s.gif clip=6 ratio=0.0020 cache=cache/msey-lh200
-last24 server=idahub.ucsd.edu sta=msey chan=lhz lcode=10 file=msey-lhz10.gif thumbnail=msey-lhz10_s.gif clip=6 ratio=0.0020 cache=cache/msey-lhz10
-last24 server=idahub.ucsd.edu sta=msey chan=lh1 lcode=10 file=msey-lh110.gif thumbnail=msey-lh110_s.gif clip=6 ratio=0.0020 cache=cache/msey-lh110
-last24 server=idahub.ucsd.edu sta=msey chan=lh2 lcode=10 file=msey-lh210.gif thumbnail=msey-lh210_s.gif clip=6 ratio=0.0020 cache=cache/msey-lh210
+last24 port=39137 server=idahub.ucsd.edu sta=msey chan=lhz lcode=00 file=msey-lhz00.gif thumbnail=msey-lhz00_s.gif clip=6 ratio=0.0020 cache=cache/msey-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=msey chan=lh1 lcode=00 file=msey-lh100.gif thumbnail=msey-lh100_s.gif clip=6 ratio=0.0020 cache=cache/msey-lh100
+last24 port=39137 server=idahub.ucsd.edu sta=msey chan=lh2 lcode=00 file=msey-lh200.gif thumbnail=msey-lh200_s.gif clip=6 ratio=0.0020 cache=cache/msey-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=msey chan=lhz lcode=10 file=msey-lhz10.gif thumbnail=msey-lhz10_s.gif clip=6 ratio=0.0020 cache=cache/msey-lhz10
+last24 port=39137 server=idahub.ucsd.edu sta=msey chan=lh1 lcode=10 file=msey-lh110.gif thumbnail=msey-lh110_s.gif clip=6 ratio=0.0020 cache=cache/msey-lh110
+last24 port=39137 server=idahub.ucsd.edu sta=msey chan=lh2 lcode=10 file=msey-lh210.gif thumbnail=msey-lh210_s.gif clip=6 ratio=0.0020 cache=cache/msey-lh210
 
-last24 server=idahub.ucsd.edu sta=msvf chan=lhz lcode=00 file=msvf-lhz00.gif thumbnail=msvf-lhz00_s.gif clip=6 ratio=0.0010 cache=cache/msvf-lhz00
-last24 server=idahub.ucsd.edu sta=msvf chan=lh1 lcode=00 file=msvf-lh100.gif thumbnail=msvf-lh100_s.gif clip=6 ratio=0.0010 cache=cache/msvf-lh100
-last24 server=idahub.ucsd.edu sta=msvf chan=lh2 lcode=00 file=msvf-lh200.gif thumbnail=msvf-lh200_s.gif clip=6 ratio=0.0010 cache=cache/msvf-lh200
-last24 server=idahub.ucsd.edu sta=msvf chan=lhz lcode=10 file=msvf-lhz10.gif thumbnail=msvf-lhz10_s.gif clip=6 ratio=0.0010 cache=cache/msvf-lhz10
-last24 server=idahub.ucsd.edu sta=msvf chan=lh1 lcode=10 file=msvf-lh110.gif thumbnail=msvf-lh110_s.gif clip=6 ratio=0.0010 cache=cache/msvf-lh110
-last24 server=idahub.ucsd.edu sta=msvf chan=lh2 lcode=10 file=msvf-lh210.gif thumbnail=msvf-lh210_s.gif clip=6 ratio=0.0010 cache=cache/msvf-lh210
+last24 port=39137 server=idahub.ucsd.edu sta=msvf chan=lhz lcode=00 file=msvf-lhz00.gif thumbnail=msvf-lhz00_s.gif clip=6 ratio=0.0010 cache=cache/msvf-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=msvf chan=lh1 lcode=00 file=msvf-lh100.gif thumbnail=msvf-lh100_s.gif clip=6 ratio=0.0010 cache=cache/msvf-lh100
+last24 port=39137 server=idahub.ucsd.edu sta=msvf chan=lh2 lcode=00 file=msvf-lh200.gif thumbnail=msvf-lh200_s.gif clip=6 ratio=0.0010 cache=cache/msvf-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=msvf chan=lhz lcode=10 file=msvf-lhz10.gif thumbnail=msvf-lhz10_s.gif clip=6 ratio=0.0010 cache=cache/msvf-lhz10
+last24 port=39137 server=idahub.ucsd.edu sta=msvf chan=lh1 lcode=10 file=msvf-lh110.gif thumbnail=msvf-lh110_s.gif clip=6 ratio=0.0010 cache=cache/msvf-lh110
+last24 port=39137 server=idahub.ucsd.edu sta=msvf chan=lh2 lcode=10 file=msvf-lh210.gif thumbnail=msvf-lh210_s.gif clip=6 ratio=0.0010 cache=cache/msvf-lh210
 
-last24 server=idahub.ucsd.edu sta=nil chan=lhz lcode=00 file=nil-lhz00.gif thumbnail=nil-lhz00_s.gif clip=6 ratio=0.0080 cache=cache/nil-lhz00
-last24 server=idahub.ucsd.edu sta=nil chan=lh1 lcode=00 file=nil-lh100.gif thumbnail=nil-lh100_s.gif clip=6 ratio=0.0080 cache=cache/nil-lh100
-last24 server=idahub.ucsd.edu sta=nil chan=lh2 lcode=00 file=nil-lh200.gif thumbnail=nil-lh200_s.gif clip=6 ratio=0.0080 cache=cache/nil-lh200
-last24 server=idahub.ucsd.edu sta=nil chan=lhz lcode=10 file=nil-lhz10.gif thumbnail=nil-lhz10_s.gif clip=6 ratio=0.0080 cache=cache/nil-lhz10
-last24 server=idahub.ucsd.edu sta=nil chan=lh1 lcode=10 file=nil-lh110.gif thumbnail=nil-lh110_s.gif clip=6 ratio=0.0080 cache=cache/nil-lh110
-last24 server=idahub.ucsd.edu sta=nil chan=lh2 lcode=10 file=nil-lh210.gif thumbnail=nil-lh210_s.gif clip=6 ratio=0.0080 cache=cache/nil-lh210
+last24 port=39137 server=idahub.ucsd.edu sta=nil chan=lhz lcode=00 file=nil-lhz00.gif thumbnail=nil-lhz00_s.gif clip=6 ratio=0.0080 cache=cache/nil-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=nil chan=lh1 lcode=00 file=nil-lh100.gif thumbnail=nil-lh100_s.gif clip=6 ratio=0.0080 cache=cache/nil-lh100
+last24 port=39137 server=idahub.ucsd.edu sta=nil chan=lh2 lcode=00 file=nil-lh200.gif thumbnail=nil-lh200_s.gif clip=6 ratio=0.0080 cache=cache/nil-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=nil chan=lhz lcode=10 file=nil-lhz10.gif thumbnail=nil-lhz10_s.gif clip=6 ratio=0.0080 cache=cache/nil-lhz10
+last24 port=39137 server=idahub.ucsd.edu sta=nil chan=lh1 lcode=10 file=nil-lh110.gif thumbnail=nil-lh110_s.gif clip=6 ratio=0.0080 cache=cache/nil-lh110
+last24 port=39137 server=idahub.ucsd.edu sta=nil chan=lh2 lcode=10 file=nil-lh210.gif thumbnail=nil-lh210_s.gif clip=6 ratio=0.0080 cache=cache/nil-lh210
 
-last24 server=idahub.ucsd.edu sta=nna chan=lhz lcode=00 file=nna-lhz00.gif thumbnail=nna-lhz00_s.gif clip=6 ratio=0.0015 cache=cache/nna-lhz00
-last24 server=idahub.ucsd.edu sta=nna chan=lh1 lcode=00 file=nna-lh100.gif thumbnail=nna-lh100_s.gif clip=6 ratio=0.0015 cache=cache/nna-lh100
-last24 server=idahub.ucsd.edu sta=nna chan=lh2 lcode=00 file=nna-lh200.gif thumbnail=nna-lh200_s.gif clip=6 ratio=0.0015 cache=cache/nna-lh200
-last24 server=idahub.ucsd.edu sta=nna chan=lhz lcode=10 file=nna-lhz10.gif thumbnail=nna-lhz10_s.gif clip=6 ratio=0.0020 cache=cache/nna-lhz10
-last24 server=idahub.ucsd.edu sta=nna chan=lh1 lcode=10 file=nna-lh110.gif thumbnail=nna-lh110_s.gif clip=6 ratio=0.0020 cache=cache/nna-lh110
-last24 server=idahub.ucsd.edu sta=nna chan=lh2 lcode=10 file=nna-lh210.gif thumbnail=nna-lh210_s.gif clip=6 ratio=0.0020 cache=cache/nna-lh210
+last24 port=39137 server=idahub.ucsd.edu sta=nna chan=lhz lcode=00 file=nna-lhz00.gif thumbnail=nna-lhz00_s.gif clip=6 ratio=0.0015 cache=cache/nna-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=nna chan=lh1 lcode=00 file=nna-lh100.gif thumbnail=nna-lh100_s.gif clip=6 ratio=0.0015 cache=cache/nna-lh100
+last24 port=39137 server=idahub.ucsd.edu sta=nna chan=lh2 lcode=00 file=nna-lh200.gif thumbnail=nna-lh200_s.gif clip=6 ratio=0.0015 cache=cache/nna-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=nna chan=lhz lcode=10 file=nna-lhz10.gif thumbnail=nna-lhz10_s.gif clip=6 ratio=0.0020 cache=cache/nna-lhz10
+last24 port=39137 server=idahub.ucsd.edu sta=nna chan=lh1 lcode=10 file=nna-lh110.gif thumbnail=nna-lh110_s.gif clip=6 ratio=0.0020 cache=cache/nna-lh110
+last24 port=39137 server=idahub.ucsd.edu sta=nna chan=lh2 lcode=10 file=nna-lh210.gif thumbnail=nna-lh210_s.gif clip=6 ratio=0.0020 cache=cache/nna-lh210
 
-last24 server=idahub.ucsd.edu sta=obn chan=lhz lcode=00 file=obn-lhz00.gif thumbnail=obn-lhz00_s.gif clip=6 ratio=0.0015 cache=cache/obn-lhz00
-last24 server=idahub.ucsd.edu sta=obn chan=lh1 lcode=00 file=obn-lh100.gif thumbnail=obn-lh100_s.gif clip=6 ratio=0.0015 cache=cache/obn-lh100
-last24 server=idahub.ucsd.edu sta=obn chan=lh2 lcode=00 file=obn-lh200.gif thumbnail=obn-lh200_s.gif clip=6 ratio=0.0015 cache=cache/obn-lh200
-last24 server=idahub.ucsd.edu sta=obn chan=lhz lcode=10 file=obn-lhz10.gif thumbnail=obn-lhz10_s.gif clip=6 ratio=0.0015 cache=cache/obn-lhz10
-last24 server=idahub.ucsd.edu sta=obn chan=lh1 lcode=10 file=obn-lh110.gif thumbnail=obn-lh110_s.gif clip=6 ratio=0.0015 cache=cache/obn-lh110
-last24 server=idahub.ucsd.edu sta=obn chan=lh2 lcode=10 file=obn-lh210.gif thumbnail=obn-lh210_s.gif clip=6 ratio=0.0015 cache=cache/obn-lh210
+last24 port=39137 server=idahub.ucsd.edu sta=obn chan=lhz lcode=00 file=obn-lhz00.gif thumbnail=obn-lhz00_s.gif clip=6 ratio=0.0015 cache=cache/obn-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=obn chan=lh1 lcode=00 file=obn-lh100.gif thumbnail=obn-lh100_s.gif clip=6 ratio=0.0015 cache=cache/obn-lh100
+last24 port=39137 server=idahub.ucsd.edu sta=obn chan=lh2 lcode=00 file=obn-lh200.gif thumbnail=obn-lh200_s.gif clip=6 ratio=0.0015 cache=cache/obn-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=obn chan=lhz lcode=10 file=obn-lhz10.gif thumbnail=obn-lhz10_s.gif clip=6 ratio=0.0015 cache=cache/obn-lhz10
+last24 port=39137 server=idahub.ucsd.edu sta=obn chan=lh1 lcode=10 file=obn-lh110.gif thumbnail=obn-lh110_s.gif clip=6 ratio=0.0015 cache=cache/obn-lh110
+last24 port=39137 server=idahub.ucsd.edu sta=obn chan=lh2 lcode=10 file=obn-lh210.gif thumbnail=obn-lh210_s.gif clip=6 ratio=0.0015 cache=cache/obn-lh210
 
-last24 server=idahub.ucsd.edu sta=palk chan=lhz lcode=00 file=palk-lhz00.gif thumbnail=palk-lhz00_s.gif clip=6 ratio=0.0030 cache=cache/palk-lhz00
-last24 server=idahub.ucsd.edu sta=palk chan=lh1 lcode=00 file=palk-lh100.gif thumbnail=palk-lh100_s.gif clip=6 ratio=0.0030 cache=cache/palk-lh100
-last24 server=idahub.ucsd.edu sta=palk chan=lh2 lcode=00 file=palk-lh200.gif thumbnail=palk-lh200_s.gif clip=6 ratio=0.0030 cache=cache/palk-lh200
-last24 server=idahub.ucsd.edu sta=palk chan=lhz lcode=10 file=palk-lhz10.gif thumbnail=palk-lhz10_s.gif clip=6 ratio=0.0030 cache=cache/palk-lhz10
-last24 server=idahub.ucsd.edu sta=palk chan=lh1 lcode=10 file=palk-lh110.gif thumbnail=palk-lh110_s.gif clip=6 ratio=0.0030 cache=cache/palk-lh110
-last24 server=idahub.ucsd.edu sta=palk chan=lh2 lcode=10 file=palk-lh210.gif thumbnail=palk-lh210_s.gif clip=6 ratio=0.0030 cache=cache/palk-lh210
+last24 port=39137 server=idahub.ucsd.edu sta=palk chan=lhz lcode=00 file=palk-lhz00.gif thumbnail=palk-lhz00_s.gif clip=6 ratio=0.0030 cache=cache/palk-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=palk chan=lh1 lcode=00 file=palk-lh100.gif thumbnail=palk-lh100_s.gif clip=6 ratio=0.0030 cache=cache/palk-lh100
+last24 port=39137 server=idahub.ucsd.edu sta=palk chan=lh2 lcode=00 file=palk-lh200.gif thumbnail=palk-lh200_s.gif clip=6 ratio=0.0030 cache=cache/palk-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=palk chan=lhz lcode=10 file=palk-lhz10.gif thumbnail=palk-lhz10_s.gif clip=6 ratio=0.0030 cache=cache/palk-lhz10
+last24 port=39137 server=idahub.ucsd.edu sta=palk chan=lh1 lcode=10 file=palk-lh110.gif thumbnail=palk-lh110_s.gif clip=6 ratio=0.0030 cache=cache/palk-lh110
+last24 port=39137 server=idahub.ucsd.edu sta=palk chan=lh2 lcode=10 file=palk-lh210.gif thumbnail=palk-lh210_s.gif clip=6 ratio=0.0030 cache=cache/palk-lh210
 
-last24 server=idahub.ucsd.edu sta=pfo chan=lhz lcode=00 file=pfo-lhz00.gif thumbnail=pfo-lhz00_s.gif clip=6 ratio=0.0015 cache=cache/pfo-lhz00
-last24 server=idahub.ucsd.edu sta=pfo chan=lh1 lcode=00 file=pfo-lh100.gif thumbnail=pfo-lh100_s.gif clip=6 ratio=0.0015 cache=cache/pfo-lh100
-last24 server=idahub.ucsd.edu sta=pfo chan=lh2 lcode=00 file=pfo-lh200.gif thumbnail=pfo-lh200_s.gif clip=6 ratio=0.0015 cache=cache/pfo-lh200
-last24 server=idahub.ucsd.edu sta=pfo chan=lhz lcode=10 file=pfo-lhz10.gif thumbnail=pfo-lhz10_s.gif clip=6 ratio=0.0030 cache=cache/pfo-lhz10
-last24 server=idahub.ucsd.edu sta=pfo chan=lh1 lcode=10 file=pfo-lh110.gif thumbnail=pfo-lh110_s.gif clip=6 ratio=0.0030 cache=cache/pfo-lh110
-last24 server=idahub.ucsd.edu sta=pfo chan=lh2 lcode=10 file=pfo-lh210.gif thumbnail=pfo-lh210_s.gif clip=6 ratio=0.0030 cache=cache/pfo-lh210
+last24 port=39137 server=idahub.ucsd.edu sta=pfo chan=lhz lcode=00 file=pfo-lhz00.gif thumbnail=pfo-lhz00_s.gif clip=6 ratio=0.0015 cache=cache/pfo-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=pfo chan=lh1 lcode=00 file=pfo-lh100.gif thumbnail=pfo-lh100_s.gif clip=6 ratio=0.0015 cache=cache/pfo-lh100
+last24 port=39137 server=idahub.ucsd.edu sta=pfo chan=lh2 lcode=00 file=pfo-lh200.gif thumbnail=pfo-lh200_s.gif clip=6 ratio=0.0015 cache=cache/pfo-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=pfo chan=lhz lcode=10 file=pfo-lhz10.gif thumbnail=pfo-lhz10_s.gif clip=6 ratio=0.0030 cache=cache/pfo-lhz10
+last24 port=39137 server=idahub.ucsd.edu sta=pfo chan=lh1 lcode=10 file=pfo-lh110.gif thumbnail=pfo-lh110_s.gif clip=6 ratio=0.0030 cache=cache/pfo-lh110
+last24 port=39137 server=idahub.ucsd.edu sta=pfo chan=lh2 lcode=10 file=pfo-lh210.gif thumbnail=pfo-lh210_s.gif clip=6 ratio=0.0030 cache=cache/pfo-lh210
 
-last24 server=idahub.ucsd.edu sta=rayn chan=lhz lcode=00 file=rayn-lhz00.gif thumbnail=rayn-lhz00_s.gif clip=6 ratio=0.0050 cache=cache/rayn-lhz00
-last24 server=idahub.ucsd.edu sta=rayn chan=lh1 lcode=00 file=rayn-lh100.gif thumbnail=rayn-lh100_s.gif clip=6 ratio=0.0050 cache=cache/rayn-lh100
-last24 server=idahub.ucsd.edu sta=rayn chan=lh2 lcode=00 file=rayn-lh200.gif thumbnail=rayn-lh200_s.gif clip=6 ratio=0.0050 cache=cache/rayn-lh200
-last24 server=idahub.ucsd.edu sta=rayn chan=lhz lcode=10 file=rayn-lhz10.gif thumbnail=rayn-lhz10_s.gif clip=6 ratio=0.0050 cache=cache/rayn-lhz10
-last24 server=idahub.ucsd.edu sta=rayn chan=lh1 lcode=10 file=rayn-lh110.gif thumbnail=rayn-lh110_s.gif clip=6 ratio=0.0050 cache=cache/rayn-lh110
-last24 server=idahub.ucsd.edu sta=rayn chan=lh2 lcode=10 file=rayn-lh210.gif thumbnail=rayn-lh210_s.gif clip=6 ratio=0.0050 cache=cache/rayn-lh210
+last24 port=39137 server=idahub.ucsd.edu sta=rayn chan=lhz lcode=00 file=rayn-lhz00.gif thumbnail=rayn-lhz00_s.gif clip=6 ratio=0.0050 cache=cache/rayn-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=rayn chan=lh1 lcode=00 file=rayn-lh100.gif thumbnail=rayn-lh100_s.gif clip=6 ratio=0.0050 cache=cache/rayn-lh100
+last24 port=39137 server=idahub.ucsd.edu sta=rayn chan=lh2 lcode=00 file=rayn-lh200.gif thumbnail=rayn-lh200_s.gif clip=6 ratio=0.0050 cache=cache/rayn-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=rayn chan=lhz lcode=10 file=rayn-lhz10.gif thumbnail=rayn-lhz10_s.gif clip=6 ratio=0.0050 cache=cache/rayn-lhz10
+last24 port=39137 server=idahub.ucsd.edu sta=rayn chan=lh1 lcode=10 file=rayn-lh110.gif thumbnail=rayn-lh110_s.gif clip=6 ratio=0.0050 cache=cache/rayn-lh110
+last24 port=39137 server=idahub.ucsd.edu sta=rayn chan=lh2 lcode=10 file=rayn-lh210.gif thumbnail=rayn-lh210_s.gif clip=6 ratio=0.0050 cache=cache/rayn-lh210
 
-last24 server=idahub.ucsd.edu sta=rpn chan=lhz lcode=00 file=rpn-lhz00.gif thumbnail=rpn-lhz00_s.gif clip=6 ratio=0.0001 cache=cache/rpn-lhz00
-last24 server=idahub.ucsd.edu sta=rpn chan=lh1 lcode=00 file=rpn-lh100.gif thumbnail=rpn-lh100_s.gif clip=6 ratio=0.0001 cache=cache/rpn-lh100
-last24 server=idahub.ucsd.edu sta=rpn chan=lh2 lcode=00 file=rpn-lh200.gif thumbnail=rpn-lh200_s.gif clip=6 ratio=0.0001 cache=cache/rpn-lh200
-last24 server=idahub.ucsd.edu sta=rpn chan=lhz lcode=10 file=rpn-lhz10.gif thumbnail=rpn-lhz10_s.gif clip=6 ratio=0.0001 cache=cache/rpn-lhz10
-last24 server=idahub.ucsd.edu sta=rpn chan=lh1 lcode=10 file=rpn-lh110.gif thumbnail=rpn-lh110_s.gif clip=6 ratio=0.0001 cache=cache/rpn-lh110
-last24 server=idahub.ucsd.edu sta=rpn chan=lh2 lcode=10 file=rpn-lh210.gif thumbnail=rpn-lh210_s.gif clip=6 ratio=0.0001 cache=cache/rpn-lh210
+last24 port=39137 server=idahub.ucsd.edu sta=rpn chan=lhz lcode=00 file=rpn-lhz00.gif thumbnail=rpn-lhz00_s.gif clip=6 ratio=0.0001 cache=cache/rpn-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=rpn chan=lh1 lcode=00 file=rpn-lh100.gif thumbnail=rpn-lh100_s.gif clip=6 ratio=0.0001 cache=cache/rpn-lh100
+last24 port=39137 server=idahub.ucsd.edu sta=rpn chan=lh2 lcode=00 file=rpn-lh200.gif thumbnail=rpn-lh200_s.gif clip=6 ratio=0.0001 cache=cache/rpn-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=rpn chan=lhz lcode=10 file=rpn-lhz10.gif thumbnail=rpn-lhz10_s.gif clip=6 ratio=0.0001 cache=cache/rpn-lhz10
+last24 port=39137 server=idahub.ucsd.edu sta=rpn chan=lh1 lcode=10 file=rpn-lh110.gif thumbnail=rpn-lh110_s.gif clip=6 ratio=0.0001 cache=cache/rpn-lh110
+last24 port=39137 server=idahub.ucsd.edu sta=rpn chan=lh2 lcode=10 file=rpn-lh210.gif thumbnail=rpn-lh210_s.gif clip=6 ratio=0.0001 cache=cache/rpn-lh210
 
-last24 server=idahub.ucsd.edu sta=sacv chan=lhz lcode=00 file=sacv-lhz00.gif thumbnail=sacv-lhz00_s.gif clip=6 ratio=0.0015 cache=cache/sacv-lhz00
-last24 server=idahub.ucsd.edu sta=sacv chan=lh1 lcode=00 file=sacv-lh100.gif thumbnail=sacv-lh100_s.gif clip=6 ratio=0.0015 cache=cache/sacv-lh100
-last24 server=idahub.ucsd.edu sta=sacv chan=lh2 lcode=00 file=sacv-lh200.gif thumbnail=sacv-lh200_s.gif clip=6 ratio=0.0015 cache=cache/sacv-lh200
-last24 server=idahub.ucsd.edu sta=sacv chan=lhz lcode=10 file=sacv-lhz10.gif thumbnail=sacv-lhz10_s.gif clip=6 ratio=0.0015 cache=cache/sacv-lhz10
-last24 server=idahub.ucsd.edu sta=sacv chan=lh1 lcode=10 file=sacv-lh110.gif thumbnail=sacv-lh110_s.gif clip=6 ratio=0.0015 cache=cache/sacv-lh110
-last24 server=idahub.ucsd.edu sta=sacv chan=lh2 lcode=10 file=sacv-lh210.gif thumbnail=sacv-lh210_s.gif clip=6 ratio=0.0015 cache=cache/sacv-lh210
+last24 port=39137 server=idahub.ucsd.edu sta=sacv chan=lhz lcode=00 file=sacv-lhz00.gif thumbnail=sacv-lhz00_s.gif clip=6 ratio=0.0015 cache=cache/sacv-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=sacv chan=lh1 lcode=00 file=sacv-lh100.gif thumbnail=sacv-lh100_s.gif clip=6 ratio=0.0015 cache=cache/sacv-lh100
+last24 port=39137 server=idahub.ucsd.edu sta=sacv chan=lh2 lcode=00 file=sacv-lh200.gif thumbnail=sacv-lh200_s.gif clip=6 ratio=0.0015 cache=cache/sacv-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=sacv chan=lhz lcode=10 file=sacv-lhz10.gif thumbnail=sacv-lhz10_s.gif clip=6 ratio=0.0015 cache=cache/sacv-lhz10
+last24 port=39137 server=idahub.ucsd.edu sta=sacv chan=lh1 lcode=10 file=sacv-lh110.gif thumbnail=sacv-lh110_s.gif clip=6 ratio=0.0015 cache=cache/sacv-lh110
+last24 port=39137 server=idahub.ucsd.edu sta=sacv chan=lh2 lcode=10 file=sacv-lh210.gif thumbnail=sacv-lh210_s.gif clip=6 ratio=0.0015 cache=cache/sacv-lh210
 
-last24 server=idahub.ucsd.edu sta=shel chan=lhz lcode=00 file=shel-lhz00.gif thumbnail=shel-lhz00_s.gif clip=6 ratio=0.0005 cache=cache/shel-lhz00
-last24 server=idahub.ucsd.edu sta=shel chan=lh1 lcode=00 file=shel-lh100.gif thumbnail=shel-lh100_s.gif clip=6 ratio=0.0005 cache=cache/shel-lh100
-last24 server=idahub.ucsd.edu sta=shel chan=lh2 lcode=00 file=shel-lh200.gif thumbnail=shel-lh200_s.gif clip=6 ratio=0.0005 cache=cache/shel-lh200
-last24 server=idahub.ucsd.edu sta=shel chan=lhz lcode=10 file=shel-lhz10.gif thumbnail=shel-lhz10_s.gif clip=6 ratio=0.0005 cache=cache/shel-lhz10
-last24 server=idahub.ucsd.edu sta=shel chan=lh1 lcode=10 file=shel-lh110.gif thumbnail=shel-lh110_s.gif clip=6 ratio=0.0005 cache=cache/shel-lh110
-last24 server=idahub.ucsd.edu sta=shel chan=lh2 lcode=10 file=shel-lh210.gif thumbnail=shel-lh210_s.gif clip=6 ratio=0.0005 cache=cache/shel-lh210
+last24 port=39137 server=idahub.ucsd.edu sta=shel chan=lhz lcode=00 file=shel-lhz00.gif thumbnail=shel-lhz00_s.gif clip=6 ratio=0.0005 cache=cache/shel-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=shel chan=lh1 lcode=00 file=shel-lh100.gif thumbnail=shel-lh100_s.gif clip=6 ratio=0.0005 cache=cache/shel-lh100
+last24 port=39137 server=idahub.ucsd.edu sta=shel chan=lh2 lcode=00 file=shel-lh200.gif thumbnail=shel-lh200_s.gif clip=6 ratio=0.0005 cache=cache/shel-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=shel chan=lhz lcode=10 file=shel-lhz10.gif thumbnail=shel-lhz10_s.gif clip=6 ratio=0.0005 cache=cache/shel-lhz10
+last24 port=39137 server=idahub.ucsd.edu sta=shel chan=lh1 lcode=10 file=shel-lh110.gif thumbnail=shel-lh110_s.gif clip=6 ratio=0.0005 cache=cache/shel-lh110
+last24 port=39137 server=idahub.ucsd.edu sta=shel chan=lh2 lcode=10 file=shel-lh210.gif thumbnail=shel-lh210_s.gif clip=6 ratio=0.0005 cache=cache/shel-lh210
 
-last24 server=idahub.ucsd.edu sta=simi  chan=lhz lcode=00 file=simi-lhz00.gif  thumbnail=simi-lhz00_s.gif  clip=6 ratio=0.0060 cache=cache/simi-lhz00
-last24 server=idahub.ucsd.edu sta=simi  chan=lh1 lcode=00 file=simi-lh100.gif  thumbnail=simi-lh100_s.gif  clip=6 ratio=0.0060 cache=cache/simi-lh100
-last24 server=idahub.ucsd.edu sta=simi  chan=lh2 lcode=00 file=simi-lh200.gif  thumbnail=simi-lh200_s.gif  clip=6 ratio=0.0060 cache=cache/simi-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=simi  chan=lhz lcode=00 file=simi-lhz00.gif  thumbnail=simi-lhz00_s.gif  clip=6 ratio=0.0060 cache=cache/simi-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=simi  chan=lh1 lcode=00 file=simi-lh100.gif  thumbnail=simi-lh100_s.gif  clip=6 ratio=0.0060 cache=cache/simi-lh100
+last24 port=39137 server=idahub.ucsd.edu sta=simi  chan=lh2 lcode=00 file=simi-lh200.gif  thumbnail=simi-lh200_s.gif  clip=6 ratio=0.0060 cache=cache/simi-lh200
 
-last24 server=idahub.ucsd.edu sta=sur chan=lhz lcode=00 file=sur-lhz00.gif thumbnail=sur-lhz00_s.gif clip=6 ratio=0.0003 cache=cache/sur-lhz00
-last24 server=idahub.ucsd.edu sta=sur chan=lh1 lcode=00 file=sur-lh100.gif thumbnail=sur-lh100_s.gif clip=6 ratio=0.0003 cache=cache/sur-lh100
-last24 server=idahub.ucsd.edu sta=sur chan=lh2 lcode=00 file=sur-lh200.gif thumbnail=sur-lh200_s.gif clip=6 ratio=0.0003 cache=cache/sur-lh200
-last24 server=idahub.ucsd.edu sta=sur chan=lhz lcode=10 file=sur-lhz10.gif thumbnail=sur-lhz10_s.gif clip=6 ratio=0.0003 cache=cache/sur-lhz10
-last24 server=idahub.ucsd.edu sta=sur chan=lh1 lcode=10 file=sur-lh110.gif thumbnail=sur-lh110_s.gif clip=6 ratio=0.0003 cache=cache/sur-lh110
-last24 server=idahub.ucsd.edu sta=sur chan=lh2 lcode=10 file=sur-lh210.gif thumbnail=sur-lh210_s.gif clip=6 ratio=0.0003 cache=cache/sur-lh210
+last24 port=39137 server=idahub.ucsd.edu sta=sur chan=lhz lcode=00 file=sur-lhz00.gif thumbnail=sur-lhz00_s.gif clip=6 ratio=0.0003 cache=cache/sur-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=sur chan=lh1 lcode=00 file=sur-lh100.gif thumbnail=sur-lh100_s.gif clip=6 ratio=0.0003 cache=cache/sur-lh100
+last24 port=39137 server=idahub.ucsd.edu sta=sur chan=lh2 lcode=00 file=sur-lh200.gif thumbnail=sur-lh200_s.gif clip=6 ratio=0.0003 cache=cache/sur-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=sur chan=lhz lcode=10 file=sur-lhz10.gif thumbnail=sur-lhz10_s.gif clip=6 ratio=0.0003 cache=cache/sur-lhz10
+last24 port=39137 server=idahub.ucsd.edu sta=sur chan=lh1 lcode=10 file=sur-lh110.gif thumbnail=sur-lh110_s.gif clip=6 ratio=0.0003 cache=cache/sur-lh110
+last24 port=39137 server=idahub.ucsd.edu sta=sur chan=lh2 lcode=10 file=sur-lh210.gif thumbnail=sur-lh210_s.gif clip=6 ratio=0.0003 cache=cache/sur-lh210
 
-last24 server=idahub.ucsd.edu sta=tau chan=lhz lcode=00 file=tau-lhz00.gif thumbnail=tau-lhz00_s.gif clip=6 ratio=0.0003 cache=cache/tau-lhz00
-last24 server=idahub.ucsd.edu sta=tau chan=lh1 lcode=00 file=tau-lh100.gif thumbnail=tau-lh100_s.gif clip=6 ratio=0.0005 cache=cache/tau-lh100
-last24 server=idahub.ucsd.edu sta=tau chan=lh2 lcode=00 file=tau-lh200.gif thumbnail=tau-lh200_s.gif clip=6 ratio=0.0005 cache=cache/tau-lh200
-last24 server=idahub.ucsd.edu sta=tau chan=lhz lcode=10 file=tau-lhz10.gif thumbnail=tau-lhz10_s.gif clip=6 ratio=0.0005 cache=cache/tau-lhz10
-last24 server=idahub.ucsd.edu sta=tau chan=lh1 lcode=10 file=tau-lh110.gif thumbnail=tau-lh110_s.gif clip=6 ratio=0.0005 cache=cache/tau-lh110
-last24 server=idahub.ucsd.edu sta=tau chan=lh2 lcode=10 file=tau-lh210.gif thumbnail=tau-lh210_s.gif clip=6 ratio=0.0005 cache=cache/tau-lh210
+last24 port=39137 server=idahub.ucsd.edu sta=tau chan=lhz lcode=00 file=tau-lhz00.gif thumbnail=tau-lhz00_s.gif clip=6 ratio=0.0003 cache=cache/tau-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=tau chan=lh1 lcode=00 file=tau-lh100.gif thumbnail=tau-lh100_s.gif clip=6 ratio=0.0005 cache=cache/tau-lh100
+last24 port=39137 server=idahub.ucsd.edu sta=tau chan=lh2 lcode=00 file=tau-lh200.gif thumbnail=tau-lh200_s.gif clip=6 ratio=0.0005 cache=cache/tau-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=tau chan=lhz lcode=10 file=tau-lhz10.gif thumbnail=tau-lhz10_s.gif clip=6 ratio=0.0005 cache=cache/tau-lhz10
+last24 port=39137 server=idahub.ucsd.edu sta=tau chan=lh1 lcode=10 file=tau-lh110.gif thumbnail=tau-lh110_s.gif clip=6 ratio=0.0005 cache=cache/tau-lh110
+last24 port=39137 server=idahub.ucsd.edu sta=tau chan=lh2 lcode=10 file=tau-lh210.gif thumbnail=tau-lh210_s.gif clip=6 ratio=0.0005 cache=cache/tau-lh210
 
-last24 server=idahub.ucsd.edu sta=tly chan=lhz lcode=00 file=tly-lhz00.gif thumbnail=tly-lhz00_s.gif clip=6 ratio=0.0050 cache=cache/tly-lhz00
-last24 server=idahub.ucsd.edu sta=tly chan=lh1 lcode=00 file=tly-lh100.gif thumbnail=tly-lh100_s.gif clip=6 ratio=0.0050 cache=cache/tly-lh100
-last24 server=idahub.ucsd.edu sta=tly chan=lh2 lcode=00 file=tly-lh200.gif thumbnail=tly-lh200_s.gif clip=6 ratio=0.0050 cache=cache/tly-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=tly chan=lhz lcode=00 file=tly-lhz00.gif thumbnail=tly-lhz00_s.gif clip=6 ratio=0.0050 cache=cache/tly-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=tly chan=lh1 lcode=00 file=tly-lh100.gif thumbnail=tly-lh100_s.gif clip=6 ratio=0.0050 cache=cache/tly-lh100
+last24 port=39137 server=idahub.ucsd.edu sta=tly chan=lh2 lcode=00 file=tly-lh200.gif thumbnail=tly-lh200_s.gif clip=6 ratio=0.0050 cache=cache/tly-lh200
 
-last24 server=idahub.ucsd.edu sta=uoss chan=lhz lcode=00 file=uoss-lhz00.gif thumbnail=uoss-lhz00_s.gif clip=6 ratio=0.0040 cache=cache/uoss-lhz00
-last24 server=idahub.ucsd.edu sta=uoss chan=lh1 lcode=00 file=uoss-lh100.gif thumbnail=uoss-lh100_s.gif clip=6 ratio=0.0040 cache=cache/uoss-lh100
-last24 server=idahub.ucsd.edu sta=uoss chan=lh2 lcode=00 file=uoss-lh200.gif thumbnail=uoss-lh200_s.gif clip=6 ratio=0.0040 cache=cache/uoss-lh200
-last24 server=idahub.ucsd.edu sta=uoss chan=lhz lcode=10 file=uoss-lhz10.gif thumbnail=uoss-lhz10_s.gif clip=6 ratio=0.0100 cache=cache/uoss-lhz10
-last24 server=idahub.ucsd.edu sta=uoss chan=lh1 lcode=10 file=uoss-lh110.gif thumbnail=uoss-lh110_s.gif clip=6 ratio=0.0100 cache=cache/uoss-lh110
-last24 server=idahub.ucsd.edu sta=uoss chan=lh2 lcode=10 file=uoss-lh210.gif thumbnail=uoss-lh210_s.gif clip=6 ratio=0.0100 cache=cache/uoss-lh210
+last24 port=39137 server=idahub.ucsd.edu sta=uoss chan=lhz lcode=00 file=uoss-lhz00.gif thumbnail=uoss-lhz00_s.gif clip=6 ratio=0.0040 cache=cache/uoss-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=uoss chan=lh1 lcode=00 file=uoss-lh100.gif thumbnail=uoss-lh100_s.gif clip=6 ratio=0.0040 cache=cache/uoss-lh100
+last24 port=39137 server=idahub.ucsd.edu sta=uoss chan=lh2 lcode=00 file=uoss-lh200.gif thumbnail=uoss-lh200_s.gif clip=6 ratio=0.0040 cache=cache/uoss-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=uoss chan=lhz lcode=10 file=uoss-lhz10.gif thumbnail=uoss-lhz10_s.gif clip=6 ratio=0.0100 cache=cache/uoss-lhz10
+last24 port=39137 server=idahub.ucsd.edu sta=uoss chan=lh1 lcode=10 file=uoss-lh110.gif thumbnail=uoss-lh110_s.gif clip=6 ratio=0.0100 cache=cache/uoss-lh110
+last24 port=39137 server=idahub.ucsd.edu sta=uoss chan=lh2 lcode=10 file=uoss-lh210.gif thumbnail=uoss-lh210_s.gif clip=6 ratio=0.0100 cache=cache/uoss-lh210
 
-last24 server=idahub.ucsd.edu sta=wrab chan=lhz lcode=00 file=wrab-lhz00.gif thumbnail=wrab-lhz00_s.gif clip=6 ratio=0.0020 cache=cache/wrab-lhz00
-last24 server=idahub.ucsd.edu sta=wrab chan=lh1 lcode=00 file=wrab-lh100.gif thumbnail=wrab-lh100_s.gif clip=6 ratio=0.0020 cache=cache/wrab-lh100
-last24 server=idahub.ucsd.edu sta=wrab chan=lh2 lcode=00 file=wrab-lh200.gif thumbnail=wrab-lh200_s.gif clip=6 ratio=0.0020 cache=cache/wrab-lh200
-last24 server=idahub.ucsd.edu sta=wrab chan=lhz lcode=10 file=wrab-lhz10.gif thumbnail=wrab-lhz10_s.gif clip=6 ratio=0.0020 cache=cache/wrab-lhz10
-last24 server=idahub.ucsd.edu sta=wrab chan=lh1 lcode=10 file=wrab-lh110.gif thumbnail=wrab-lh110_s.gif clip=6 ratio=0.0020 cache=cache/wrab-lh110
-last24 server=idahub.ucsd.edu sta=wrab chan=lh2 lcode=10 file=wrab-lh210.gif thumbnail=wrab-lh210_s.gif clip=6 ratio=0.0020 cache=cache/wrab-lh210
+last24 port=39137 server=idahub.ucsd.edu sta=wrab chan=lhz lcode=00 file=wrab-lhz00.gif thumbnail=wrab-lhz00_s.gif clip=6 ratio=0.0020 cache=cache/wrab-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=wrab chan=lh1 lcode=00 file=wrab-lh100.gif thumbnail=wrab-lh100_s.gif clip=6 ratio=0.0020 cache=cache/wrab-lh100
+last24 port=39137 server=idahub.ucsd.edu sta=wrab chan=lh2 lcode=00 file=wrab-lh200.gif thumbnail=wrab-lh200_s.gif clip=6 ratio=0.0020 cache=cache/wrab-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=wrab chan=lhz lcode=10 file=wrab-lhz10.gif thumbnail=wrab-lhz10_s.gif clip=6 ratio=0.0020 cache=cache/wrab-lhz10
+last24 port=39137 server=idahub.ucsd.edu sta=wrab chan=lh1 lcode=10 file=wrab-lh110.gif thumbnail=wrab-lh110_s.gif clip=6 ratio=0.0020 cache=cache/wrab-lh110
+last24 port=39137 server=idahub.ucsd.edu sta=wrab chan=lh2 lcode=10 file=wrab-lh210.gif thumbnail=wrab-lh210_s.gif clip=6 ratio=0.0020 cache=cache/wrab-lh210
 
-#last24 server=idahub.ucsd.edu sta=ads5 chan=lhz lcode=00 file=ads5-lhz00.gif thumbnail=ads5-lhz00_s.gif clip=6 ratio=0.0005 cache=cache/ads5-lhz00
-#last24 server=idahub.ucsd.edu sta=ads5 chan=lh1 lcode=00 file=ads5-lh100.gif thumbnail=ads5-lh100_s.gif clip=6 ratio=0.0001 cache=cache/ads5-lh100
-#last24 server=idahub.ucsd.edu sta=ads5 chan=lh2 lcode=00 file=ads5-lh200.gif thumbnail=ads5-lh200_s.gif clip=6 ratio=0.0001 cache=cache/ads5-lh200
-#last24 server=idahub.ucsd.edu sta=ads5 chan=ldh lcode=00 file=ads5-ldh00.gif thumbnail=ads5-ldh00_s.gif clip=6 ratio=0.0001 cache=cache/ads5-ldh00
+#last24 port=39137 server=idahub.ucsd.edu sta=ads5 chan=lhz lcode=00 file=ads5-lhz00.gif thumbnail=ads5-lhz00_s.gif clip=6 ratio=0.0005 cache=cache/ads5-lhz00
+#last24 port=39137 server=idahub.ucsd.edu sta=ads5 chan=lh1 lcode=00 file=ads5-lh100.gif thumbnail=ads5-lh100_s.gif clip=6 ratio=0.0001 cache=cache/ads5-lh100
+#last24 port=39137 server=idahub.ucsd.edu sta=ads5 chan=lh2 lcode=00 file=ads5-lh200.gif thumbnail=ads5-lh200_s.gif clip=6 ratio=0.0001 cache=cache/ads5-lh200
+#last24 port=39137 server=idahub.ucsd.edu sta=ads5 chan=ldh lcode=00 file=ads5-ldh00.gif thumbnail=ads5-ldh00_s.gif clip=6 ratio=0.0001 cache=cache/ads5-ldh00
 
-#last24 server=idahub.ucsd.edu sta=xell chan=lhz lcode=00 file=xell-lhz00.gif thumbnail=xell-lhz00_s.gif clip=6 ratio=0.0020 cache=cache/xell-lhz00
-#last24 server=idahub.ucsd.edu sta=xell chan=lh1 lcode=00 file=xell-lh100.gif thumbnail=xell-lh100_s.gif clip=6 ratio=0.0020 cache=cache/xell-lh100
-#last24 server=idahub.ucsd.edu sta=xell chan=lh2 lcode=00 file=xell-lh200.gif thumbnail=xell-lh200_s.gif clip=6 ratio=0.0020 cache=cache/xell-lh200
-#last24 server=idahub.ucsd.edu sta=xell chan=lhz lcode=10 file=xell-lhz10.gif thumbnail=xell-lhz10_s.gif clip=6 ratio=0.0020 cache=cache/xell-lhz10
-#last24 server=idahub.ucsd.edu sta=xell chan=lh1 lcode=10 file=xell-lh110.gif thumbnail=xell-lh110_s.gif clip=6 ratio=0.0020 cache=cache/xell-lh110
-#last24 server=idahub.ucsd.edu sta=xell chan=lh2 lcode=10 file=xell-lh210.gif thumbnail=xell-lh210_s.gif clip=6 ratio=0.0020 cache=cache/xell-lh210
-#last24 server=idahub.ucsd.edu sta=xell chan=lhz lcode=20 file=xell-lhz20.gif thumbnail=xell-lhz20_s.gif clip=6 ratio=0.0020 cache=cache/xell-lhz20
-#last24 server=idahub.ucsd.edu sta=xell chan=lh1 lcode=20 file=xell-lh120.gif thumbnail=xell-lh120_s.gif clip=6 ratio=0.0020 cache=cache/xell-lh120
-#last24 server=idahub.ucsd.edu sta=xell chan=lh2 lcode=20 file=xell-lh220.gif thumbnail=xell-lh220_s.gif clip=6 ratio=0.0020 cache=cache/xell-lh220
-#last24 server=idahub.ucsd.edu sta=xell chan=lhz lcode=30 file=xell-lhz30.gif thumbnail=xell-lhz30_s.gif clip=6 ratio=0.0020 cache=cache/xell-lhz30
-#last24 server=idahub.ucsd.edu sta=xell chan=lh1 lcode=30 file=xell-lh130.gif thumbnail=xell-lh130_s.gif clip=6 ratio=0.0020 cache=cache/xell-lh130
-#last24 server=idahub.ucsd.edu sta=xell chan=lh2 lcode=30 file=xell-lh230.gif thumbnail=xell-lh230_s.gif clip=6 ratio=0.0020 cache=cache/xell-lh230
+#last24 port=39137 server=idahub.ucsd.edu sta=xell chan=lhz lcode=00 file=xell-lhz00.gif thumbnail=xell-lhz00_s.gif clip=6 ratio=0.0020 cache=cache/xell-lhz00
+#last24 port=39137 server=idahub.ucsd.edu sta=xell chan=lh1 lcode=00 file=xell-lh100.gif thumbnail=xell-lh100_s.gif clip=6 ratio=0.0020 cache=cache/xell-lh100
+#last24 port=39137 server=idahub.ucsd.edu sta=xell chan=lh2 lcode=00 file=xell-lh200.gif thumbnail=xell-lh200_s.gif clip=6 ratio=0.0020 cache=cache/xell-lh200
+#last24 port=39137 server=idahub.ucsd.edu sta=xell chan=lhz lcode=10 file=xell-lhz10.gif thumbnail=xell-lhz10_s.gif clip=6 ratio=0.0020 cache=cache/xell-lhz10
+#last24 port=39137 server=idahub.ucsd.edu sta=xell chan=lh1 lcode=10 file=xell-lh110.gif thumbnail=xell-lh110_s.gif clip=6 ratio=0.0020 cache=cache/xell-lh110
+#last24 port=39137 server=idahub.ucsd.edu sta=xell chan=lh2 lcode=10 file=xell-lh210.gif thumbnail=xell-lh210_s.gif clip=6 ratio=0.0020 cache=cache/xell-lh210
+#last24 port=39137 server=idahub.ucsd.edu sta=xell chan=lhz lcode=20 file=xell-lhz20.gif thumbnail=xell-lhz20_s.gif clip=6 ratio=0.0020 cache=cache/xell-lhz20
+#last24 port=39137 server=idahub.ucsd.edu sta=xell chan=lh1 lcode=20 file=xell-lh120.gif thumbnail=xell-lh120_s.gif clip=6 ratio=0.0020 cache=cache/xell-lh120
+#last24 port=39137 server=idahub.ucsd.edu sta=xell chan=lh2 lcode=20 file=xell-lh220.gif thumbnail=xell-lh220_s.gif clip=6 ratio=0.0020 cache=cache/xell-lh220
+#last24 port=39137 server=idahub.ucsd.edu sta=xell chan=lhz lcode=30 file=xell-lhz30.gif thumbnail=xell-lhz30_s.gif clip=6 ratio=0.0020 cache=cache/xell-lhz30
+#last24 port=39137 server=idahub.ucsd.edu sta=xell chan=lh1 lcode=30 file=xell-lh130.gif thumbnail=xell-lh130_s.gif clip=6 ratio=0.0020 cache=cache/xell-lh130
+#last24 port=39137 server=idahub.ucsd.edu sta=xell chan=lh2 lcode=30 file=xell-lh230.gif thumbnail=xell-lh230_s.gif clip=6 ratio=0.0020 cache=cache/xell-lh230
 
-#last24 server=idahub.ucsd.edu sta=xpfo chan=lhz lcode=00 file=xpfo-lhz00.gif thumbnail=xpfo-lhz00_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lhz00
-#last24 server=idahub.ucsd.edu sta=xpfo chan=lh1 lcode=00 file=xpfo-lh100.gif thumbnail=xpfo-lh100_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lh100
-#last24 server=idahub.ucsd.edu sta=xpfo chan=lh2 lcode=00 file=xpfo-lh200.gif thumbnail=xpfo-lh200_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lh200
-#last24 server=idahub.ucsd.edu sta=xpfo chan=lhz lcode=10 file=xpfo-lhz10.gif thumbnail=xpfo-lhz10_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lhz10
-#last24 server=idahub.ucsd.edu sta=xpfo chan=lh1 lcode=10 file=xpfo-lh110.gif thumbnail=xpfo-lh110_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lh110
-#last24 server=idahub.ucsd.edu sta=xpfo chan=lh2 lcode=10 file=xpfo-lh210.gif thumbnail=xpfo-lh210_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lh210
-# last24 server=idahub.ucsd.edu sta=xpfo chan=lhz lcode=20 file=xpfo-lhz20.gif thumbnail=xpfo-lhz20_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lhz20
-# last24 server=idahub.ucsd.edu sta=xpfo chan=lh1 lcode=20 file=xpfo-lh120.gif thumbnail=xpfo-lh120_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lh120
-# last24 server=idahub.ucsd.edu sta=xpfo chan=lh2 lcode=20 file=xpfo-lh220.gif thumbnail=xpfo-lh220_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lh220
-# last24 server=idahub.ucsd.edu sta=xpfo chan=lhz lcode=30 file=xpfo-lhz30.gif thumbnail=xpfo-lhz30_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lhz30
-# last24 server=idahub.ucsd.edu sta=xpfo chan=lh1 lcode=30 file=xpfo-lh130.gif thumbnail=xpfo-lh130_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lh130
-# last24 server=idahub.ucsd.edu sta=xpfo chan=lh2 lcode=30 file=xpfo-lh230.gif thumbnail=xpfo-lh230_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lh230
-# last24 server=idahub.ucsd.edu sta=xpfo chan=lhz lcode=40 file=xpfo-lhz40.gif thumbnail=xpfo-lhz40_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lhz40
-# last24 server=idahub.ucsd.edu sta=xpfo chan=lh1 lcode=40 file=xpfo-lh140.gif thumbnail=xpfo-lh140_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lh140
-# last24 server=idahub.ucsd.edu sta=xpfo chan=lh2 lcode=40 file=xpfo-lh240.gif thumbnail=xpfo-lh240_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lh240
-# last24 server=idahub.ucsd.edu sta=xpfo chan=lhz lcode=50 file=xpfo-lhz50.gif thumbnail=xpfo-lh250_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lh250
-# last24 server=idahub.ucsd.edu sta=xpfo chan=lh1 lcode=50 file=xpfo-lh150.gif thumbnail=xpfo-lh150_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lh150
-# last24 server=idahub.ucsd.edu sta=xpfo chan=lh2 lcode=50 file=xpfo-lh250.gif thumbnail=xpfo-lh250_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lh250
-#last24 server=idahub.ucsd.edu sta=xpfo chan=lh2 lcode=60 file=xpfo-lh260.gif thumbnail=xpfo-lh260_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lh260
-#last24 server=idahub.ucsd.edu sta=xpfo chan=lhz lcode=60 file=xpfo-lhz60.gif thumbnail=xpfo-lh260_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lh260
-#last24 server=idahub.ucsd.edu sta=xpfo chan=lh1 lcode=60 file=xpfo-lh160.gif thumbnail=xpfo-lh160_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lh160
+#last24 port=39137 server=idahub.ucsd.edu sta=xpfo chan=lhz lcode=00 file=xpfo-lhz00.gif thumbnail=xpfo-lhz00_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lhz00
+#last24 port=39137 server=idahub.ucsd.edu sta=xpfo chan=lh1 lcode=00 file=xpfo-lh100.gif thumbnail=xpfo-lh100_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lh100
+#last24 port=39137 server=idahub.ucsd.edu sta=xpfo chan=lh2 lcode=00 file=xpfo-lh200.gif thumbnail=xpfo-lh200_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lh200
+#last24 port=39137 server=idahub.ucsd.edu sta=xpfo chan=lhz lcode=10 file=xpfo-lhz10.gif thumbnail=xpfo-lhz10_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lhz10
+#last24 port=39137 server=idahub.ucsd.edu sta=xpfo chan=lh1 lcode=10 file=xpfo-lh110.gif thumbnail=xpfo-lh110_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lh110
+#last24 port=39137 server=idahub.ucsd.edu sta=xpfo chan=lh2 lcode=10 file=xpfo-lh210.gif thumbnail=xpfo-lh210_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lh210
+ last24 port=39137 server=idahub.ucsd.edu sta=xpfo chan=lhz lcode=20 file=xpfo-lhz20.gif thumbnail=xpfo-lhz20_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lhz20
+ last24 port=39137 server=idahub.ucsd.edu sta=xpfo chan=lh1 lcode=20 file=xpfo-lh120.gif thumbnail=xpfo-lh120_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lh120
+ last24 port=39137 server=idahub.ucsd.edu sta=xpfo chan=lh2 lcode=20 file=xpfo-lh220.gif thumbnail=xpfo-lh220_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lh220
+ last24 port=39137 server=idahub.ucsd.edu sta=xpfo chan=lhz lcode=30 file=xpfo-lhz30.gif thumbnail=xpfo-lhz30_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lhz30
+ last24 port=39137 server=idahub.ucsd.edu sta=xpfo chan=lh1 lcode=30 file=xpfo-lh130.gif thumbnail=xpfo-lh130_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lh130
+ last24 port=39137 server=idahub.ucsd.edu sta=xpfo chan=lh2 lcode=30 file=xpfo-lh230.gif thumbnail=xpfo-lh230_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lh230
+ last24 port=39137 server=idahub.ucsd.edu sta=xpfo chan=lhz lcode=40 file=xpfo-lhz40.gif thumbnail=xpfo-lhz40_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lhz40
+ last24 port=39137 server=idahub.ucsd.edu sta=xpfo chan=lh1 lcode=40 file=xpfo-lh140.gif thumbnail=xpfo-lh140_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lh140
+ last24 port=39137 server=idahub.ucsd.edu sta=xpfo chan=lh2 lcode=40 file=xpfo-lh240.gif thumbnail=xpfo-lh240_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lh240
+ last24 port=39137 server=idahub.ucsd.edu sta=xpfo chan=lhz lcode=50 file=xpfo-lhz50.gif thumbnail=xpfo-lh250_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lh250
+ last24 port=39137 server=idahub.ucsd.edu sta=xpfo chan=lh1 lcode=50 file=xpfo-lh150.gif thumbnail=xpfo-lh150_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lh150
+ last24 port=39137 server=idahub.ucsd.edu sta=xpfo chan=lh2 lcode=50 file=xpfo-lh250.gif thumbnail=xpfo-lh250_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lh250
+#last24 port=39137 server=idahub.ucsd.edu sta=xpfo chan=lh2 lcode=60 file=xpfo-lh260.gif thumbnail=xpfo-lh260_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lh260
+#last24 port=39137 server=idahub.ucsd.edu sta=xpfo chan=lhz lcode=60 file=xpfo-lhz60.gif thumbnail=xpfo-lh260_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lh260
+#last24 port=39137 server=idahub.ucsd.edu sta=xpfo chan=lh1 lcode=60 file=xpfo-lh160.gif thumbnail=xpfo-lh160_s.gif clip=6 ratio=0.0020 cache=cache/xpfo-lh160
 
-# last24 server=idahub.ucsd.edu sta=yyy chan=lhz lcode=00 file=yyy-lhz00.gif thumbnail=yyy-lhz00_s.gif clip=6 ratio=0.0020 cache=cache/yyy-lhz00
-# last24 server=idahub.ucsd.edu sta=yyy chan=lh1 lcode=00 file=yyy-lh100.gif thumbnail=yyy-lh100_s.gif clip=6 ratio=0.0020 cache=cache/yyy-lh100
-# last24 server=idahub.ucsd.edu sta=yyy chan=lh2 lcode=00 file=yyy-lh200.gif thumbnail=yyy-lh200_s.gif clip=6 ratio=0.0020 cache=cache/yyy-lh200
-#last24 server=idahub.ucsd.edu sta=yyy chan=lhz lcode=10 file=yyy-lhz10.gif thumbnail=yyy-lhz10_s.gif clip=6 ratio=0.0020 cache=cache/yyy-lhz10
-#last24 server=idahub.ucsd.edu sta=yyy chan=lh1 lcode=10 file=yyy-lh110.gif thumbnail=yyy-lh110_s.gif clip=6 ratio=0.0020 cache=cache/yyy-lh110
-#last24 server=idahub.ucsd.edu sta=yyy chan=lh2 lcode=10 file=yyy-lh210.gif thumbnail=yyy-lh210_s.gif clip=6 ratio=0.0020 cache=cache/yyy-lh210
+# last24 port=39137 server=idahub.ucsd.edu sta=yyy chan=lhz lcode=00 file=yyy-lhz00.gif thumbnail=yyy-lhz00_s.gif clip=6 ratio=0.0020 cache=cache/yyy-lhz00
+# last24 port=39137 server=idahub.ucsd.edu sta=yyy chan=lh1 lcode=00 file=yyy-lh100.gif thumbnail=yyy-lh100_s.gif clip=6 ratio=0.0020 cache=cache/yyy-lh100
+# last24 port=39137 server=idahub.ucsd.edu sta=yyy chan=lh2 lcode=00 file=yyy-lh200.gif thumbnail=yyy-lh200_s.gif clip=6 ratio=0.0020 cache=cache/yyy-lh200
+#last24 port=39137 server=idahub.ucsd.edu sta=yyy chan=lhz lcode=10 file=yyy-lhz10.gif thumbnail=yyy-lhz10_s.gif clip=6 ratio=0.0020 cache=cache/yyy-lhz10
+#last24 port=39137 server=idahub.ucsd.edu sta=yyy chan=lh1 lcode=10 file=yyy-lh110.gif thumbnail=yyy-lh110_s.gif clip=6 ratio=0.0020 cache=cache/yyy-lh110
+#last24 port=39137 server=idahub.ucsd.edu sta=yyy chan=lh2 lcode=10 file=yyy-lh210.gif thumbnail=yyy-lh210_s.gif clip=6 ratio=0.0020 cache=cache/yyy-lh210
 
 # /bin/cp -f *.gif /ida/web/heli24
