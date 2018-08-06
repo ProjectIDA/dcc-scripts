@@ -338,3 +338,6 @@ last24 port=39137 server=idahub.ucsd.edu sta=wrab chan=lh2 lcode=10 file=wrab-lh
 #last24 port=39137 server=idahub.ucsd.edu sta=yyy chan=lh2 lcode=10 file=yyy-lh210.gif thumbnail=yyy-lh210_s.gif clip=6 ratio=0.0020 cache=cache/yyy-lh210
 
 # /bin/cp -f *.gif /ida/web/heli24
+
+# output timestamp
+echo "`date`" >! update.ts
