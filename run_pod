@@ -1,0 +1,49 @@
+#!/bin/csh -f
+# $Id: run_pod,v 1.2 2015/10/02 23:05:33 dechavez Exp $
+# Wrapper script to run the DMC POD program on a podir generated tree
+
+if ($#argv != 2) then
+    echo "usage: run_pod POD_dir DatalessName"
+    exit 1
+endif
+
+set podtree = $argv[1]
+set output  = $argv[2]
+
+setenv SEED_VERSION      2.3     
+setenv DATA_PATH         NULL_DATA_PATH
+setenv HEADER_PATH       ${podtree}/HDR000
+setenv SEEDOUTPUTNODATA  TRUE
+setenv CREATOR "IRIS/IDA Data Collection Center" 
+unsetenv PODJUSTDOIT
+set req_file           = ${podtree}/POD.req
+set log_rec_size       = 4096
+set phys_rec_size      = 32768 
+set vol_span           = 99,365
+set time_span          = 99,365
+
+if (! -d $HEADER_PATH) then
+    echo "ERROR: missing $HEADER_PATH" 
+    exit 1
+endif
+
+if (! -f $req_file) then
+    echo "missing $req_file"
+    exit 1
+endif
+
+set command = "pod $output $req_file $log_rec_size $phys_rec_size $vol_span $time_span"
+echo $command
+$command
+if ($status != 0) then
+    echo "ERROR: pod command failed"
+    exit 1
+endif
+
+exit 0
+
+# $Log: run_pod,v $
+# Revision 1.2  2015/10/02 23:05:33  dechavez
+# Modified to fit into mkdless cleanly.  User muse specify both the root of the
+# POD tree (assumed to be built by podir) and the name of the output file.
+#
