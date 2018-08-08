@@ -1,0 +1,68 @@
+#! /bin/csh -f
+#
+# $Id: vh_gen,v 1.2 2015/11/25 17:08:37 dauerbach Exp $
+#
+##################################################
+#
+#
+# Uses vhfilt to enerate VH data from existing miniseed files in
+# /ida/tmp/daily/miniseed/jday/DONE
+#
+# Checks to make sure there is no VH data already in 
+# the miniseed file before processing it
+#
+# Usage:
+#     vh_gen
+#
+###################################################
+
+#if ($#argv != 1) then
+#	echo "Usage:"
+#	echo "    vh_gen"
+#	echo ""
+#	exit 1
+#endif 
+
+set stalist = (AAK ABPO ALE ARU ASCN BFO BORG BRVK CMLA COCO DGAR EFI ERM ESK FFC HOPE JTS KAPI KDAK KIV KURK KWAJ LVZ MBAR MSEY MSVF NIL NNA OBN PALK PFO RAYN RPN SACV SHEL SUR TAU TLY UOSS WRAB)
+
+
+set MINISEEDDIR = /ida/tmp/daily/miniseed
+
+if (! -d $MINISEEDDIR) then
+	echo "Error: Directory $MINISEEDDIR not found."
+	exit 1
+endif
+
+cd $MINISEEDDIR
+
+foreach sta ($stalist)
+
+	echo "Processing: $sta"
+
+	# concat allexisting ms files (in fact this will only include from 2015-109 forward)
+	cat 2015???/DONE/$sta*.ms > $sta.vh_src.ms
+
+	# have dataselect cleanup the epochs 
+	dataselect -ts 2015:109 -te 2015:321:12:00 $sta.vh_src.ms -o $sta.vh_src_clean.ms
+ 
+	# run vhfilt
+	vhfilt < $sta.vh_src_clean.ms > $sta.vh_raw.ms
+
+	# crop start/end
+	dataselect -ts 2015:110 -te 2015:321 $sta.vh_raw.ms -o $sta.vh.ms
+ 
+end
+
+exit
+
+
+###################################################
+# $Log: vh_gen,v $
+# Revision 1.2  2015/11/25 17:08:37  dauerbach
+# Add AAK back to list of stations and fix usage notes
+#
+# Revision 1.1  2015/11/19 23:25:31  dauerbach
+# initial load of vh_gen (w/o AAK) and vh_send
+#
+#
+###################################################
