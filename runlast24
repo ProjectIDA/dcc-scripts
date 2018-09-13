@@ -39,9 +39,9 @@ last24 port=39137 server=idahub.ucsd.edu sta=ale  chan=lhz lcode=10 file=ale-lhz
 last24 port=39137 server=idahub.ucsd.edu sta=ale  chan=lh1 lcode=10 file=ale-lh110.gif  thumbnail=ale-lh110_s.gif  clip=6 ratio=0.0040 cache=cache/ale-lh110
 last24 port=39137 server=idahub.ucsd.edu sta=ale  chan=lh2 lcode=10 file=ale-lh210.gif  thumbnail=ale-lh210_s.gif  clip=6 ratio=0.0040 cache=cache/ale-lh210
 
-last24 port=39137 server=idahub.ucsd.edu sta=aru  chan=lhz lcode=00 file=aru-lhz00.gif  thumbnail=aru-lhz00_s.gif  clip=6 ratio=0.0035 cache=cache/aru-lhz00
-last24 port=39137 server=idahub.ucsd.edu sta=aru  chan=lh1 lcode=00 file=aru-lh100.gif  thumbnail=aru-lh100_s.gif  clip=6 ratio=0.0035 cache=cache/aru-lhz00
-last24 port=39137 server=idahub.ucsd.edu sta=aru  chan=lh2 lcode=00 file=aru-lh200.gif  thumbnail=aru-lh200_s.gif  clip=6 ratio=0.0035 cache=cache/aru-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=arti  chan=lhz lcode=00 file=arti-lhz00.gif  thumbnail=arti-lhz00_s.gif  clip=6 ratio=0.0035 cache=cache/arti-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=arti  chan=lh1 lcode=00 file=arti-lh100.gif  thumbnail=arti-lh100_s.gif  clip=6 ratio=0.0035 cache=cache/arti-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=arti  chan=lh2 lcode=00 file=arti-lh200.gif  thumbnail=arti-lh200_s.gif  clip=6 ratio=0.0035 cache=cache/arti-lhz00
 
 last24 port=39137 server=idahub.ucsd.edu sta=ascn chan=lhz lcode=00 file=ascn-lhz00.gif thumbnail=ascn-lhz00_s.gif clip=6 ratio=0.000001 cache=cache/ascn-lhz00
 last24 port=39137 server=idahub.ucsd.edu sta=ascn chan=lh1 lcode=00 file=ascn-lh100.gif thumbnail=ascn-lh100_s.gif clip=6 ratio=0.0005 cache=cache/ascn-lh100
