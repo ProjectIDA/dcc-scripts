@@ -18,7 +18,7 @@ if ($jdate == 'today') then
     @ jdate = $jdate - 1
 endif
 
-set admin = 'ezak@ucsd.edu,dauerbach@ucsd.edu'
+set admin = 'ezak@ucsd.edu,dauerbach@ucsd.edu,sbargabus@ucsd.edu'
 set path = (/ida/local/scripts $path)
 set db = /ida/dcc/db/DMC
 
