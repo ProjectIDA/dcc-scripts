@@ -38,7 +38,7 @@ ls *.sync >& /dev/null
 if ($status != 0) then
   echo ""
   echo r2q_sync: no SYNC files found in `pwd`.
-  set admin = 'ezak@ucsd.edu, dauerbach@ucsd.edu'
+  set admin = 'ezak@ucsd.edu,sbargabus@ucsd.edu,dauerbach@ucsd.edu'
   Mail -s "no SYNC files found in `pwd`" $admin < /dev/null >& /dev/null
   echo ""
   exit
@@ -51,7 +51,7 @@ cp *.sync $aslsyncdir >& /dev/null
 if ($status !- 0) then
   echo ""
   echo r2q_sync: Error copying SYNC files to $aslsyncdir.
-  set admin = 'ezak@ucsd.edu, dauerbach@ucsd.edu'
+  set admin = 'ezak@ucsd.edu,sbargabus@ucsd.edu,dauerbach@ucsd.edu'
   Mail -s "Error copying SYNC files to $aslsyncdir" $admin < /dev/null >& /dev/null
   echo ""
   exit
@@ -71,7 +71,7 @@ tar -cf $tarfile *.sync
 if ($status != 0) then
   echo ""
   echo r2q_sync: Error creating tar file: $tarfile.
-  set admin = 'ezak@ucsd.edu, dauerbach@ucsd.edu'
+  set admin = 'ezak@ucsd.edu,sbargabus@ucsd.edu,dauerbach@ucsd.edu'
   Mail -s "Error tar'ing SYNC files found in `pwd`" $admin < /dev/null >& /dev/null
   echo ""
   exit
@@ -80,7 +80,7 @@ endif
 #
 # mail the tar file to DMC
 #
-set admin = 'maryann@iris.washington.edu, dauerbach@ucsd.edu, ezak@ucsd.edu'
+set admin = 'maryann@iris.washington.edu, dauerbach@ucsd.edu, ezak@ucsd.edu, sbargabus@ucsd.edu'
 Mail -s "SYNC files from $d1 to $d2" $admin < $tarfile 
 
 #
@@ -90,7 +90,7 @@ if (! -d DONE.syncfile) mkdir DONE.syncfile
 if ($status != 0) then
   echo ""
   echo r2q_sync: Error creating DONE.syncfile directory in `pwd`.
-  set admin = 'ezak@ucsd.edu, dauerbach@ucsd.edu'
+  set admin = 'ezak@ucsd.edu,sbargabus@ucsd.edu,dauerbach@ucsd.edu'
   Mail -s "Error creating DONE.syncfile directory in `pwd`" $admin < /dev/null >& /dev/null
   echo ""
   exit

@@ -173,7 +173,7 @@ else
   set flag = 'ERROR'
 endif
 
-set admin = 'ezak@ucsd.edu,dauerbach@ucsd.edu'
+set admin = 'ezak@ucsd.edu,sbargabus@ucsd.edu,dauerbach@ucsd.edu'
 Mail -s "miniseed2dmc $jdate status:$flag" $admin < /tmp/ms2dmc.log.$$
 
 rm /tmp/list.$$ /tmp/ms2dmc.log.$$
