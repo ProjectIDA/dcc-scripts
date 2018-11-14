@@ -1,0 +1,139 @@
+#! /bin/csh
+
+#-----------------------------------------------------------------------------------------
+# script to create page for calibration information
+#	Pete 4/24/2013
+#		converted to Linux 5/8/2014
+#	Dan 2016-08-16
+#		Added bootstrap formatting
+#	Dan 2017-03-10
+#		changed date separators to ':' form '-' so sorter wouldn't treat as 
+#			numeric string and fail to sort correctly
+#		changed '-1' to 'n/a' to output for for missing sensors
+#-----------------------------------------------------------------------------------------
+
+###OLD LOCATION##set ofile=/ida/web/WhatsNew/recalibration/html/GSN_recalibration_table.html
+set ofile=/ida/web/procedures/recalibration/html/GSN_recalibration_table.html
+cd /ida/dcc/db/CALS
+
+listenv path
+
+# -------------------------------------------
+# output leading information at the top:
+# -------------------------------------------
+
+rm -rf $ofile
+echo "" | awk '{ printf "<\!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 3.2 Final//EN\"> \n"}' > $ofile
+echo "" | awk '{ printf "<head>\n"}' >> $ofile
+echo "" | awk '{ printf "<TITLE>Recalibration of IRIS/IDA sensors</TITLE>\n"}' >> $ofile
+echo "" | awk '{ printf "<META NAME=DESCRIPTION CONTENT=\"\">\n"}' >> $ofile
+echo "" | awk '{ printf "<META NAME=KEYWORDS CONTENT=\"\">\n"}' >> $ofile
+echo "" | awk '{ printf "<META http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\">\n"}' >> $ofile
+echo "" | awk '{ printf "<link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css\" \n" }' >> $ofile
+echo "" | awk '{ printf "   integrity=\"sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u\" crossorigin=\"anonymous\">\n"}' >> $ofile
+echo "" | awk '{ printf "</head>\n"}' >> $ofile
+echo "" | awk '{ printf "<body>\n"}' >> $ofile
+echo "" | awk '{ printf "<script src='/web/js/sorttable.js'></script>\n"}' >> $ofile 
+echo "" | awk '{ printf "<div class=\"container\">\n"}' >> $ofile
+echo "" | awk '{ printf "<div class=\"row\">\n"}' >> $ofile
+echo "" | awk '{ printf "<h1>Recalibration of IRIS/IDA sensors</h1>\n"}' >> $ofile
+echo "" | awk '{ printf "<h3>Calibration schedule</h3>\n"}' >> $ofile
+echo "" | awk '{ printf "<P>\n"}' >> $ofile
+echo "" | awk '{ printf "The table below records when the most recent calibrations took place.  The\n"}' >> $ofile
+echo "" | awk '{ printf "second column indicates when the last random binary calibration of the primary sensor was executed\n"}' >> $ofile
+echo "" | awk '{ printf "and the third column, when it is next due.  This column is color coded red if the calibration is past due.\n"}' >> $ofile
+echo "" | awk '{ printf "Columns four and five similarly represent the same information for the secondary sensor.\n"}' >> $ofile
+echo "" | awk '{ printf "The random binary test can fail if the sensor is inoperable or if there is a defect in the local network\n"}' >> $ofile
+echo "" | awk '{ printf "topology preventing the calibration signal from reaching the sensor.\n"}' >> $ofile
+echo "" | awk '{ printf "The last column indicates whether the sensor sensitivity has been checked by co-recording with a\n"}' >> $ofile
+echo "" | awk '{ printf "portable reference instrument.\n"}' >> $ofile
+echo "" | awk '{ printf "</P>\n"}' >> $ofile
+
+echo "" | awk '{ printf "<P>\nThis table was last updated on "}' >> $ofile
+date >> $ofile
+echo "" | awk '{ printf "</P>\n"}' >> $ofile
+
+
+echo "" | awk '{ printf "<table width=\"740px\" class=\"table-bordered table-striped table-condensed\"> \n"}' >> $ofile
+echo "" | awk '{ printf "<tr bgcolor=\"#FFFFFF\"> \n"}' >> $ofile
+echo "" | awk '{ printf "<th width='110px'> </th> \n"}' >> $ofile
+echo "" | awk '{ printf "<th width='220px'> Primary sensor</th> \n"}' >> $ofile
+echo "" | awk '{ printf "<th width='220px'> Secondary sensor </th> \n"}' >> $ofile
+echo "" | awk '{ printf "<th width='130px'> Absolute</th> \n"}' >> $ofile
+echo "" | awk '{ printf "</tr> \n"}' >> $ofile
+echo "" | awk '{ printf "</table> \n"}' >> $ofile
+echo "" | awk '{ printf "<table width=\"740px\" class=\"sortable table-bordered table-striped table-condensed\"> \n"}' >> $ofile
+echo "" | awk '{ printf "<tr bgcolor=\"#FFFFFF\"> \n"}' >> $ofile
+echo "" | awk '{ printf "<th width='110px'> Station </th> \n"}' >> $ofile
+echo "" | awk '{ printf "<th width='110px'> Last RB cal </th> \n"}' >> $ofile
+echo "" | awk '{ printf "<th width='110px'> Next due </th> \n"}' >> $ofile
+echo "" | awk '{ printf "<th width='110px'> Last RB cal </th> \n"}' >> $ofile
+echo "" | awk '{ printf "<th width='110px'> Next due </th> \n"}' >> $ofile
+echo "" | awk '{ printf "<th width='130px'> Last Calibration </th> \n"}' >> $ofile
+echo "" | awk '{ printf "</tr> \n"}' >> $ofile
+
+
+
+
+set cg="66FF99" # green
+set cy="FFFF66" # yellow
+set cr="FF0033" # red
+set cb="CCFFFF" # pale blue
+set co="FF6600" # orange
+set cw="FFFFFF" # white
+
+set td=`date +%Y%j`
+
+set slist=`cat IDA.cals | awk '{print $1}' | sort -u`
+
+foreach s ($slist)
+set s1=`dbsubset IDA.cals "sta=='$s' && caltype=='rb' && sensorclass=='primary'" | dbselect - 'max(caldate)' | sort -u`
+set s2=`dbsubset IDA.cals "sta=='$s' && caltype=='rb' && sensorclass=='secondary'" | dbselect - 'max(caldate)' | sort -u`
+set s3=`dbsubset IDA.cals "sta=='$s' && caltype=='abs' " | dbselect - 'max(caldate)' | sort -u`
+
+# station cell:
+echo $s | awk '{printf "<tr> <td class=\"bg-primary\" align=\"left\"><strong>%s</strong></td> ", $1}' >> $ofile
+
+# primary sensor cells
+
+set n=`echo $s1 $td | awk '{printf "%d",$1+1000-$2}'`
+echo $s1 | awk '{printf "<td class=\"bg-info\" align=\"center\">%s:%s</td> ", substr($1,1,4), substr($1,5,3)}' >> $ofile
+if ($n < 0 ) then
+	echo $s1 | awk '{printf "<td class=\"bg-danger text-danger\" align=\"center\"><strong>%s:%s</strong></td> ", substr($1+1000,1,4), substr($1+1000,5,3)}' >> $ofile
+else
+	echo $s1 | awk '{printf "<td class=\"bg-success\" align=\"center\">%s:%s</td> ", substr($1+1000,1,4), substr($1+1000,5,3)}' >> $ofile
+endif
+
+# secondary sensor cells
+
+set n=`echo $s2 $td | awk '{printf "%d",$1+1000-$2}'`
+if ($s2 < 0) then
+	echo "n/a" | awk '{printf "<td class=\"bg-warning text-muted\" align=\"center\"><strong>%s</strong></td> ", $1}' >> $ofile
+	echo "n/a" | awk '{printf "<td class=\"bg-warning text-muted\" align=\"center\"><strong>%s</strong></td> ", $1}' >> $ofile
+else
+	echo $s2 | awk '{printf "<td class=\"bg-info\" align=\"center\">%s:%s</td> ", substr($1,1,4), substr($1,5,3)}' >> $ofile
+	if ($n < 0 ) then
+		echo $s2 | awk '{printf "<td class=\"bg-danger text-danger\" align=\"center\"><strong>%s:%s</strong></td> ", substr($1+1000,1,4), substr($1+1000,5,3)}' >> $ofile
+	else
+		echo $s2 | awk '{printf "<td class=\"bg-success\" align=\"center\">%s:%s</td> ", substr($1+1000,1,4), substr($1+1000,5,3)}' >> $ofile
+	endif
+endif
+
+# absolute cal cell
+
+if ( $s3 > 0 ) then
+	echo $s3 | awk '{printf "<td class=\"bg-info\" align=\"center\">%s:%s</td> </tr>\n", substr($1,1,4), substr($1,5,3)}' >> $ofile
+else
+	set s3="-1"
+	echo "n/a" | awk '{printf "<td class=\"bg-warning text-muted\" align=\"center\"><strong>%s</strong></td> </tr>\n", $1}' >> $ofile
+endif
+
+
+
+end
+
+echo "" | awk '{ printf "</div>\n" }' >> $ofile
+echo "" | awk '{ printf "</div>\n" }' >> $ofile
+echo "" | awk '{ printf "</body>\n" }' >> $ofile
+echo "" | awk '{ printf "</html>\n" }' >> $ofile
+
