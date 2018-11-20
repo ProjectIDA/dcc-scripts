@@ -99,11 +99,12 @@ foreach sta ([a-z]*)
       if ($nn > 1) then
         foreach file (`cat $gzlist1`)
           set n2 = `gz_counter $file:r | awk '{print $2}'`
-          @ n3 = ( $n2 - $n1 ) - 3000
+          @ n3 = ( ( $n2 - $n1 ) - 3000 ) % 1500
 
           if ( $n3 > 0 ) then
-            @ nf = $n3 / 3000 
-            echo "  $sta  GAPS in FILEnames btw $f1($n1) & $file($n2): $n3 recs == $nf file(s)" >> $LOG	#4
+            # @ nf = $n3 / 3000 
+            # echo "  $sta  GAPS in FILEnames btw $f1($n1) & $file($n2): $n3 recs == $nf file(s)" >> $LOG	#4
+            echo "  $sta  GAPS in FILEnames btw $f1($n1) & $file($n2): $n3 recs" >> $LOG	#4
             set moving = 0
           else if ($n3 < 0) then
             if ($n2 == 0) then
@@ -129,7 +130,7 @@ foreach sta ([a-z]*)
               set moving = 0
             else	
               set nrec = `ls -l /tmp/junk$$ | awk '{printf "%d\n",$5/1024}'`
-              if ( ($nrec - 3000 ) != 0 ) then
+              if ( ($nrec - 3000 ) % 1500 != 0 ) then
                 echo "  $sta  $file found INCOMPLETE (rec=$nrec)" >> $LOG	#3
                 set moving = 0
               endif
