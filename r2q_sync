@@ -48,7 +48,7 @@ endif
 # cp sync files to shared ASL shared space
 # 
 cp *.sync $aslsyncdir >& /dev/null
-if ($status !- 0) then
+if ($status != 0) then
   echo ""
   echo r2q_sync: Error copying SYNC files to $aslsyncdir.
   set admin = 'ezak@ucsd.edu,sbargabus@ucsd.edu,dauerbach@ucsd.edu'
