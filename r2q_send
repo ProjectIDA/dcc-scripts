@@ -124,22 +124,6 @@ if ($status == 0) then			# yes, all data sent to DMC, move them to DONE
   # move ms files
   if (! -d $dir/DONE) mkdir -p $dir/DONE	# make DONE/ first
 
-  # echo "${myname}: Copying miniseed and inventory files into $IDA_ARCHIVE_DMC_DIR..."
-  # foreach msfn (${dir}/*.ms)
-  #     # get station: ASSUMES STA_YYYYJJJ.ms name format
-  #     set sta = `basename $msfn | awk -F"_" '{print $1}' | lcase`
-  #     set dmc_arc_dir = $IDA_ARCHIVE_DMC_DIR/$sta/$yr/$dy
-  #     if (! -d $dmc_arc_dir) mkdir -p $dmc_arc_dir
-
-  #     dataselect -A $dmc_arc_dir/%n.%s.%l.%c.%Y.%j $msfn
-  #     # TODO: Error checking
-
-  #     set command = "msi -S $msfn"
-  #     set invfn   = "$dmc_arc_dir/inventory"
-  #     $command >! $invfn
-  #     # TODO: Error checking
-  # end
-
   echo "r2q_send: Moving Miniseed files into DONE..."
   \mv $dir/*.ms $dir/DONE		# MOVE/REPLACE ms files in DONE/
 
