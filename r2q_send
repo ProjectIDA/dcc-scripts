@@ -152,14 +152,15 @@ if ($status == 0) then			# yes, all data sent to DMC, move them to DONE
     cp -p /tmp/ms2dmc.log.$$ $syncdir/DONE.statefile/r2q_send.log.$jdate 
   endif
   #
-  # cp sync files to shared ASL shared space
+  # get sync file name from log and cp to shared ASL shared space
   # 
-  cp $syncdir/*.sync $aslsyncdir >& /dev/null
+  set syncfile = `grep "SYNC file" /tmp/ms2dmc.log.$$ | awk '{print $11}'`
+  cp $syncfile $aslsyncdir/ >& /dev/null
   if ($status != 0) then
     echo ""
-    echo r2q_send: Error copying SYNC files to $aslsyncdir.
+    echo r2q_send: Error copying SYNC file $syncfile to $aslsyncdir.
     set admin = 'ezak@ucsd.edu,sbargabus@ucsd.edu,dauerbach@ucsd.edu'
-    Mail -s "Error copying SYNC files to $aslsyncdir" $admin < /dev/null >& /dev/null
+    Mail -s "Error copying SYNC file $syncfile to $aslsyncdir" $admin < /dev/null >& /dev/null
     echo ""
     exit
   endif
