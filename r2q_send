@@ -62,7 +62,7 @@ if ($#argv != 1) then
 endif
 
 
-set myname = "r2q_proc"
+set myname = "r2q_send"
 #
 # directory contains mini-SEED data
 # 
@@ -84,7 +84,7 @@ set syncdir = /ida/tmp/daily/SYNC
 cd $syncdir
 
 #
-# for ASL to pick up week's worth of IDA/II 
+# for ASL to pick up new IDA/II data sent to DMC
 # sync file to know what to pull from DMC
 #
 set aslsyncdir = /sync
