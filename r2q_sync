@@ -24,12 +24,6 @@ else
 endif
 
 #
-# for ASL to pick up week's worth of IDA/II 
-# sync file to know what to pull from DMC
-#
-set aslsyncdir = /sync
-
-#
 # go to where the SYNC files are
 #
 cd /ida/tmp/daily/SYNC
@@ -40,19 +34,6 @@ if ($status != 0) then
   echo r2q_sync: no SYNC files found in `pwd`.
   set admin = 'ezak@ucsd.edu,sbargabus@ucsd.edu,dauerbach@ucsd.edu'
   Mail -s "no SYNC files found in `pwd`" $admin < /dev/null >& /dev/null
-  echo ""
-  exit
-endif
-
-#
-# cp sync files to shared ASL shared space
-# 
-cp *.sync $aslsyncdir >& /dev/null
-if ($status != 0) then
-  echo ""
-  echo r2q_sync: Error copying SYNC files to $aslsyncdir.
-  set admin = 'ezak@ucsd.edu,sbargabus@ucsd.edu,dauerbach@ucsd.edu'
-  Mail -s "Error copying SYNC files to $aslsyncdir" $admin < /dev/null >& /dev/null
   echo ""
   exit
 endif
