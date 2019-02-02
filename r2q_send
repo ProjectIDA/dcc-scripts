@@ -160,7 +160,7 @@ if ($status == 0) then			# yes, all data sent to DMC, move them to DONE
     echo ""
     echo r2q_send: Error copying SYNC file $syncfile to $aslsyncdir.
     set admin = 'ezak@ucsd.edu,sbargabus@ucsd.edu,dauerbach@ucsd.edu'
-    Mail -s "Error copying SYNC file $syncfile to $aslsyncdir" $admin < /dev/null >& /dev/null
+    Mail -r ${USER}@ucsd.edu -s "Error copying SYNC file $syncfile to $aslsyncdir" $admin < /dev/null >& /dev/null
     echo ""
     exit
   endif
@@ -170,7 +170,7 @@ else
 endif
 
 set admin = 'ezak@ucsd.edu,sbargabus@ucsd.edu,dauerbach@ucsd.edu'
-Mail -s "miniseed2dmc $jdate status:$flag" $admin < /tmp/ms2dmc.log.$$
+Mail -r ${USER}@ucsd.edu -s "miniseed2dmc $jdate status:$flag" $admin < /tmp/ms2dmc.log.$$
 
 rm /tmp/list.$$ /tmp/ms2dmc.log.$$
 
