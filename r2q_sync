@@ -80,7 +80,15 @@ endif
 #
 # move tar file to DONE.syncfile
 #
+echo 
 mv $tarfile DONE.syncfile
+if ($status != 0) then
+  echo ""
+  echo r2q_sync: Error moving tar file: $tarfile.
+  set admin = 'ezak@ucsd.edu,sbargabus@ucsd.edu,dauerbach@ucsd.edu'
+  Mail -s "Error moving $tarfile to DONE.syncfile" $admin < /dev/null >& /dev/null
+  echo ""
+  exit
+endif
 
-
-
+rm *.sync
