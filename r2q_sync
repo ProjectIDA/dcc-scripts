@@ -61,7 +61,7 @@ endif
 #
 # mail the tar file to DMC
 #
-set admin = 'maryann@iris.washington.edu, dauerbach@ucsd.edu, ezak@ucsd.edu, sbargabus@ucsd.edu'
+set admin = 'engine_room@iris.washington.edu, dauerbach@ucsd.edu, ezak@ucsd.edu, sbargabus@ucsd.edu'
 Mail -s "SYNC files from $d1 to $d2" $admin < $tarfile 
 
 #
