@@ -101,6 +101,11 @@ exec sleep 2
 quit
 INN
 
+  dbpick -nostarttalk -noexist -sc {$sta}:VH.... -tw 86400 -geom 1600x1000+50+50 $prefix << INN >> & /dev/null
+exec sleep 2
+quit
+INN
+
   dbpick -nostarttalk -noexist -sc {$sta}:LN.... -tw 86400 -geom 1600x1000+50+50 $prefix << INN >> & /dev/null
 exec sleep 2
 quit
