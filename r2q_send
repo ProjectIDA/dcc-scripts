@@ -75,7 +75,7 @@ set dy  = `echo $jdate | cut -c5-7`
 # host and port are assigned by DMC
 #
 set host  = ringsub.iris.washington.edu
-set port  = 16105
+set port  = 16100
 # IDA has been asked to use port 16105 effective 2019-03-14, by Un Joe.
 
 set syncdir = /ida/tmp/daily/SYNC
