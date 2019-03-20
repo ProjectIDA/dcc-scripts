@@ -4,12 +4,16 @@
 #
 ##################################################
 #
+# One(?) off script to process LH data into VH for all days since 
+# start of IDA Linux era, when old VH gen process became obsolete.
 #
-# Uses vhfilt to enerate VH data from existing miniseed files in
-# /ida/tmp/daily/miniseed/jday/DONE
+# Uses vhfilt to generate VH data from existing miniseed files in
+# /ida/tmp/daily/miniseed/2015jjj/DONE for day 2015110 thru end of 2015
+# Starts processing with day 109 so that the trimming after the filtering
+# doesn't cut of any data from day 110.
 #
-# Checks to make sure there is no VH data already in 
-# the miniseed file before processing it
+# Saves VH data in station specific files: <sta>.vh.ms in dir
+# /ida/tmp/daily/miniseed
 #
 # Usage:
 #     vh_gen
@@ -23,6 +27,7 @@
 #	exit 1
 #endif 
 
+# UGH --- I HATE THIS. I WANT MY DB...
 set stalist = (AAK ABPO ALE ARU ASCN BFO BORG BRVK CMLA COCO DGAR EFI ERM ESK FFC HOPE JTS KAPI KDAK KIV KURK KWAJ LVZ MBAR MSEY MSVF NIL NNA OBN PALK PFO RAYN RPN SACV SHEL SUR TAU TLY UOSS WRAB)
 
 
