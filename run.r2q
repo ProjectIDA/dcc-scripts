@@ -18,7 +18,7 @@ if ($jdate == 'today') then
     @ jdate = $jdate - 1
 endif
 
-set admin = 'ezak@ucsd.edu,dauerbach@ucsd.edu'
+set admin = 'ezak@ucsd.edu,dauerbach@ucsd.edu,dbargabus@ucsd.edu'
 set path = (/ida/local/scripts $path)
 set db = /ida/dcc/db/DMC
 
@@ -28,11 +28,16 @@ if ($status != 0) then
    goto failure
 endif
 
-set LOG = /tmp/r2q_proc.LOG
+set shorthost = `hostname -s`
+if ! $?IDA_DCC_LOG_DIR then
+    echo "Environment variable IDA_DCC_LOG_DIR is not set"
+    goto failure
+endif
+set LOG = $IDA_DCC_LOG_DIR/$shorthost/r2q_proc/$jdate.LOG
 
 rm -f $LOG
 if ($status != 0) then
-   echo "run.r2q: Error deleting previous 'r2q_proc.LOG' file"
+   echo "run.r2q: Error deleting '$LOG' file"
    goto failure
 endif
 
@@ -43,7 +48,7 @@ if ($status != 0) then
 endif
 
 echo "" > $LOG
-echo "This report is available at idadcc:/tmp/r2q_proc.LOG.  It's updated daily." >> $LOG
+echo "This report is available at $shorthost in $LOG.  It's updated daily." >> $LOG
 echo "Please look for lines marked with 'withdraw' or 'ERROR'." >> $LOG
 echo "" >> $LOG
 echo "Data from channels marked 'withdraw' will not be sent to DMC." >> $LOG
