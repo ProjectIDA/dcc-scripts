@@ -1,4 +1,5 @@
 #!/bin/bash
+# $Id: iidqa,v 1.3 2016/03/03 00:15:35 dauerbach Exp $
 
 if [ $# != 4 ]; then
    errormsg='  Wrong number of parameters. Expected 4.'
@@ -42,4 +43,18 @@ STA=`echo $sta | tr '[:lower:]' '[:upper:]'`
 CHAN=`echo $chan | tr '[:lower:]' '[:upper:]'`
 
 cmd="-w http://dqa.ucsd.edu/dqa -n II -s $STA -c $CHAN -m NLNMDeviationMetric:200-500 -f CSV -b $start -e $end"
-./dqa4h.py $cmd | grep "$STA"
+
+# grep to get rid of blank lines in output
+# tr to get rid fo commas that MATLAB doesn't like.
+
+dqa4h.py $cmd | grep "$STA" | tr -d ','
+
+###################################################
+# $Log: iidqa,v $
+# Revision 1.3  2016/03/03 00:15:35  dauerbach
+# Added comments and cvs keys
+#
+#
+#
+###################################################
+

@@ -1,0 +1,137 @@
+#! /bin/tcsh
+#
+#=============================================================================================
+# $Id: r2q_view,v 1.1 2015/11/24 23:11:14 dauerbach Exp $
+#
+# script to review daily miniseed data created by r2q_proc
+#=============================================================================================
+#
+if ($#argv < 1) then
+  echo ""
+  echo "Usage: r2q_view jday [sta=]"
+  echo "Example: r2q_view 2014291"
+  echo "Example: r2q_view 2014291 sta=aak"
+  echo ""
+  echo "  For a given day, r2q_view calls 'miniseed2db' to generate wfdisc table from"
+  echo "  miniseed data sets created by r2q_proc.  It then runs 'dbpick' on the wfdisc"
+  echo "  to review the data from BH, LH, LN and LD channels."
+  echo ""
+  echo "  The miniseed data are in /ida/tmp/daily/miniseed/[jday] and the associated db files."
+  echo ""
+  exit 1
+endif
+
+set jdate = $1
+if (! -d /ida/tmp/daily/miniseed/$jdate) then
+  echo ""
+  echo "r2q_view: ERROR - /ida/tmp/daily/miniseed/$jdate does not exist, please run r2q_proc first."
+  exit 1
+endif
+
+if (! -d /ida/tmp/daily/miniseed/$jdate/db) then
+  mkdir /ida/tmp/daily/miniseed/$jdate/db 
+  if ($status != 0) then
+    echo ""
+    echo "r2q_view: ERROR - can not create /ida/tmp/daily/miniseed/$jdate/db"
+    exit 1
+  endif
+endif
+
+cd /ida/tmp/daily/miniseed/$jdate/db
+
+#
+# get the station name if 2nd argument is given
+#
+if ($#argv == 2) then
+  set sta = `echo $2 | lcase | awk -F'sta=' '{print $2}'| ucase`
+  set STA = `awk '{print $1}' /ida/dcc/db/DMC/IDA.seed2dmc |sort -u | grep -v ABKT | grep -v NRIL | grep $sta `
+  if ($status != 0) then
+    echo ""
+    echo "r2q_view: ERROR - $sta does not exist, please check the station name."
+    exit 1
+  endif
+  if ($#STA != 1) then
+    echo ""
+    echo "r2q_view: ERROR - $sta is not uniq, it refers to $STA, please restart with a uniq name."
+    exit 1
+  endif
+  set sta = `echo $STA`
+  if (! -f ../{$sta}_$jdate.ms) then
+    echo ""
+    echo "r2q_view: ERROR - there is no miniseed data for $sta on $jdate, please run r2q_proc first."
+    exit 1
+  endif
+  set mslist = ../{$sta}_$jdate.ms
+else
+  set mslist = `ls ../{*}_$jdate.ms`
+endif
+
+set log = ./miniseed2db.errs.$$
+rm -f $log
+touch $log
+
+foreach x (`echo $mslist`)
+  set prefix = `echo $x | awk -F'/' '{print $2}' | awk -F'.' '{print $1}'`
+  set sta = `echo $prefix | awk -F'_' '{print $1}'`
+  rm -f ./$prefix.*
+  echo $prefix -------------------- >> $log
+  echo ""
+  echo ""
+  echo "$prefix --------------------------------"
+  miniseed2db $x $prefix >>& $log
+  set mystatus = $status
+  if ($mystatus != 0) then
+    echo ""
+    echo "r2q_view: ERROR - in running miniseed2db on $x ....."
+    continue 
+  endif
+
+  dbpick -nostarttalk -noexist -sc {$sta}:BH._00 -tw 86400 -geom 1600x1000+50+50 $prefix << INN >> & /dev/null
+exec sleep 2
+quit
+INN
+
+  dbpick -nostarttalk -noexist -sc {$sta}:BH._10 -tw 86400 -geom 1600x1000+50+50 $prefix << INN >> & /dev/null
+exec sleep 2
+quit
+INN
+
+  dbpick -nostarttalk -noexist -sc {$sta}:LH.... -tw 86400 -geom 1600x1000+50+50 $prefix << INN >> & /dev/null
+exec sleep 2
+quit
+INN
+
+  dbpick -nostarttalk -noexist -sc {$sta}:VH.... -tw 86400 -geom 1600x1000+50+50 $prefix << INN >> & /dev/null
+exec sleep 2
+quit
+INN
+
+  dbpick -nostarttalk -noexist -sc {$sta}:LN.... -tw 86400 -geom 1600x1000+50+50 $prefix << INN >> & /dev/null
+exec sleep 2
+quit
+INN
+
+  dbpick -nostarttalk -noexist -sc {$sta}:LD.... -tw 86400 -geom 1600x1000+50+50 $prefix << INN >> & /dev/null
+exec sleep 2
+quit
+INN
+  
+echo "One can use dbpick to view $prefix individually at /ida/tmp/daily/miniseed/$jdate/db."
+echo "One can also use gs to view the postscrip files - screen dump from dbpick."
+ls -l $prefix.*
+echo ""
+echo -n 'press return to continue or n to stop: '; set ans = "$<"
+if ($ans == 'n') break
+
+end
+exit
+
+
+#===================================
+# $Log: r2q_view,v $
+# Revision 1.1  2015/11/24 23:11:14  dauerbach
+# initial load
+#
+#
+#===================================
+

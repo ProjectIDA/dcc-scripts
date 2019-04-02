@@ -1,0 +1,117 @@
+#!/bin/tcsh
+#
+# $Id: r2q_dataseg,v 1.2 2015/11/16 23:16:02 dauerbach Exp $
+#
+# ================================================================================
+# r2q_dataseg outputs a list of channels and their status for a given station/day.
+# ================================================================================
+#
+
+if ($#argv != 2) then
+  echo ""
+  echo "  Usage: r2q_dataseg station jday" 
+  echo "  Example: r2q_dataseg cmla 2014100"
+  echo ""
+  echo "  r2q_dataseg outputs a list of channels and their status for a given station/day."
+  echo ""
+  echo "  For a given station/day, it obtains a channel list from table /ida/dcc/db/DMC/IDA.seed2dmc"
+  echo "  and marks 'withdraw' on the bad channels according to table /ida/dcc/db/DMC/IDA.withdraw."
+  echo ""
+  echo "  The output is in the format to be used as SELECTION FILE for DMC's program 'dataselect'"
+  echo '  with "-s" option:'
+  echo ""
+  echo "  network station loccode channel qual start_time        end_time"
+  echo "  ------- ------- ------- ------- ---- ----------------- -----------------"
+  echo "  II      BORG    00      BH1     *    2014,070,00:00:00 2014,070,13:00:20"
+  echo "  II      BORG    00      BH1     *    2014,070,15:30:00 2014,070,20:40:00"
+  echo "  II      BORG    10      BH1     *    2014,070,00:00:00 2014,071,00:00:00"
+  echo ""
+  exit 1
+endif
+
+set path = (/ida/dcc/bin /ida/local/bin /ida/local/scripts /usr/local/bin $path)
+
+set sta = $1
+set jdy = $2
+set tt1 = `htoe $jdy | awk '{printf "%ld\n", $1}'`
+set tt2 = `htoe $jdy | awk '{printf "%ld\n", $1+86400}'`
+set STA  = `echo $sta | ucase`
+
+
+# --------
+# get the channel list for a given station/day
+# --------
+set clist = /tmp/clist.$$
+rm -f $clist
+
+set db = /ida/dcc/db/DMC
+
+# --------
+# get all valid channels for a given day
+# --------
+dbsubset $db/IDA.seed2dmc "sta=='$STA' && (time<$tt2 && endtime>=$tt1)" | dbselect - sta loccode chan | awk '{printf "%4s %02d %3s\n",$1,$2,$3}' | grep -i -v vm > $clist
+
+
+# --------
+# check the bad data segments for station/channel/day listed in clist
+# --------
+set wlist = /tmp/wlist.$$
+rm -f $wlist
+
+foreach sta_ch ("`cat $clist`")
+
+  set ch = `echo $sta_ch | awk '{print $3}' | lcase`
+  set lc = `echo $sta_ch | awk '{print $2}'`
+
+# --------
+# search it in IDA.withdraw
+# --------
+  dbsubset $db/IDA.withdraw "sta=='$STA' && loccode=='$lc' && chan=='$ch' && (time<$tt2 && endtime>=$tt1)" | dbselect - sta loccode chan time endtime | ucase | awk '{printf "II %s %02d %3s %17.5f %17.5f\n",$1,$2,$3,$4,$5}' > $wlist
+
+  set mstr = `echo II $STA $lc $ch | ucase | awk '{printf "%2s %s %02d %3s\n",$1,$2,$3,$4}'`
+
+# --------
+# if nothing found in IDA.withdraw, the entire day is passed!
+# otherwise, slice the day into time segments with good data
+# --------
+  set tst1 = `etoh code=16 $tt1 | awk '{printf "%4d,%03d,%s\n", $1/1000,$1%1000,$5}'`
+  set tst2 = `etoh code=16 $tt2 | awk '{printf "%4d,%03d,%s\n", $1/1000,$1%1000,$5}'`
+  if (-z $wlist) then
+    echo $mstr $tst1 $tst2 | awk '{printf "%2s %4s %02d %3s * %s %s\n",$1,$2,$3,$4,$5,$6}'
+  else
+    echo $mstr $tst1 $tst2 '-withdraw' | awk '{printf "%2s %4s %02d %3s * %s %s %s\n",$1,$2,$3,$4,$5,$6,$7}'
+    set nt = `grep -w "$mstr" $wlist | awk '{printf "%ld %ld ", $5,$6}'`
+    set ntt = `echo $tt1 $nt $tt2`
+    @ ii = 1
+    @ jj = 2
+    while ($ii <= $#ntt)
+#     if ( $ntt[$ii] < $ntt[$jj] ) then
+# problem occurs when the numbers are larger then 2147483647,
+# so we use AandB to compare two numbers: AandB returns 2 if n1 < n2
+#
+      AandB $ntt[$ii] $ntt[$jj]
+      set mystatus = $status
+      if ($mystatus == 2) then
+        set ntst1 = `etoh code=16 $ntt[$ii] | awk '{printf "%4d,%03d,%s\n", $1/1000,$1%1000,$5}'`
+        set ntst2 = `etoh code=16 $ntt[$jj] | awk '{printf "%4d,%03d,%s\n", $1/1000,$1%1000,$5}'`
+        echo $mstr $ntst1 $ntst2 '-partial data' | awk '{printf "%2s %4s %02d %3s * %s %s %s %s\n",$1,$2,$3,$4,$5,$6,$7,$8}'
+      endif
+      @ ii += 2
+      @ jj += 2
+    end
+  endif
+  rm -f $wlist
+end
+
+rm $clist
+
+
+#
+# $Log: r2q_dataseg,v $
+# Revision 1.2  2015/11/16 23:16:02  dauerbach
+# remove references to path /ida/dcc/scripts in r2q_poc and referenced sub scripts
+#
+# Revision 1.1  2015/11/16 21:54:43  dauerbach
+# Initial cvs load for production /ida/dcc/scripts r2q_proc & r2q_dataseg
+#
+#

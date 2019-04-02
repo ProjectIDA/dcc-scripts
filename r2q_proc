@@ -1,0 +1,274 @@
+#!/bin/tcsh
+#
+# $Id: r2q_proc,v 1.7 2016/07/01 19:59:35 dauerbach Exp $
+#
+# ==========================================================================
+# r2q_proc is to process a single day of data for a given station.
+# ==========================================================================
+
+if ($#argv < 2) then
+  echo ""
+  echo "  Usage: r2q_proc station jday [-x]"
+  echo "  Example: r2q_proc borg 2014070"
+  echo "  Example: r2q_proc wrab 2014300 -x"
+  echo ""
+  echo "  r2q_proc processes a single day of data for a given station."
+  echo ""
+  echo "  It gathers IDA10 raw data files from /ida/archive/raw/[sta]/[year]/[day] and converts them"
+  echo "  into mini-SEED data by running a in-house program 'imseed'.  Without option '-x', it uses"
+  echo "  DMC's program 'dataselect' to excludes bad data segments listed in /ida/dcc/db/DMC/IDA.withdraw."
+  echo ""
+  echo "  The final mini-SEED is sliced to the day's boundaries, ie from 00:00 to 23:59 and is marked"
+  echo "  with 'Q'.  The mini-SEED is names as [STATION]_[JulianDay].ms and will be placed in"
+  echo "  /ida/tmp/daily/miniseed/[JulianDay] for future distribution to DMC."
+  echo ""
+  echo "  To view these mini-SEED data, run script 'r2q_view'."
+  echo ""
+  echo "  To send these mini-SEED data to DMC, run script 'r2q_send'."
+  echo "" 
+  echo "  To keep the accuracy of sending good data to DMC, it's important to update the table"
+  echo "  /ida/dcc/db/DMC/IDA.withdraw accordingly by running 'add_withdraw' and 'mod_withdraw'."
+  echo ""
+  echo "  Option '-x' will process the entire dataset, ie including both good and bad data segments."
+  echo "  This allows operator to examine the complete dataset closely for a station/day if needed."
+  echo "  The mini-SEED generated with '-x' will be named as [STATION]_[JulianDay]_ex.ms and is placed"
+  echo "  in /ida/tmp/daily/miniseed/[JulianDay]/extra."
+  echo ""
+  echo ""
+  exit 1
+endif
+ 
+set path = (/ida/local/bin /ida/local/scripts /ida/dcc/bin /usr/local/bin $path)
+
+set sta = `echo $1 | lcase`
+set jdy = $2
+set yr  = `echo $jdy | cut -c1-4`
+set dy  = `echo $jdy | cut -c5-7`
+set STA = `echo $sta | ucase`
+
+set MINISEEDDIR = /ida/tmp/daily/miniseed
+set ARCHIVEDIR = /ida/archive
+set RAW = $ARCHIVEDIR/raw/$sta/$yr/$dy
+
+
+set all = ""
+if ($#argv == 3) then
+  if ("$argv[3]" == "-x") set all = "-x"
+endif
+
+echo ""
+echo $sta $jdy =====================================================================================
+
+/bin/ls $ARCHIVEDIR/raw | grep -v ads3 | grep -v adst | grep -v xell | grep -v ibfo | grep -v iasl | grep $sta >>& /dev/null
+set mystatus = $status
+if ($mystatus != 0) then
+  echo r2q_proc: $sta is not part of network, status = $mystatus
+  goto skip
+endif
+
+# --------
+# checking the raw directory (probably not needed anymore ???)
+# --------
+gz_chk_raw $sta $jdy
+set mystatus = $status
+if ($mystatus != 0) then
+  echo ""
+  echo r2q_proc: Can not continue for $STA on $jdy, gz_chk_raw status = $mystatus
+  goto skip
+endif
+
+# --------
+# if "-x" is given, process all channels and put the output in $MINISEEDDIR/jdy/extra
+# --------
+if ("$all" == "-x") then
+  set workdir = $MINISEEDDIR/$jdy/extra
+  set msfile = {$STA}_{$jdy}_ex.ms
+else
+  set workdir = $MINISEEDDIR/$jdy
+  set msfile = {$STA}_{$jdy}.ms
+endif
+
+cd $RAW
+if ($status != 0) then
+   echo "r2q_proc: Error cd'ing into $RAW"
+   exit 1 
+endif
+
+# --------
+# first time range of raw data 
+# --------
+
+# get filelist
+set flist = `ls [4-9]???????????????????????.gz [4-9]???????????????????????.GZ`
+if ($status != 0) then
+   echo "r2q_proc: Error: NO *gz files in $RAW"
+   exit 1
+endif
+
+set earliest_ep = `cat $flist | idaspan | head -1 | attol`
+if !($earliest_ep > 0) then
+   echo "r2q_proc: Error retrieving earliest_ep with idaspan"
+   exit 1
+endif
+
+set latest_ep = `cat $flist | idaspan | tail -1 | attol`
+if !($latest_ep > 0) then
+   echo "r2q_proc: Error retrieving latest_ep with idaspan"
+   exit 1
+endif
+
+
+set earliest_jd = `etoh code=0 $earliest_ep`
+if ($status != 0) then
+   echo "r2q_proc: Error retrieving earliest_jd with etoh"
+   exit 1
+endif
+set earliest_jd = `echo $earliest_jd | sed 's/-/:/g'`
+
+set latest_jd =   `etoh code=0 $latest_ep`
+if ($status != 0) then
+   echo "r2q_proc: Error retrieving earliest_jd with etoh"
+   exit 1
+endif
+set latest_jd = `echo $latest_jd | sed 's/-/:/g'`
+
+# --------
+# making miniseed data from the list - a list of files in $ARCHIVEDIR/raw/$sta/$yr/$dy
+# --------
+if (! -d $workdir) mkdir -p $workdir
+set cmd = imseed
+cat $flist | $cmd sta=$STA q=Q bs=4096 > $workdir/tmpA$$.ms
+if ($status != 0) then
+   echo "r2q_proc: Error running imseed on filelist: ($flist)."
+   exit 1
+endif
+
+# -------
+# Use dataselect to cleanup segments and sorting, etc, using raw time range
+# -------
+echo ""
+echo "Use dataselect to straighten out epochs:"
+echo dataselect -Ps -ts $earliest_jd -te $latest_jd $workdir/tmpA$$.ms -o $workdir/tmpB$$.ms
+echo ""
+dataselect -Ps -ts $earliest_jd -te $latest_jd $workdir/tmpA$$.ms -o $workdir/tmpB$$.ms
+if ($status != 0) then
+   echo "r2q_proc: Error running dataselect -ts $earlist_jd -te $latest_jd -o $workdir/tmpB$$.ms"
+   exit 1
+endif
+
+
+# --------
+# run miniseed through vhfilt to geenrate VH* from LH* channels
+# --------
+set cmd = vhfilt
+$cmd < $workdir/tmpB$$.ms > $workdir/vh$$.ms
+if ($status != 0) then
+   echo "r2q_proc: Error executing vhfilt to create VH miniseed data."
+   exit 1
+endif
+cat $workdir/tmpB$$.ms $workdir/vh$$.ms > $workdir/out$$.ms
+rm -f $workdir/tmpA$$.ms $workdir/tmpB$$.ms $workdir/vh$$.ms
+
+# --------
+# prepare sfile for dataselect process
+# --------
+cd $workdir
+set sfile = /tmp/sfile.$$
+rm -f $sfile $sfile.all
+
+r2q_dataseg $sta $jdy > $sfile.all
+
+
+# --------
+# if all channels are requested - for checking/reviewing purpose
+# remove the partial data segments from the list
+# --------
+if ("$all" == "-x") then
+  grep -v partial $sfile.all | awk -F'-withdraw' '{print $1}' > $sfile
+  echo $sta $jdy - process all data channels, good and bad - output is in $workdir
+  cat $sfile
+else
+  grep -v withdraw $sfile.all | awk -F'-partial' '{print $1}' > $sfile
+  if (-z $sfile) then
+    echo ""
+    echo r2q_proc: $sta $jdy - Nothing to be sent to DMC
+    cat $sfile.all
+    rm -f out$$.ms $sfile $sfile.all
+    exit
+  endif
+
+  echo "$sta $jdy - channel list from database tables ..."
+  grep -v withdraw $sfile.all
+  grep withdraw $sfile.all >>& /dev/null
+  if ($status == 0) then
+    echo '-----------------------'
+    grep withdraw $sfile.all
+  endif
+endif
+
+# --------
+# slice data to the day's boundary
+# select data based on SELECTION FILE (with -s)
+# change data quality to Q
+# --------
+dataselect -Sd out$$.ms -o day$$.ms
+
+#dataselect -Pr -s $sfile day$$.ms -o tmp$$.ms	# prune at the record level
+#dataselect -Pe -s $sfile day$$.ms -o tmp$$.ms	# prune at the edge level
+dataselect -Ps -s $sfile day$$.ms -o tmp$$.ms	# prune at the sample level
+
+# final prune into the time window
+set tstr1 = `echo $yr $dy | awk '{printf "%04d.%03d.00.00.00.000000\n", $1,$2}'`
+set tstr2 = `echo $yr $dy | awk '{printf "%04d.%03d.23.59.59.999999\n", $1,$2}'`
+echo dataselect -ts $tstr1 -te $tstr2 tmp$$.ms -o tmp1$$.ms
+dataselect -ts $tstr1 -te $tstr2 tmp$$.ms -o tmp1$$.ms
+
+dataselect -Q Q tmp1$$.ms -o $msfile
+
+echo ""
+echo '-----------------------'
+echo "$sta $jdy - data segments from mini-SEED data ..."
+msi -y -tg $msfile
+
+rm -f $sfile $sfile.all
+rm -f out$$.ms day$$.ms tmp$$.ms tmp1$$.ms
+
+exit 0
+
+# input station neds to be skipped
+skip:
+   echo "r2q_proc: Skipping $STA for $jdy"
+   echo ===============================================================================================
+   echo ""
+
+exit 0
+
+
+#
+# $Log: r2q_proc,v $
+# Revision 1.7  2016/07/01 19:59:35  dauerbach
+# Add -Ps to both echo AND real dataselect call. Argh.
+#
+# Revision 1.6  2016/07/01 19:32:11  dauerbach
+#
+# Added '-Ps' to dataselect call prior to vhfilt so overlaps taken care
+# before vhfilt.
+#
+# Revision 1.5  2015/11/18 18:46:52  dauerbach
+# additional adjustments to err checking for run.r2q, r2q_proc, gz_chk_raw
+#
+# Revision 1.4  2015/11/18 00:09:20  dauerbach
+# now using idaspan to get days' lower/upper limits and dataselect to tidy up miniseed prior to running vhfilt
+#
+# Revision 1.3  2015/11/17 00:16:48  dauerbach
+# Added call to vhfilt for VH* data generation
+#
+# Revision 1.2  2015/11/16 23:16:02  dauerbach
+# remove references to path /ida/dcc/scripts in r2q_poc and referenced sub scripts
+#
+# Revision 1.1  2015/11/16 21:54:43  dauerbach
+# Initial cvs load for production /ida/dcc/scripts r2q_proc & r2q_dataseg
+#
+#
+#
+#

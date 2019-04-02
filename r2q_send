@@ -17,7 +17,6 @@ if ($#argv != 1) then
   echo "  records from the local computer to a remote Data Managment Center.'  Users will need"
   echo "  to contact DMC to get assigned host and port for such transfering before using it."
   echo ""
-  echo "  IDA has been assigned to use port 16100 for sending files to ringsub.iris.washington.edu"
   echo ""
   echo "  To keep track the status of data transmission, miniseed2dmc creates a statefile in a local"
   echo "  working directory.  It also creates a SYNC file in the same directory to display/track the"
@@ -62,31 +61,33 @@ if ($#argv != 1) then
 endif
 
 
+set myname = "r2q_send"
 #
 # directory contains mini-SEED data
 # 
 set jdate = $1
 set dir   = /ida/tmp/daily/miniseed/$jdate
+set yr  = `echo $jdate | cut -c1-4`
+set dy  = `echo $jdate | cut -c5-7`
+
 
 #
 # host and port are assigned by DMC
 #
 set host  = ringsub.iris.washington.edu
 set port  = 16100
+# IDA has been asked to use port 16105 effective 2019-03-14, by Un Joe.
 
 set syncdir = /ida/tmp/daily/SYNC
-set aslsyncdir = /sync   # directory for ASL to pick up sync files to know what to pull from DMC for IDA/II
 
 # for some reason -S does not work well with -w, so let's just cd to syncdir
 cd $syncdir
 
 #
-#if (-f statefile.$jdate) then
-#  echo "" 
-#  echo r2q_send: ERROR - statefile.$jdate exists at $syncdir, please remove it first.
-#  echo "" 
-#  exit 1
-#endif
+# for ASL to pick up new IDA/II data sent to DMC
+# sync file to know what to pull from DMC
+#
+set aslsyncdir = /sync
 
 #
 # -p is to pretend, process input as usual and write the state and SYNC files but do NOT connect or send files.
@@ -100,9 +101,11 @@ rm -f /tmp/list.$$
 ls $dir/*.ms | grep -v XPFO > /tmp/list.$$
 rm -f /tmp/ms2dmc.log.$$ 
 
-echo miniseed2dmc -w $syncdir -S statefile.$jdate "$host":"$port" -l /tmp/list.$$
+echo miniseed2dmc -v -w $syncdir -S statefile.$jdate "$host":"$port" -l /tmp/list.$$
      miniseed2dmc -v -w $syncdir -S statefile.$jdate "$host":"$port" -l /tmp/list.$$ >& /tmp/ms2dmc.log.$$
 
+
+#
 # If everything is sent, move files around and clean it
 #   1. move all .ms files into $dir/DONE/
 #   2. move db/ (from running r2q_view) into $dir/DONE/ 
@@ -118,7 +121,11 @@ if ($status == 0) then			# yes, all data sent to DMC, move them to DONE
   set flag = 'DONE'
   # move ms files
   if (! -d $dir/DONE) mkdir -p $dir/DONE	# make DONE/ first
+
+  echo "r2q_send: Moving Miniseed files into DONE..."
   \mv $dir/*.ms $dir/DONE		# MOVE/REPLACE ms files in DONE/
+
+  echo "r2q_send: Moving db directory into DONE..."
   if (-d $dir/db) then
     if (! -d $dir/DONE/db) then
       mv $dir/db $dir/DONE		# MOVE the entire db/ into DONE/
@@ -128,6 +135,9 @@ if ($status == 0) then			# yes, all data sent to DMC, move them to DONE
     endif
   endif
 
+  echo "r2q_send: Updating DONE_Summary.txt..." 
+  msi -tg -Q -tf 2 $dir/DONE/*.ms | awk '{print $1 ", " $2 ", " $3 ", " $5}' > $dir/DONE/summary.csv
+
   # move statefile
   if (-f $syncdir/DONE.statefile/statefile.$jdate) then
     cat $syncdir/statefile.$jdate >> $syncdir/DONE.statefile/statefile.$jdate
@@ -136,23 +146,31 @@ if ($status == 0) then			# yes, all data sent to DMC, move them to DONE
     mv $syncdir/statefile.$jdate $syncdir/DONE.statefile
   endif
 
-  # DOING THIS WEEKLY IN r2q_sync
-  # # copy sync files to $aslsyncdir for ASL/DQA to pickup
-  # if (-d $aslsyncdir) then
-  #   cp $syncdir/*.sync $aslsyncdir
-  # endif
-
   if (-f $syncdir/DONE.statefile/r2q_send.log.$jdate) then
     cat /tmp/ms2dmc.log.$$ >> $syncdir/DONE.statefile/r2q_send.log.$jdate
   else
     cp -p /tmp/ms2dmc.log.$$ $syncdir/DONE.statefile/r2q_send.log.$jdate 
   endif
+  #
+  # get sync file name from log and cp to shared ASL shared space
+  # 
+  set syncfile = `grep "SYNC file" /tmp/ms2dmc.log.$$ | awk '{print $11}'`
+  cp $syncfile $aslsyncdir/ >& /dev/null
+  if ($status != 0) then
+    echo ""
+    echo r2q_send: Error copying SYNC file $syncfile to $aslsyncdir.
+    set admin = 'ezak@ucsd.edu,sbargabus@ucsd.edu,dauerbach@ucsd.edu'
+    Mail -r ${USER}@ucsd.edu -s "Error copying SYNC file $syncfile to $aslsyncdir" $admin < /dev/null >& /dev/null
+    echo ""
+    exit
+  endif
+
 else
   set flag = 'ERROR'
 endif
 
-set admin = 'ezak@ucsd.edu,dauerbach@ucsd.edu'
-Mail -s "miniseed2dmc $jdate status:$flag" $admin < /tmp/ms2dmc.log.$$
+set admin = 'ezak@ucsd.edu,sbargabus@ucsd.edu,dauerbach@ucsd.edu'
+Mail -r ${USER}@ucsd.edu -s "miniseed2dmc $jdate status:$flag" $admin < /tmp/ms2dmc.log.$$
 
 rm /tmp/list.$$ /tmp/ms2dmc.log.$$
 
