@@ -20,7 +20,7 @@ endif
 
 set admin = 'ezak@ucsd.edu,dauerbach@ucsd.edu,dbargabus@ucsd.edu'
 set path = (/ida/local/scripts $path)
-set db = /ida/dcc/db/DMC
+set db = $IDA_DATASCOPEDB_DIR/DMC
 
 set list = `awk '{print $1}' $db/IDA.seed2dmc | sort -u | grep -v NRIL | grep -v ABKT`
 if ($status != 0) then 
