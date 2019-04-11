@@ -1,3 +1,4 @@
+#!/bin/tcsh
 #
 # VI_withdraw is to modify /ida/dcc/db/DMC/IDA.withdraw with vi.
 #
@@ -6,7 +7,7 @@ set dbfile    = IDA.withdraw
 set dbfile_bk = $dbfile.`date +%s`
 
 echo ""
-echo -n 'Do you want to modify the entries in $dbdir/$dbfile? '; set ans = "$<"
+echo -n "Do you want to modify the entries in $dbdir/$dbfile? "; set ans = "$<"
 set ans = `echo $ans | lcase | cut -c1-1`
 if ($ans != 'y') then
   echo ""
