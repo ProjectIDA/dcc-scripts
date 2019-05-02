@@ -6,7 +6,6 @@ YEAR=`date -d 'last month' +'%Y'`
 echo $MONTH
 echo $YEAR
 pwd
-matlab -nodisplay -r "cd('/ida/dcc/matlab'); station_metrics($YEAR,$MONTH)"
+matlab -nodisplay -r "cd('/ida/dcc/matlab'); station_metrics($YEAR,$MONTH); exit(0);"
 cd -
-
 
