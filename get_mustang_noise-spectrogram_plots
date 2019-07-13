@@ -13,6 +13,7 @@
 #	exit 1
 #endif 
 
+umask 002 
 #######################################
 # GET IDA/II (non-experimental) STATION LIST
 # UGH --- I HATE THIS. I WANT MY DB...
@@ -23,7 +24,6 @@ set stalist = (AAK ABPO ALE ARTI ASCN BORG BRVK CMLA COCO DGAR EFI ERM ESK FFC H
 
 #######################################
 # Loop through stations retrieving plots from MUSTANG and saving them for Web viewing
-
 foreach sta ($stalist)
 
     /ida/dcc/bin/mustango noise-spectrogram ii $sta 00,10 lhz,lh1,lh2,bhz,bh1,bh2 \
@@ -37,7 +37,6 @@ end
 # BFO 'NE' horizontals
     /ida/dcc/bin/mustango noise-spectrogram ii bfo 00,10 lhz,lhn,lhe,bhz,bhn,bhe \
         --plot.powerscale.height=20 --plot.powerscale.width=200 --outdir /ida/dcc/qc/PLOTS/PLOTS.mustang
-
 # XBFO experimental sensors
     /ida/dcc/bin/mustango noise-spectrogram ii XBFO 50,55,60 lhz,lhn,lhe,bhz,bhn,bhe \
         --plot.powerscale.height=20 --plot.powerscale.width=200 --outdir /ida/dcc/qc/PLOTS/PLOTS.mustang
