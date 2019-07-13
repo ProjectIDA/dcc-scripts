@@ -28,7 +28,10 @@ aliases = {"prod": "https://igskgacgvmaslwb.cr.usgs.gov/dqa", "dev": "https://ig
 
 parser.add_argument("-C", "--command", help="command for type of data retrieval, EG: -C data, hash, or md5, default is \"data\"", default="data")
 
-parser.add_argument("-w", "--website", help="use website alias or full url. Aliases: prod and dev", required=True)
+parser.add_argument("-w", "--website", help="use website alias or full url. Aliases: prod and dev",
+                    required=False,
+                    default="https://dqa.ucsd.edu/dqa"
+                   )
 parser.add_argument("-n", "--network", help="network identifier, EG: -n IU", default="%")
 parser.add_argument("-s", "--station", help="station identifier, EG: -s ANMO", default="%")
 parser.add_argument("-l", "--location", help="location identifier, EG: -l 00", default="%")
