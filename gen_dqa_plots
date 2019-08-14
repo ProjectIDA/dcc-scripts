@@ -1,0 +1,53 @@
+#! /bin/csh -f
+##################################################
+#
+# Usage:
+#     get_dqa_plots
+#
+###################################################
+
+umask 002
+#######################################
+# GET IDA/II (non-experimental) STATION LIST
+# UGH --- I HATE THIS. I WANT MY DB...
+set stalist = (AAK ABPO ALE ARTI ASCN BORG BRVK CMLA COCO DGAR EFI ERM ESK FFC HOPE JTS KAPI KDAK KIV KURK KWJN LVZ MBAR MSEY MSVF NIL NNA OBN PALK PFO RAYN RPN SACV SHEL SIMI SUR TAU TLY UOSS WRAB)
+set stalist = (AAK ABPO ARTI BORG BRVK CMLA COCO DGAR EFI ERM ESK FFC HOPE JTS KAPI KDAK KIV KURK KWJN LVZ MBAR MSEY MSVF NIL NNA OBN PALK PFO RAYN RPN SACV SHEL SIMI SUR TAU TLY UOSS WRAB)
+#
+# NOTE: Above list missing BFO and Xxxx stations with non-standard components (aka 'NE') or locations. E.g. XBFO and XPFO
+#######################################
+
+#######################################
+# Loop through stations retrieving plots from MUSTANG and saving them for Web viewing
+foreach sta ($stalist)
+
+  /ida/dcc/scripts/dqa-plots.py CoherencePBM:4-8               plot ii $sta lhz-lhz 00-10 2018-07-01 2019-07-01 --save --name last365   --outdir /ida/dcc/qc/PLOTS/metrics/ -q
+  /ida/dcc/scripts/dqa-plots.py CoherencePBM:4-8               plot ii $sta lhnd-lhnd 00-10 2018-07-01 2019-07-01 --save --name last365 --outdir /ida/dcc/qc/PLOTS/metrics/ -q
+  /ida/dcc/scripts/dqa-plots.py CoherencePBM:4-8               plot ii $sta lhed-lhed 00-10 2018-07-01 2019-07-01 --save --name last365 --outdir /ida/dcc/qc/PLOTS/metrics/ -q
+
+  sleep 1
+
+  /ida/dcc/scripts/dqa-plots.py CoherencePBM:90-110            plot ii $sta lhz-lhz 00-10 2018-07-01 2019-07-01 --save --name last365   --outdir /ida/dcc/qc/PLOTS/metrics/ -q
+  /ida/dcc/scripts/dqa-plots.py CoherencePBM:90-110            plot ii $sta lhnd-lhnd 00-10 2018-07-01 2019-07-01 --save --name last365 --outdir /ida/dcc/qc/PLOTS/metrics/ -q
+  /ida/dcc/scripts/dqa-plots.py CoherencePBM:90-110            plot ii $sta lhed-lhed 00-10 2018-07-01 2019-07-01 --save --name last365 --outdir /ida/dcc/qc/PLOTS/metrics/ -q
+
+  sleep 1
+
+  /ida/dcc/scripts/dqa-plots.py CoherencePBM:200-500           plot ii $sta lhz-lhz 00-10 2018-07-01 2019-07-01 --save --name last365   --outdir /ida/dcc/qc/PLOTS/metrics/ -q
+  /ida/dcc/scripts/dqa-plots.py CoherencePBM:200-500           plot ii $sta lhnd-lhnd 00-10 2018-07-01 2019-07-01 --save --name last365 --outdir /ida/dcc/qc/PLOTS/metrics/ -q
+  /ida/dcc/scripts/dqa-plots.py CoherencePBM:200-500           plot ii $sta lhed-lhed 00-10 2018-07-01 2019-07-01 --save --name last365 --outdir /ida/dcc/qc/PLOTS/metrics/ -q
+
+  sleep 1
+
+  /ida/dcc/scripts/dqa-plots.py StationDeviationMetric:90-110  plot ii $sta lhz 00 2018-07-01 2019-07-01 --save --name last365          --outdir /ida/dcc/qc/PLOTS/metrics/ -q
+  /ida/dcc/scripts/dqa-plots.py StationDeviationMetric:90-110  plot ii $sta lh1 00 2018-07-01 2019-07-01 --save --name last365          --outdir /ida/dcc/qc/PLOTS/metrics/ -q
+  /ida/dcc/scripts/dqa-plots.py StationDeviationMetric:90-110  plot ii $sta lh2 00 2018-07-01 2019-07-01 --save --name last365          --outdir /ida/dcc/qc/PLOTS/metrics/ -q
+  /ida/dcc/scripts/dqa-plots.py StationDeviationMetric:90-110  plot ii $sta lhz 10 2018-07-01 2019-07-01 --save --name last365          --outdir /ida/dcc/qc/PLOTS/metrics/ -q
+  /ida/dcc/scripts/dqa-plots.py StationDeviationMetric:90-110  plot ii $sta lh1 10 2018-07-01 2019-07-01 --save --name last365          --outdir /ida/dcc/qc/PLOTS/metrics/ -q
+  /ida/dcc/scripts/dqa-plots.py StationDeviationMetric:90-110  plot ii $sta lh2 10 2018-07-01 2019-07-01 --save --name last365          --outdir /ida/dcc/qc/PLOTS/metrics/ -q
+
+  sleep 1
+
+end
+######################################
+
+exit
