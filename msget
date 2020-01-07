@@ -23,14 +23,15 @@
 import argparse
 import sys
 import os
+import datetime
 from ida.datetime import parsedt
 from ida.utils import is_valid_chanloc, msget
 
 from fabulous.color import red, bold
 
-version = '1.0.0'
-parser = argparse.ArgumentParser(description="Retrieve MINISEED data from IDA raw archives for a single CHANLOC" +
-                                             "for arbitrary time range. Output is sent to STDOUT.")
+version = '1.0.1'
+parser = argparse.ArgumentParser(description="Retrieve MINISEED data from IDA raw ms archives for a single CHANLOC" +
+                                             "for arbitrary time range.")
 parser.add_argument('station', action="store", default='',
                     help="Station code for which data should be retrieved (case insensitive).")
 parser.add_argument('chanloc', action='store', help="A single CHANLOC code. E.g. bhz00. Case insensitive.",
@@ -44,7 +45,7 @@ parser.add_argument('endtime', action="store", default='',
 parser.add_argument('--net', action="store", default="II", help="Specify NETWORK. Default is 'II'.")
 parser.add_argument('--out', '-o', action="store", default=None, help="Specify output file. Default is STDOUT.")
 parser.add_argument('--ms-arc-dir', action='store', default=os.environ.get('IDA_ARCHIVE_MS_DIR', '.'),
-                    help='Root directory of the MINISEED data archive.')
+                    help='Specify an alternate root directory of the MINISEED data archive.')
 parser.add_argument('-v', '--version', action='version', version=version)
 
 args = parser.parse_args()
@@ -69,6 +70,10 @@ if not end_dt:
     print(red(bold(f"Error parsing END TIME: {args.endtime}")), file=sys.stderr)
     parser.print_help()
     sys.exit(1)
+
+# check to see if TIME specified on END. If not, add a day. This is consistent with i10get and mstrim behavior.
+if len(args.endtime) in [8, 10]:  # date only supplied, so add a day
+    end_dt = end_dt + datetime.timedelta(days=1)
 
 arcdir = os.path.abspath(os.path.expanduser(arcdir))
 if not os.path.exists(arcdir) or not os.path.isdir(arcdir):
