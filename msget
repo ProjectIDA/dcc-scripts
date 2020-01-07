@@ -29,9 +29,9 @@ from ida.utils import is_valid_chanloc, msget
 
 from fabulous.color import red, bold
 
-version = '1.0.3'
-parser = argparse.ArgumentParser(description="Retrieve MINISEED data from IDA raw ms archives for a single CHANLOC" +
-                                             "for arbitrary time range.")
+version = '1.0.4'
+parser = argparse.ArgumentParser(description="Retrieve MINISEED data from IDA raw miniseed archives " +
+                                             "for a single STA and CHANLOC for arbitrary time range.")
 parser.add_argument('station', action="store", default='',
                     help="Station code for which data should be retrieved (case insensitive).")
 parser.add_argument('chanloc', action='store', help="A single CHANLOC code. E.g. bhz00 (case insensitive).",
