@@ -29,12 +29,12 @@ from ida.utils import is_valid_chanloc, msget
 
 from fabulous.color import red, bold
 
-version = '1.0.1'
+version = '1.0.3'
 parser = argparse.ArgumentParser(description="Retrieve MINISEED data from IDA raw ms archives for a single CHANLOC" +
                                              "for arbitrary time range.")
 parser.add_argument('station', action="store", default='',
                     help="Station code for which data should be retrieved (case insensitive).")
-parser.add_argument('chanloc', action='store', help="A single CHANLOC code. E.g. bhz00. Case insensitive.",
+parser.add_argument('chanloc', action='store', help="A single CHANLOC code. E.g. bhz00 (case insensitive).",
                                                     default='')
 parser.add_argument('starttime', action="store", default='',
                     help="START TIME in either  YYYY-JJJ:HH:MM:SS  or  YYYY-MM-DD:HH:MM:SS formats (UTC assumed). " +
@@ -43,9 +43,8 @@ parser.add_argument('endtime', action="store", default='',
                     help="END TIME in either  YYYY-JJJ:HH:MM:SS  or  YYYY-MM-DD:HH:MM:SS formats (UTC assumed). " +
                          "Time is optional. 23:59:99.999 assumed if not supplied")
 parser.add_argument('--net', action="store", default="II", help="Specify NETWORK. Default is 'II'.")
-parser.add_argument('--out', '-o', action="store", default=None, help="Specify output file. Default is STDOUT.")
 parser.add_argument('--ms-arc-dir', action='store', default=os.environ.get('IDA_ARCHIVE_MS_DIR', '.'),
-                    help='Specify an alternate root directory of the MINISEED data archive.')
+                    help='Specify alternate root dir for MINISEED data archive.')
 parser.add_argument('-v', '--version', action='version', version=version)
 
 args = parser.parse_args()
@@ -90,4 +89,4 @@ if not os.path.exists(arcdir) or not os.path.isdir(arcdir):
 chan = chanloc[:3]
 loc = chanloc[3:]
 
-msget(arcdir, sta, chan, loc, start_dt, end_dt, net=args.net, outfn=args.out)
+msget(arcdir, sta, chan, loc, start_dt, end_dt, net=args.net)
