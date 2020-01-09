@@ -73,7 +73,7 @@ if len(args.endtime) in [8, 10]:  # date only supplied, so add a day
 
 out_dir = os.path.abspath(os.path.expanduser(out_dir))
 if not os.path.exists(out_dir) or not os.path.isdir(out_dir):
-    print(red(bold(f"MS ARC DIR not found: {out_dir}")), file=sys.stderr, flush=True)
+    print(red(bold(f"OUTPUT DIR not found: {out_dir}")), file=sys.stderr, flush=True)
     parser.print_help()
     sys.exit(1)
 
@@ -83,4 +83,6 @@ stations = get_solar_station_list()
 for sta in stations:
 
     fig = gen_station_solar_soh_fig(sta, start_dt, end_dt)
-    fig.savefig("{}-{}-{}.png".format(sta, start_dt.isoformat(), end_dt.isoformat()), dpi=400)
+    png_filename = "{}.png".format(sta)
+    png_filename = os.path.join(out_dir, png_filename)
+    fig.savefig(png_filename, dpi=300)
