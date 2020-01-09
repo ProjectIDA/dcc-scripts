@@ -1,0 +1,86 @@
+#!/usr/bin/env python3
+#######################################################################################################################
+# Copyright (C) 2016-2020  Regents of the University of California
+#
+# This is free software: you can redistribute it and/or modify it under the terms of the
+# GNU General Public License (GNU GPL) as published by the Free Software Foundation, either version 3 of the License,
+# or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+# without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details.
+#
+# A copy of the GNU General Public License can be found in LICENSE.TXT in the root of the source code repository.
+# Additionally, it can be found at http://www.gnu.org/licenses/.
+#
+# NOTES: Per GNU GPLv3 terms:
+#   * This notice must be kept in this source file
+#   * Changes to the source must be clearly noted with date & time of change
+#
+# If you use this software in a product, an explicit acknowledgment in the product documentation of the contribution
+# by Project IDA, Institute of Geophysics and Planetary Physics, UCSD would be appreciated but is not required.
+#######################################################################################################################
+import argparse
+import sys
+# import tempfile
+import datetime
+import os
+# import matplotlib.pyplot as plt
+# from matplotlib.dates import date2num, DateFormatter
+# import matplotlib.dates as mdates
+# from matplotlib.ticker import (AutoMinorLocator)
+# import numpy as np
+# from obspy import read
+
+from fabulous.color import red, bold
+
+from ida.datetime import parsedt
+from ida.plotting.solar import get_solar_station_list, gen_station_solar_soh_fig
+
+out_dir_default = os.path.join(os.environ.get('IDA_WEB_ROOT', '.'), 'SOLAR')
+
+version = '1.0.0'
+parser = argparse.ArgumentParser(description="Generate SOLAR SOH plots (png) for IDA SOLAR stations. " +
+                                             "Uses data from IDA raw miniseed archives.")
+parser.add_argument('starttime', action="store", default='',
+                    help="START TIME in either  YYYY-JJJ:HH:MM:SS  or  YYYY-MM-DD:HH:MM:SS formats (UTC assumed). " +
+                         "Time is optional. 00:00:00 assumed if not supplied")
+parser.add_argument('endtime', action="store", default='',
+                    help="END TIME in either  YYYY-JJJ:HH:MM:SS  or  YYYY-MM-DD:HH:MM:SS formats (UTC assumed). " +
+                         "Time is optional. 23:59:99.999 assumed if not supplied")
+parser.add_argument('--outdir', action='store', default=out_dir_default,
+                    help='Specify directory in which to save png plots. Default: ' + out_dir_default)
+parser.add_argument('-v', '--version', action='version', version=version)
+
+args = parser.parse_args()
+out_dir = args.outdir
+
+start_dt = parsedt(args.starttime)
+if not start_dt:
+    print(red(bold(f"Error parsing START TIME: {args.starttime}")), file=sys.stderr, flush=True)
+    parser.print_help()
+    sys.exit(1)
+
+end_dt = parsedt(args.endtime)
+if not end_dt:
+    print(red(bold(f"Error parsing END TIME: {args.endtime}")), file=sys.stderr)
+    parser.print_help()
+    sys.exit(1)
+
+# check to see if TIME specified on END. If not, add a day. This is consistent with i10get and mstrim behavior.
+if len(args.endtime) in [8, 10]:  # date only supplied, so add a day
+    end_dt = end_dt + datetime.timedelta(days=1)
+
+out_dir = os.path.abspath(os.path.expanduser(out_dir))
+if not os.path.exists(out_dir) or not os.path.isdir(out_dir):
+    print(red(bold(f"MS ARC DIR not found: {out_dir}")), file=sys.stderr, flush=True)
+    parser.print_help()
+    sys.exit(1)
+
+
+stations = get_solar_station_list()
+
+for sta in stations:
+
+    fig = gen_station_solar_soh_fig(sta, start_dt, end_dt)
+    fig.savefig("{}-{}-{}.png".format(sta, start_dt.isoformat(), end_dt.isoformat()), dpi=400)
