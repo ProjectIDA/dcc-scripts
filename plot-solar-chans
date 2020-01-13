@@ -35,24 +35,26 @@ import os
 from fabulous.color import red, bold
 
 from ida.datetime import parsedt
-from ida.plotting.solar import get_solar_station_list, gen_station_solar_soh_fig
+from ida.plotting.solar import gen_station_solar_soh_fig
 
-out_dir_default = os.path.join(os.environ.get('IDA_WEB_ROOT', '.'), 'SOLAR')
+out_dir_default = "./"
 
-version = '1.0.0'
-parser = argparse.ArgumentParser(description="Generate SOLAR SOH plots (png) for IDA SOLAR stations. " +
-                                             "Uses data from IDA raw miniseed archives.")
+version = '1.1.0'
+parser = argparse.ArgumentParser(description="Generate SOLAR SOH plots (png) for an IDA SOLAR station.")
+parser.add_argument('station', action="store", default='',
+                    help="Station code (case insensitive).")
 parser.add_argument('starttime', action="store", default='',
                     help="START TIME in either  YYYY-JJJ:HH:MM:SS  or  YYYY-MM-DD:HH:MM:SS formats (UTC assumed). " +
                          "Time is optional. 00:00:00 assumed if not supplied")
 parser.add_argument('endtime', action="store", default='',
                     help="END TIME in either  YYYY-JJJ:HH:MM:SS  or  YYYY-MM-DD:HH:MM:SS formats (UTC assumed). " +
                          "Time is optional. 23:59:99.999 assumed if not supplied")
-parser.add_argument('--outdir', action='store', default=out_dir_default,
+parser.add_argument('--outdir', '-o', action='store', default=out_dir_default,
                     help='Specify directory in which to save png plots. Default: ' + out_dir_default)
 parser.add_argument('-v', '--version', action='version', version=version)
 
 args = parser.parse_args()
+sta = args.station.lower()
 out_dir = args.outdir
 
 start_dt = parsedt(args.starttime)
@@ -78,11 +80,8 @@ if not os.path.exists(out_dir) or not os.path.isdir(out_dir):
     sys.exit(1)
 
 
-stations = get_solar_station_list()
+fig = gen_station_solar_soh_fig(sta, start_dt, end_dt)
+png_filename = "{}.png".format(sta)
+png_filename = os.path.join(out_dir, png_filename)
+fig.savefig(png_filename, dpi=300)
 
-for sta in stations:
-
-    fig = gen_station_solar_soh_fig(sta, start_dt, end_dt)
-    png_filename = "{}.png".format(sta)
-    png_filename = os.path.join(out_dir, png_filename)
-    fig.savefig(png_filename, dpi=300)
