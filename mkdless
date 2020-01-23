@@ -158,7 +158,7 @@ foreach seed ($seed_list)
 
         if ($chatty) echo "Generating POD tree: $podtree"
 
-        set command = "~/src/bin/podir/OBJS/linux.3.10.x86_64/podir -v db=${db} $podtree $podir_keep_param instance=${seed_instance}"
+        set command = "podir -v db=${db} $podtree $podir_keep_param instance=${seed_instance}"
 
         echo "`date +%Y:%j-%H:%M:%S` - $command" >> $log
         $command >>& $log
