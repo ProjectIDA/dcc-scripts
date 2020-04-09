@@ -38,10 +38,10 @@ end
     /ida/dcc/bin/mustango noise-spectrogram ii bfo 00,10 lhz,lhn,lhe,bhz,bhn,bhe --name-tail last365 \
         --plot.powerscale.height=20 --plot.powerscale.width=200 --outdir /ida/dcc/qc/PLOTS/PLOTS.mustang
 # XBFO experimental sensors
-    /ida/dcc/bin/mustango noise-spectrogram ii XBFO 50,55,60 lhz,lhn,lhe,bhz,bhn,bhe --name-tail last365 \
+    /ida/dcc/bin/mustango noise-spectrogram ii XBFO 50,55,60,70 lhz,lhn,lhe,bhz,bhn,bhe --name-tail last365 \
         --plot.powerscale.height=20 --plot.powerscale.width=200 --outdir /ida/dcc/qc/PLOTS/PLOTS.mustang
 
 # XPFO sensors
-    /ida/dcc/bin/mustango noise-spectrogram ii XPFO 00,10,20,30,40,50,60,70 lhz,lh1,lh2,bhz,bh1,bh2 --name-tail last365 \
+    /ida/dcc/bin/mustango noise-spectrogram ii XPFO 00,10,20,30,40,50,60,70,80,90 lhz,lh1,lh2,bhz,bh1,bh2 --name-tail last365 \
         --plot.powerscale.height=20 --plot.powerscale.width=200 --outdir /ida/dcc/qc/PLOTS/PLOTS.mustang
 exit
