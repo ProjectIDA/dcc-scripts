@@ -16,8 +16,8 @@
 umask 002 
 #######################################
 # GET IDA/II (non-experimental) STATION LIST
-# UGH --- I HATE THIS. I WANT MY DB...
-set stalist = (AAK ABPO ALE ARTI ASCN BORG BRVK CMLA COCO DGAR EFI ERM ESK FFC HOPE JTS KAPI KDAK KIV KURK KWJN LVZ MBAR MSEY MSVF NIL NNA OBN PALK PFO RAYN RPN SACV SHEL SIMI SUR TAU TLY UOSS WRAB)
+# UGH --- I HATE THIS. I WANT MY MDB...
+set stalist = (COCO DGAR EFI ERM ESK FFC HOPE JTS KAPI KDAK KIV KURK KWJN LVZ MBAR MSEY MSVF NIL NNA OBN PALK PFO RAYN RPN SACV SHEL SIMI SUR TAU TLY UOSS WRAB)
 #
 # NOTE: Above list missing BFO and Xxxx stations with non-standard components (aka 'NE') or locations. E.g. XBFO and XPFO
 #######################################
@@ -27,16 +27,45 @@ set stalist = (AAK ABPO ALE ARTI ASCN BORG BRVK CMLA COCO DGAR EFI ERM ESK FFC H
 foreach sta ($stalist)
 
     /ida/dcc/bin/mustango noise-spectrogram ii $sta 00,10 lhz,lh1,lh2,bhz,bh1,bh2 --name-tail last365 \
-        --plot.powerscale.height=20 --plot.powerscale.width=300 --outdir /ida/dcc/qc/PLOTS/PLOTS.mustang
+                                         --plot.powerscale.height=20 --plot.powerscale.width=300 --outdir /ida/dcc/qc/PLOTS/PLOTS.mustang
 end
 ######################################
+
+
+/ida/dcc/bin/mustango noise-spectrogram ii aak 00,10 lhz,lh1,lh2,bhz,bh1,bh2 --name-tail last365 \
+    --plot.powerscale.range=-185,-107 --plot.powerscale.height=20 --plot.powerscale.width=300 --outdir /ida/dcc/qc/PLOTS/PLOTS.mustang
+
+/ida/dcc/bin/mustango noise-spectrogram ii abpo 00,10 lhz,lh1,lh2,bhz,bh1,bh2 --name-tail last365 \
+    --plot.powerscale.range=-183,-94  --plot.powerscale.height=20 --plot.powerscale.width=300 --outdir /ida/dcc/qc/PLOTS/PLOTS.mustang
+
+/ida/dcc/bin/mustango noise-spectrogram ii ale 00,10 lhz,lh1,lh2,bhz,bh1,bh2 --name-tail last365 \
+    --plot.powerscale.range=-185,-101 --plot.powerscale.height=20 --plot.powerscale.width=300 --outdir /ida/dcc/qc/PLOTS/PLOTS.mustang
+
+/ida/dcc/bin/mustango noise-spectrogram ii arti 00,10 lhz,lh1,lh2,bhz,bh1,bh2 --name-tail last365 \
+    --plot.powerscale.range=-187,-103 --plot.powerscale.height=20 --plot.powerscale.width=300 --outdir /ida/dcc/qc/PLOTS/PLOTS.mustang
+
+/ida/dcc/bin/mustango noise-spectrogram ii ascn 00,10 lhz,lh1,lh2,bhz,bh1,bh2 --name-tail last365 \
+    --plot.powerscale.range=-172,-72  --plot.powerscale.height=20 --plot.powerscale.width=300 --outdir /ida/dcc/qc/PLOTS/PLOTS.mustang
+
+# BFO 'NE' horizontals
+/ida/dcc/bin/mustango noise-spectrogram ii bfo 00,10 lhz,lhn,lhe,bhz,bhn,bhe --name-tail last365 \
+    --plot.powerscale.range=-187,-99  --plot.powerscale.height=20 --plot.powerscale.width=300 --outdir /ida/dcc/qc/PLOTS/PLOTS.mustang
+
+/ida/dcc/bin/mustango noise-spectrogram ii borg 00,10 lhz,lh1,lh2,bhz,bh1,bh2 --name-tail last365 \
+    --plot.powerscale.range=-184,-81  --plot.powerscale.height=20 --plot.powerscale.width=300 --outdir /ida/dcc/qc/PLOTS/PLOTS.mustang
+
+/ida/dcc/bin/mustango noise-spectrogram ii bork 00,10 lhz,lh1,lh2,bhz,bh1,bh2 --name-tail last365 \
+    --plot.powerscale.range=-184,-105 --plot.powerscale.height=20 --plot.powerscale.width=300 --outdir /ida/dcc/qc/PLOTS/PLOTS.mustang
+
+/ida/dcc/bin/mustango noise-spectrogram ii brvk 00,10 lhz,lh1,lh2,bhz,bh1,bh2 --name-tail last365 \
+    --plot.powerscale.range=-185,-107 --plot.powerscale.height=20 --plot.powerscale.width=300 --outdir /ida/dcc/qc/PLOTS/PLOTS.mustang
+
+/ida/dcc/bin/mustango noise-spectrogram ii cmla 00,10 lhz,lh1,lh2,bhz,bh1,bh2 --name-tail last365 \
+    --plot.powerscale.range=-183,-72  --plot.powerscale.height=20 --plot.powerscale.width=300 --outdir /ida/dcc/qc/PLOTS/PLOTS.mustang
 
 ######################################
 # Now handle some non-standard cases/stations
 
-# BFO 'NE' horizontals
-    /ida/dcc/bin/mustango noise-spectrogram ii bfo 00,10 lhz,lhn,lhe,bhz,bhn,bhe --name-tail last365 \
-        --plot.powerscale.height=20 --plot.powerscale.width=300 --outdir /ida/dcc/qc/PLOTS/PLOTS.mustang
 # XBFO experimental sensors
     /ida/dcc/bin/mustango noise-spectrogram ii XBFO 50,55,60 lhz,lhn,lhe,bhz,bhn,bhe --name-tail last365 \
         --plot.powerscale.height=20 --plot.powerscale.width=300 --outdir /ida/dcc/qc/PLOTS/PLOTS.mustang
