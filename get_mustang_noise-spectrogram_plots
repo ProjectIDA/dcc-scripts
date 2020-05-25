@@ -67,6 +67,7 @@ end
 # Now handle some non-standard cases/stations
 
 # XBFO experimental sensors
+
     /ida/dcc/bin/mustango noise-spectrogram ii XBFO 50,55,60 lhz,lhn,lhe,bhz,bhn,bhe --name-tail last365 \
         --plot.powerscale.height=20 --plot.powerscale.width=300 --outdir /ida/dcc/qc/PLOTS/PLOTS.mustang
 
