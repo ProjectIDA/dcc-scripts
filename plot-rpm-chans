@@ -75,8 +75,14 @@ else:
         end_dt = end_dt + datetime.timedelta(days=1)
 
 out_dir = os.path.abspath(os.path.expanduser(out_dir))
+if not os.path.exists(out_dir):
+    try:
+        os.mkdir(out_dir)
+    except:
+        pass
+
 if not os.path.exists(out_dir) or not os.path.isdir(out_dir):
-    print(red(bold(f"OUTPUT DIR not found: {out_dir}")), file=sys.stderr, flush=True)
+    print(red(bold(f"INVALID OUTPUT DIR: {out_dir}")), file=sys.stderr, flush=True)
     parser.print_help()
     sys.exit(1)
 
