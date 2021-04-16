@@ -98,7 +98,8 @@ set aslsyncdir = /sync
 #
 
 rm -f /tmp/list.$$
-ls $dir/*.ms | grep -v XPFO > /tmp/list.$$
+
+ls $dir/*.ms > /tmp/list.$$
 rm -f /tmp/ms2dmc.log.$$ 
 
 echo miniseed2dmc -v -w $syncdir -S statefile.$jdate "$host":"$port" -l /tmp/list.$$
@@ -135,8 +136,9 @@ if ($status == 0) then			# yes, all data sent to DMC, move them to DONE
     endif
   endif
 
-  echo "r2q_send: Updating DONE_Summary.txt..." 
-  msi -tg -Q -tf 2 $dir/DONE/*.ms | awk '{print $1 ", " $2 ", " $3 ", " $5}' > $dir/DONE/summary.csv
+  echo "r2q_send: Updating DONE_Summary.txt..."
+  touch $dir/DONE/summary.csv
+  msi -tg -Q -tf 2 $dir/DONE/*.ms | awk '{print $1 ", " $2 ", " $3 ", " $5}' >> $dir/DONE/summary.csv
 
   # move statefile
   if (-f $syncdir/DONE.statefile/statefile.$jdate) then
