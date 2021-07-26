@@ -18,22 +18,18 @@ if ($jdate == 'today') then
     @ jdate = $jdate - 1
 endif
 
-set admin = 'ezak@ucsd.edu,dauerbach@ucsd.edu,dbargabus@ucsd.edu'
+set admin = 'ezak@ucsd.edu,dauerbach@ucsd.edu,dbargabus@ucsd.edu,whatfield@ucsd.edu'
 set path = (/ida/local/scripts $path)
-set db = $IDA_DATASCOPEDB_DIR/DMC
+set db = $IDA_DATASCOPEDB_DIR//DMC
 
 set list = `awk '{print $1}' $db/IDA.seed2dmc | sort -u | grep -v NRIL | grep -v ABKT`
-if ($status != 0) then 
+if ($status != 0) then
    echo "run.r2q: Error reading 'IDA.seed2dmc' file"
    goto failure
 endif
 
 set shorthost = `hostname -s`
-if ! $?IDA_DCC_LOG_DIR then
-    echo "Environment variable IDA_DCC_LOG_DIR is not set"
-    goto failure
-endif
-set LOG = $IDA_DCC_LOG_DIR/$shorthost/r2q_proc/$jdate.LOG
+set LOG = /ida/log/$shorthost/r2q_proc/$jdate.LOG
 
 rm -f $LOG
 if ($status != 0) then
@@ -67,7 +63,7 @@ foreach sta ($list)
 
 end
 
-Mail -s "Daily process info for $jdate" $admin < $LOG 
+Mail -s "Daily process info for $jdate" $admin < $LOG
 if ($status != 0) then
     echo "run.r2q: Error sending email to $admin for $jdate" >> $LOG
     goto failure
