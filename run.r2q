@@ -6,6 +6,10 @@
 # Currently (2015-11-16) set up in crontab to run daily @ ~4am local time.
 #
 
+if (-f /ida/local/cshrc) then
+   source /ida/local/cshrc
+endif
+
 if ($#argv != 1) then
     echo usage: run.r2q jdate
     echo example: run.r2q 2014112
@@ -43,7 +47,7 @@ if ($status != 0) then
    goto failure
 endif
 
-echo "" > $LOG
+echo "" >> $LOG
 echo "This report is available at $shorthost in $LOG.  It's updated daily." >> $LOG
 echo "Please look for lines marked with 'withdraw' or 'ERROR'." >> $LOG
 echo "" >> $LOG
