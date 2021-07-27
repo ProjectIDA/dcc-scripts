@@ -62,6 +62,9 @@ endif
 
 
 set myname = "r2q_send"
+
+set admin = 'ezak@ucsd.edu,sbargabus@ucsd.edu,dauerbach@ucsd.edu,whatfield@ucsd.edu'
+
 #
 # directory contains mini-SEED data
 # 
@@ -161,7 +164,6 @@ if ($status == 0) then			# yes, all data sent to DMC, move them to DONE
   if ($status != 0) then
     echo ""
     echo r2q_send: Error copying SYNC file $syncfile to $aslsyncdir.
-    set admin = 'ezak@ucsd.edu,sbargabus@ucsd.edu,dauerbach@ucsd.edu'
     Mail -r ${USER}@ucsd.edu -s "Error copying SYNC file $syncfile to $aslsyncdir" $admin < /dev/null >& /dev/null
     echo ""
     exit
@@ -171,7 +173,6 @@ else
   set flag = 'ERROR'
 endif
 
-set admin = 'ezak@ucsd.edu,sbargabus@ucsd.edu,dauerbach@ucsd.edu'
 Mail -r ${USER}@ucsd.edu -s "miniseed2dmc $jdate status:$flag" $admin < /tmp/ms2dmc.log.$$
 
 rm /tmp/list.$$ /tmp/ms2dmc.log.$$

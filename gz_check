@@ -42,7 +42,7 @@ echo "NOTE: These gz files can be deleted directly from /ida/stage instead of be
 echo ========================================================================== >> $LOG
 echo "" >> $LOG
 
-set admin = 'ezak@ucsd.edu,dauerbach@ucsd.edu,sbargabus@ucsd.edu'
+set admin = 'ezak@ucsd.edu,dauerbach@ucsd.edu,sbargabus@ucsd.edu,whatfield@ucsd.edu'
 
 set STAGEDIR = /ida/stage
 set DONEDIR  = /ida/stage/0_DONE

@@ -23,6 +23,9 @@ else
   endif
 endif
 
+set ida_admin = 'ezak@ucsd.edu,sbargabus@ucsd.edu,dauerbach@ucsd.edu,whatfield@ucsd.edu'
+set dmc_admin = 'engine_room@iris.washington.edu, dauerbach@ucsd.edu, ezak@ucsd.edu, sbargabus@ucsd.edu,whatfield@ucsd.edu'
+
 #
 # go to where the SYNC files are
 #
@@ -32,8 +35,7 @@ ls *.sync >& /dev/null
 if ($status != 0) then
   echo ""
   echo r2q_sync: no SYNC files found in `pwd`.
-  set admin = 'ezak@ucsd.edu,sbargabus@ucsd.edu,dauerbach@ucsd.edu'
-  Mail -s "no SYNC files found in `pwd`" $admin < /dev/null >& /dev/null
+  Mail -s "no SYNC files found in `pwd`" $ida_admin < /dev/null >& /dev/null
   echo ""
   exit
 endif
@@ -52,8 +54,7 @@ tar -cf $tarfile *.sync
 if ($status != 0) then
   echo ""
   echo r2q_sync: Error creating tar file: $tarfile.
-  set admin = 'ezak@ucsd.edu,sbargabus@ucsd.edu,dauerbach@ucsd.edu'
-  Mail -s "Error tar'ing SYNC files found in `pwd`" $admin < /dev/null >& /dev/null
+  Mail -s "Error tar'ing SYNC files found in `pwd`" $ida_admin < /dev/null >& /dev/null
   echo ""
   exit
 endif
@@ -61,8 +62,7 @@ endif
 #
 # mail the tar file to DMC
 #
-set admin = 'engine_room@iris.washington.edu, dauerbach@ucsd.edu, ezak@ucsd.edu, sbargabus@ucsd.edu'
-Mail -s "SYNC files from $d1 to $d2" $admin < $tarfile 
+Mail -s "SYNC files from $d1 to $d2" $dmc_admin < $tarfile 
 
 #
 # check for DONE.syncfile directory
@@ -71,8 +71,7 @@ if (! -d DONE.syncfile) mkdir DONE.syncfile
 if ($status != 0) then
   echo ""
   echo r2q_sync: Error creating DONE.syncfile directory in `pwd`.
-  set admin = 'ezak@ucsd.edu,sbargabus@ucsd.edu,dauerbach@ucsd.edu'
-  Mail -s "Error creating DONE.syncfile directory in `pwd`" $admin < /dev/null >& /dev/null
+  Mail -s "Error creating DONE.syncfile directory in `pwd`" $ida_admin < /dev/null >& /dev/null
   echo ""
   exit
 endif
@@ -85,8 +84,7 @@ mv $tarfile DONE.syncfile
 if ($status != 0) then
   echo ""
   echo r2q_sync: Error moving tar file: $tarfile.
-  set admin = 'ezak@ucsd.edu,sbargabus@ucsd.edu,dauerbach@ucsd.edu'
-  Mail -s "Error moving $tarfile to DONE.syncfile" $admin < /dev/null >& /dev/null
+  Mail -s "Error moving $tarfile to DONE.syncfile" $ida_admin < /dev/null >& /dev/null
   echo ""
   exit
 endif
