@@ -156,6 +156,11 @@ if ($status != 0) then
    exit 1
 endif
 
+if (! -f $workdir/tmpB$$.ms) then
+  echo ""
+  echo r2q_proc: No miniseed data found for $STA on $jdy
+  goto skip
+endif
 
 # --------
 # run miniseed through vhfilt to geenrate VH* from LH* channels
@@ -163,10 +168,13 @@ endif
 set cmd = vhfilt
 $cmd < $workdir/tmpB$$.ms > $workdir/vh$$.ms
 if ($status != 0) then
-   echo "r2q_proc: Error executing vhfilt to create VH miniseed data."
-   exit 1
+   echo 
+   echo "WARNING: r2q_proc: Error executing vhfilt to create VH miniseed data from LH*"
+   echo
+   mv $workdir/tmpB$$.ms $workdir/out$$.ms
+else
+   cat $workdir/tmpB$$.ms $workdir/vh$$.ms > $workdir/out$$.ms
 endif
-cat $workdir/tmpB$$.ms $workdir/vh$$.ms > $workdir/out$$.ms
 rm -f $workdir/tmpA$$.ms $workdir/tmpB$$.ms $workdir/vh$$.ms
 
 # --------
