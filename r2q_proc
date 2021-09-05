@@ -159,6 +159,7 @@ endif
 if (! -f $workdir/tmpB$$.ms) then
   echo ""
   echo r2q_proc: No miniseed data found for $STA on $jdy
+  rm -f $workdir/tmpA$$.ms
   goto skip
 endif
 
