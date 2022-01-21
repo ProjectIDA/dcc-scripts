@@ -1,0 +1,57 @@
+#!/bin/sh
+#
+myname=`basename $0`
+
+case $# in
+1) juldate=$1
+;;
+*)
+echo
+echo " Usage: $myname YYYYDDD "
+echo 
+echo " Produces a summary of the daily process log showing only the stations "
+echo "  for which there was no data and the channels that have an unexpected "
+echo "  number of terms. "
+echo 
+echo " Summary is sent to STDOUT."
+echo
+exit;;
+esac
+#
+#
+yr=`echo $juldate | cut -c1-4`
+
+# Set the log file to parse and the output filename below: 
+inputlog="/ida/log/idadcc/r2q_proc/$yr/$juldate.LOG"
+#
+#
+# This script parses the daily processing log to just show the stations for which there is no data
+#   or the data is incomplete
+#
+echo "$myname is parsing $inputlog at `date`..."
+echo
+#
+# First create parsed output log file 
+echo "These stations were skipped because there was no data:"
+echo
+#
+# Send lines for stations with no data to output log, but exclude lines
+#   for ARU, BRVK, and KWAJ which are permanently down
+#
+cat $inputlog | grep Skipping
+#
+#
+# Now find stations with partial data
+#
+echo
+echo "The data for these stations are not the expected number of terms:"
+echo
+# 
+# Get lines with number of terms, excluding lines with imseed, a common error message. Also exclude EN* chans
+# Then print lines where the number of terms does not equal 86400 times the sample rate
+cat $inputlog | grep II_ | grep -v imseed | grep -v EN | awk '{
+	if (86400 * $5 != $6) 
+	print;
+}'
+
+echo

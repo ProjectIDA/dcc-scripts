@@ -22,24 +22,36 @@ if ($jdate == 'today') then
     @ jdate = $jdate - 1
 endif
 
+
+set yr  = `echo $jdate | cut -c1-4`
 set admin = 'ezak@ucsd.edu,dauerbach@ucsd.edu,dbargabus@ucsd.edu,whatfield@ucsd.edu'
 set path = (/ida/local/scripts $path)
 set db = $IDA_DATASCOPEDB_DIR//DMC
+set shorthost = `hostname -s`
+set logdir = /ida/log/$shorthost/r2q_proc/$yr
 
-set list = `awk '{print $1}' $db/IDA.seed2dmc | sort -u | grep -v NRIL | grep -v ABKT`
+mkdir -p $logdir
+if ($status != 0) then
+   echo "run.r2q: Error creating directory $logdir"
+   goto failure
+endif
+
+# TODO: find stations based on actual date being processed
+set list = `awk '{print $1}' $db/IDA.seed2dmc | sort -u | grep -v NRIL | grep -v ABKT | grep -v ARU | grep -v BRVK | grep -v KWAJ`
 if ($status != 0) then
    echo "run.r2q: Error reading 'IDA.seed2dmc' file"
    goto failure
 endif
 
-set shorthost = `hostname -s`
-set LOG = /ida/log/$shorthost/r2q_proc/$jdate.LOG
+set LOG = $logdir/$jdate.LOG
+set LOGSUMM = $logdir/$jdate.SUMM
 
 rm -f $LOG
 if ($status != 0) then
    echo "run.r2q: Error deleting '$LOG' file"
    goto failure
 endif
+
 
 touch $LOG
 if ($status != 0) then
@@ -67,9 +79,29 @@ foreach sta ($list)
 
 end
 
+# r2q_proc summary script for testing...
+rm -f $LOGSUMM
+if ($status != 0) then
+   echo "run.r2q: Error deleting '$LOGSUMM' file"
+   goto failure
+endif
+
+r2q_proc_logsumm $jdate > $LOGSUMM
+if ($status != 0) then
+   echo "run.r2q: Error writing '$LOGSUMM' file"
+   goto failure
+endif
+
+# now email log and log summary files
 Mail -s "Daily process info for $jdate" $admin < $LOG
 if ($status != 0) then
     echo "run.r2q: Error sending email to $admin for $jdate" >> $LOG
+    goto failure
+endif
+
+Mail -s "Daily process SUMMARY for $jdate" $admin < $LOGSUMM
+if ($status != 0) then
+    echo "run.r2q: Error sending email to $admin for $jdate" >> $LOGSUMM
     goto failure
 endif
 
@@ -82,7 +114,9 @@ failure:
 
 
 #
-# $Log: run.r2q,v $
+# Revision 1.8  2022/01/21 13:53     dauerbach
+# run.r2q: call new r2q_proc_loggsumm script
+#
 # Revision 1.7  2015/11/18 18:52:54  dauerbach
 # run.r2q: remove debugging code
 #
