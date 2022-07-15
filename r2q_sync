@@ -62,7 +62,7 @@ endif
 #
 # mail the tar file to DMC
 #
-Mail -s "SYNC files from $d1 to $d2" $dmc_admin < $tarfile 
+Mail -s "SYNC files from $d1 to $d2" $dmc_admin < $tarfile
 
 #
 # check for DONE.syncfile directory
@@ -77,9 +77,25 @@ if ($status != 0) then
 endif
 
 #
+# copy tar file to DMC web pickup dir
+#
+echo
+if (! $?IDA_WEB_ROOT) then
+  echo "IDA_WEB_ROOT env variable is undefined. Can not copy tarfile ${tarfile} to DMC pickup dir."
+else
+  set dmc_pickup_dir = ${IDA_WEB_ROOT}/pickup/sync
+  cp $tarfile ${dmc_pickup_dir}/
+  if ($status != 0) then
+    echo ""
+    echo r2q_sync: Error copying tar file $tarfile to ${dmc_pickup_dir}.
+    Mail -s "Error copying tar file $tarfile to ${dmc_pickup_dir}" $ida_admin < /dev/null >& /dev/null
+    echo ""
+  endif
+endif
+
+#
 # move tar file to DONE.syncfile
 #
-echo 
 mv $tarfile DONE.syncfile
 if ($status != 0) then
   echo ""
