@@ -487,7 +487,7 @@ def main(cl_args):
                 calib = 1 / (sys_sens * (2 * pi) / 1e9)
 
                 # construct CTBTO IMS message components
-                ims2_header = ims2_calibrate_result_msg_header(cal_start_time)
+                ims2_header = ims2_calibrate_result_msg_header(ci.sta.upper(), cal_start_time)
                 comp_info = ims2_calibrate_result_msg_comp_info(
                     ci.sta.upper(), ci.chan, ctbto_inspec, calib, ci.ctbto_calper)
                 sensor_info = ims2_paz2_msg(ci.sta.upper(), ci.loc, ci.chan,
