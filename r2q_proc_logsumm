@@ -44,7 +44,7 @@ cat $inputlog | grep Skipping
 # Now find stations with partial data
 #
 echo
-echo "The data for these stations are not the expected number of terms:"
+echo "The following channels have some data, but are incomplete: "
 echo
 # 
 # Get lines with number of terms, excluding lines with imseed, a common error message. Also exclude EN* chans
@@ -55,3 +55,54 @@ cat $inputlog | grep II_ | grep -v imseed | grep -v EN | awk '{
 }'
 
 echo
+
+########################
+#  April 2022: adding a new feature to this script
+#
+#   Now create list of expected channels and compare to actual channels
+#
+########################
+#
+# get list of expected channels (comes from seed2dmc table) but exclude those that are withdrawn
+#   note: channels that are withdrawn for only part of the day will be noted above 
+cat $inputlog | grep "II " | grep -v withdraw | awk '{
+	printf "%s_%s_%s_%s\n",$1,$2,$3,$4
+}' > tmpe
+sort -u tmpe > tmpesu
+#
+# get list of actual channels coming in
+cat $inputlog | grep II_ | grep -v imseed | awk '{
+	print $1;
+}' > tmpa
+sort -u tmpa > tmpasu
+#
+# compare expected to actual channels
+diff tmpesu tmpasu > tmpd
+#
+#
+echo
+echo "The following channels are in the expected channel (seed2dmc) table, but no data was received:"
+echo "   Note: we are ignoring EN* channels, XBFO, XPFO, PFO-20, withdrawn channels, and snail-mail ALE channels "
+echo
+# Enter list of channels to ignore here, e.g. the ALE channels that aren't transmitted in real time
+# If channels are not expected to ever come in, in any fashion, they should
+# be removed from the seed2dmc table rather than just ignored here
+cat tmpd | grep "<" | awk '{print $2}' |\
+grep -v ALE_00_BH1 |\
+grep -v ALE_00_BH2 |\
+grep -v ALE_00_LN1 |\
+grep -v ALE_00_LN2 |\
+grep -v ALE_00_LNZ |\
+grep -v ALE_00_LDI |\
+grep -v ALE_10_BH1 |\
+grep -v ALE_10_BH2 |\
+grep -v ALE_10_BHZ |\
+grep -v PFO_20 |\
+grep -v EN[12Z] |\
+grep -v XBFO |\
+grep -v XPFO
+#
+echo
+#
+rm tmpe tmpesu tmpa tmpasu tmpd
+
