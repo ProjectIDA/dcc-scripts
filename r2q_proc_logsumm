@@ -1,0 +1,108 @@
+#!/bin/sh
+#
+myname=`basename $0`
+
+case $# in
+1) juldate=$1
+;;
+*)
+echo
+echo " Usage: $myname YYYYDDD "
+echo 
+echo " Produces a summary of the daily process log showing only the stations "
+echo "  for which there was no data and the channels that have an unexpected "
+echo "  number of terms. "
+echo 
+echo " Summary is sent to STDOUT."
+echo
+exit;;
+esac
+#
+#
+yr=`echo $juldate | cut -c1-4`
+
+# Set the log file to parse and the output filename below: 
+inputlog="/ida/log/idadcc/r2q_proc/$yr/$juldate.LOG"
+#
+#
+# This script parses the daily processing log to just show the stations for which there is no data
+#   or the data is incomplete
+#
+echo "$myname is parsing $inputlog at `date`..."
+echo
+#
+# First create parsed output log file 
+echo "These stations were skipped because there was no data:"
+echo
+#
+# Send lines for stations with no data to output log, but exclude lines
+#   for ARU, BRVK, and KWAJ which are permanently down
+#
+cat $inputlog | grep Skipping
+#
+#
+# Now find stations with partial data
+#
+echo
+echo "The following channels have some data, but are incomplete: "
+echo
+# 
+# Get lines with number of terms, excluding lines with imseed, a common error message. Also exclude EN* chans
+# Then print lines where the number of terms does not equal 86400 times the sample rate
+cat $inputlog | grep II_ | grep -v imseed | grep -v EN | awk '{
+	if (86400 * $5 != $6) 
+	print;
+}'
+
+echo
+
+########################
+#  April 2022: adding a new feature to this script
+#
+#   Now create list of expected channels and compare to actual channels
+#
+########################
+#
+# get list of expected channels (comes from seed2dmc table) but exclude those that are withdrawn
+#   note: channels that are withdrawn for only part of the day will be noted above 
+cat $inputlog | grep "II " | grep -v withdraw | awk '{
+	printf "%s_%s_%s_%s\n",$1,$2,$3,$4
+}' > tmpe
+sort -u tmpe > tmpesu
+#
+# get list of actual channels coming in
+cat $inputlog | grep II_ | grep -v imseed | awk '{
+	print $1;
+}' > tmpa
+sort -u tmpa > tmpasu
+#
+# compare expected to actual channels
+diff tmpesu tmpasu > tmpd
+#
+#
+echo
+echo "The following channels are in the expected channel (seed2dmc) table, but no data was received:"
+echo "   Note: we are ignoring EN* channels, XBFO, XPFO, PFO-20, withdrawn channels, and snail-mail ALE channels "
+echo
+# Enter list of channels to ignore here, e.g. the ALE channels that aren't transmitted in real time
+# If channels are not expected to ever come in, in any fashion, they should
+# be removed from the seed2dmc table rather than just ignored here
+cat tmpd | grep "<" | awk '{print $2}' |\
+grep -v ALE_00_BH1 |\
+grep -v ALE_00_BH2 |\
+grep -v ALE_00_LN1 |\
+grep -v ALE_00_LN2 |\
+grep -v ALE_00_LNZ |\
+grep -v ALE_00_LDI |\
+grep -v ALE_10_BH1 |\
+grep -v ALE_10_BH2 |\
+grep -v ALE_10_BHZ |\
+grep -v PFO_20 |\
+grep -v EN[12Z] |\
+grep -v XBFO |\
+grep -v XPFO
+#
+echo
+#
+rm tmpe tmpesu tmpa tmpasu tmpd
+

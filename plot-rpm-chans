@@ -1,0 +1,102 @@
+#!/usr/local/bin/python3
+#######################################################################################################################
+# Copyright (C) 2021  Regents of the University of California
+#
+# This is free software: you can redistribute it and/or modify it under the terms of the
+# GNU General Public License (GNU GPL) as published by the Free Software Foundation, either version 3 of the License,
+# or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+# without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the GNU General Public License for more details.
+#
+# A copy of the GNU General Public License can be found in LICENSE.TXT in the root of the source code repository.
+# Additionally, it can be found at http://www.gnu.org/licenses/.
+#
+# NOTES: Per GNU GPLv3 terms:
+#   * This notice must be kept in this source file
+#   * Changes to the source must be clearly noted with date & time of change
+#
+# If you use this software in a product, an explicit acknowledgment in the product documentation of the contribution
+# by Project IDA, Institute of Geophysics and Planetary Physics, UCSD would be appreciated but is not required.
+#######################################################################################################################
+import argparse
+import sys
+import datetime
+import os
+
+from fabulous.color import red, bold
+
+from ida.datetime import parsedt
+from ida.plotting.soh import plotchan, gen_station_soh_fig, RPM_SOH_PLOT_CHAN_INFO
+
+out_dir_default = "./"
+last_days_default = 30
+
+version = '1.0.0'
+parser = argparse.ArgumentParser(description="Generate RPM SOH plots (png) for a station.")
+parser.add_argument('station', action="store", default='',
+                    help="Station code (case insensitive).")
+parser.add_argument('--starttime', "-s", action="store", default='',
+                    help="START TIME in either  YYYY-JJJ:HH:MM:SS  or  YYYY-MM-DD:HH:MM:SS formats (UTC assumed). " +
+                         "Time is optional. 00:00:00 assumed if not supplied")
+parser.add_argument('--endtime', '-e', action="store", default='',
+                    help="END TIME in either  YYYY-JJJ:HH:MM:SS  or  YYYY-MM-DD:HH:MM:SS formats (UTC assumed). " +
+                         "Time is optional. 23:59:99.999 assumed if not supplied")
+parser.add_argument('--last', '-l', action='store', type=int,
+                    help='Specify the number of past days to plot')
+parser.add_argument('--outdir', '-o', action='store', default=out_dir_default,
+                    help='Specify directory in which to save png plots. Default: ' + out_dir_default)
+parser.add_argument('-v', '--version', action='version', version=version)
+
+args = parser.parse_args()
+sta = args.station.lower()
+out_dir = args.outdir
+last_days = args.last
+
+if last_days:
+    end_dt  = datetime.datetime.utcnow()
+    start_dt = end_dt - datetime.timedelta(days=last_days)
+else:
+    start_dt = parsedt(args.starttime)
+    if not start_dt:
+        # print(red(bold(f"Error parsing START TIME: {args.starttime}")), file=sys.stderr, flush=True)
+        parser.print_help()
+        sys.exit(1)
+
+    end_dt = parsedt(args.endtime)
+    if not end_dt:
+        print(red(bold(f"Error parsing END TIME: {args.endtime}")), file=sys.stderr)
+        parser.print_help()
+        sys.exit(1)
+
+    # check to see if TIME specified on END. If not, add a day. This is consistent with i10get and mstrim behavior.
+    if len(args.endtime) in [8, 10]:  # date only supplied, so add a day
+        end_dt = end_dt + datetime.timedelta(days=1)
+
+out_dir = os.path.abspath(os.path.expanduser(out_dir))
+if not os.path.exists(out_dir):
+    try:
+        os.mkdir(out_dir)
+    except:
+        pass
+
+if not os.path.exists(out_dir) or not os.path.isdir(out_dir):
+    print(red(bold(f"INVALID OUTPUT DIR: {out_dir}")), file=sys.stderr, flush=True)
+    parser.print_help()
+    sys.exit(1)
+
+# construct list of plotchan objects to plot
+plotchans = []
+for info in RPM_SOH_PLOT_CHAN_INFO:
+    plotchans.append(plotchan(info["chn"], info["loc"], info["gain"], info["xlabel"], info["ylabel"]))
+
+# generate fig(s), 4 plots per page
+figlist = gen_station_soh_fig("RPM SOH PLOT" , plotchans, sta.upper(), start_dt, end_dt, plots_per_fig=4)
+
+# save fig pages
+for ndx, fig in enumerate(figlist):
+    png_filename = f"{sta}_rpm_{ndx}.png"
+    png_filename = os.path.join(out_dir, png_filename)
+    fig.savefig(png_filename, dpi=300)
+
