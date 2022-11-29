@@ -5,7 +5,7 @@
 #     get_dqa_plots
 #
 ##################################################
-set path = ($path /usr/local/bin)
+set path = (/usr/local/bin $path)
 umask 002
 #######################################
 # GET IDA/II (non-experimental) STATION LIST
