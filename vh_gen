@@ -22,8 +22,12 @@
 
 #if ($#argv != 1) then
 #	echo "Usage:"
-#	echo "    vh_gen"
 #	echo ""
+#→  echo "    vf_gen YYYYDDD"
+#→  echo "ex: vf_gen 2015150"
+#→  echo ""
+#→  echo "You may use filename wildcards:"
+#→  echo "    vf_gen 20151??"
 #	exit 1
 #endif 
 
