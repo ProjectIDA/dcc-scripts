@@ -173,7 +173,8 @@ else
   set flag = 'ERROR'
 endif
 
-Mail -r ${USER}@ucsd.edu -s "miniseed2dmc $jdate status:$flag" $admin < /tmp/ms2dmc.log.$$
+#Mail -r ${USER}@ucsd.edu -s "miniseed2dmc $jdate status:$flag" $admin < /tmp/ms2dmc.log.$$
+Mail -s "miniseed2dmc $jdate status:$flag" $admin < /tmp/ms2dmc.log.$$
 
 rm /tmp/list.$$ /tmp/ms2dmc.log.$$
 
