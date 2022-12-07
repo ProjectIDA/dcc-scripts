@@ -1,3 +1,8 @@
+#####################################################################
+# Script to run manually that moves any files in
+# $IDA_DATASCOPE_DBDIR/sensors and moves any that are NOT referenced
+# in the datascope DB to a subdir NOT_USED
+#####################################################################
 import datetime
 import glob
 import os.path
@@ -11,7 +16,7 @@ def parse_dt(dt_str):
 
 
 stage_cols = [
-    
+
     ('sta',       0,   6),
     ('chn',       7,   8),
     ('loc',      16,   2),
@@ -35,7 +40,7 @@ stage_cols = [
 
 
 chan_cols = [
-    # name     sta wid  
+    # name     sta wid
     ('sta',      0,  6),
     ('chn',      7,  8),
     ('loc',     16,  2),
@@ -61,7 +66,7 @@ header_row = None
 chan_colspecs = [(chan_col[1], chan_col[1] + chan_col[2]) for chan_col in chan_cols]
 chan_names  = [chan_col[0] for chan_col in chan_cols]
 
-chan_data = pd.read_fwf('IDA.chan', names=chan_names, colspecs=chan_colspecs, header=None, 
+chan_data = pd.read_fwf('IDA.chan', names=chan_names, colspecs=chan_colspecs, header=None,
     converters=date_cnvtrs,
     )
 # print('chn: ', chan_data['chn'][0],type(chan_data['chn'][0]))
@@ -70,7 +75,7 @@ chan_data = pd.read_fwf('IDA.chan', names=chan_names, colspecs=chan_colspecs, he
 
 stage_colspecs = [(stage_col[1], stage_col[1] + stage_col[2]) for stage_col in stage_cols]
 stage_names  = [stage_col[0] for stage_col in stage_cols]
-stage_data = pd.read_fwf('IDA.stage', names=stage_names, colspecs=stage_colspecs, header=None, 
+stage_data = pd.read_fwf('IDA.stage', names=stage_names, colspecs=stage_colspecs, header=None,
     converters=date_cnvtrs
     )
 # print('begt: ', stage_data['begt'][0],type(stage_data['begt'][0]))
