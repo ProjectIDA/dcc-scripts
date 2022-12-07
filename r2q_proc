@@ -38,7 +38,7 @@ if ($#argv < 2) then
   exit 1
 endif
  
-set path = (/ida/local/bin /ida/local/scripts /ida/dcc/bin /usr/local/bin $path)
+set path = (/ida/local/bin /ida/dcc/bin /usr/local/bin $path)
 
 set sta = `echo $1 | lcase`
 set jdy = $2

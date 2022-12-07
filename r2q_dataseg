@@ -29,7 +29,7 @@ if ($#argv != 2) then
   exit 1
 endif
 
-set path = (/ida/dcc/bin /ida/local/bin /ida/local/scripts /usr/local/bin $path)
+set path = (/ida/dcc/bin /ida/local/bin /usr/local/bin $path)
 
 set sta = $1
 set jdy = $2

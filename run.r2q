@@ -25,7 +25,7 @@ endif
 
 set yr  = `echo $jdate | cut -c1-4`
 set admin = 'ezak@ucsd.edu,dauerbach@ucsd.edu,dbargabus@ucsd.edu,whatfield@ucsd.edu'
-set path = (/ida/dcc/scripts /ida/local/scripts $path)
+set path = (/ida/dcc/scripts $path)
 set db = $IDA_DATASCOPEDB_DIR//DMC
 set shorthost = `hostname -s`
 set logdir = /ida/log/$shorthost/r2q_proc/$yr
