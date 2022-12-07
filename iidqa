@@ -47,7 +47,7 @@ cmd="-w http://dqa.ucsd.edu/dqa -n II -s $STA -c $CHAN -m NLNMDeviationMetric:20
 # grep to get rid of blank lines in output
 # tr to get rid fo commas that MATLAB doesn't like.
 
-dqa4h.py $cmd | grep "$STA" | tr -d ','
+dqa4hp3 $cmd | grep "$STA" | tr -d ','
 
 ###################################################
 # $Log: iidqa,v $
