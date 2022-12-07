@@ -1,4 +1,4 @@
-#! /bin/csh -f
+#!/bin/csh -f
 
 #=============================================================================================
 # script to access MUSTANG QC data computed at the IRIS DMC and prepare a graphical display.
@@ -16,7 +16,7 @@ set meas=$2
 set sd=$3
 set ed=$4
 
-#curl -u qat:c3ntipede 'http://service.iris.edu/mustangbeta/measurements/1/query?net=II&metric='$meas'&station='$sta'&timewindow='$sd','$ed | xmllint -format - > input
+echo 'http://service.iris.edu/mustang/measurements/1/query?net=II&metric='$meas'&station='$sta'&timewindow='$sd','$ed
 curl 'http://service.iris.edu/mustang/measurements/1/query?net=II&metric='$meas'&station='$sta'&timewindow='$sd','$ed | xmllint -format - > input
 
 grep $meas input | grep -v LOG | sed 's/"/ /g' | sed 's/=/ /g' | sed 's/<//g' | sed 's/>//g' > input.txt
