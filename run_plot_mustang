@@ -1,8 +1,11 @@
-#! /bin/sh -f
+#!/bin/sh -f
 export PATH=$PATH:/usr/local/bin
 cd /ida/dcc/qc/PLOTS/PLOTS.mustang/error_files
 MONTH=`date --date="$(date +%Y-%m-15) last month" +'%m'`
 YEAR=`date -d 'last month' +'%Y'`
+export MATLAB_SHELL=/bin/tcsh
+export TERM=xterm-256color
+echo $PATH
 echo $MONTH
 echo $YEAR
 pwd
