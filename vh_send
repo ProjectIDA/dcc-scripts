@@ -64,7 +64,7 @@ set dir   = /ida/tmp/daily/miniseed/$msdir
 # host and port are assigned by DMC
 #
 set host  = ringsub.iris.washington.edu
-set port  = 16105
+set port  = 16100
 
 set syncdir = /ida/tmp/daily/SYNC
 
