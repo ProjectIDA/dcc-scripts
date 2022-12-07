@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import sys
 import copy
@@ -156,6 +156,7 @@ for orddate in range(start_ord, end_ord + 1):
     query_timestamp = dt.datetime.now(dt.timezone.utc)
 
     htmldata = res.text
+    print(htmldata)
     htmlsoup = BeautifulSoup(htmldata, "lxml")
     # datatrs = list(htmlsoup.table.find_all('tr'))[1:] # skip header record
     BH_trs = [chanrow.parent for chanrow in htmlsoup.find_all('td', string=re.compile('^\nBH[12NEZ]$'))]
@@ -168,8 +169,8 @@ for orddate in range(start_ord, end_ord + 1):
         if args.verbosity>0:
             print('   processing',len(BH_trs), 'records.')
     # pull data out of HTML structure (skip last, empty, HTML column)
-    filter_Q_rows = [tr for tr in BH_trs if tr.find_all('td')[HTML_TR_DATAQUAL_NDX].text.strip() == 'Q']
-    data_rows = [[cell.text.strip() for cell in tr.find_all('td')][:-1] for tr in filter_Q_rows]
+    filter_M_rows = [tr for tr in BH_trs if tr.find_all('td')[HTML_TR_DATAQUAL_NDX].text.strip() == 'M']
+    data_rows = [[cell.text.strip() for cell in tr.find_all('td')][:-1] for tr in filter_M_rows]
 
     # sort on chankey, plus start, end times. 
     # including times in sort to help with time interval merging
@@ -266,7 +267,7 @@ for res in summary:
 plotdata['x'] = [dt.datetime.fromordinal(orddt) for orddt in range(start_ord, end_ord + 1)]
 
 fig, axs = plt.subplots(3,1,figsize=(8.5,11.0))
-fig.suptitle("Q Data Availability at IRIS/DMC for " + STA + " for\n" + \
+fig.suptitle("M Data Availability at IRIS/DMC for " + STA + " for\n" + \
     start_dt.strftime("%Y-%m-%d") + '  thru  ' + end_dt.strftime("%Y-%m-%d"),
     fontsize='large', weight='bold')
 plt.subplots_adjust(hspace=1)
