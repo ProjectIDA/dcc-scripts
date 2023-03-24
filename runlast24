@@ -131,6 +131,13 @@ last24 port=39137 server=idahub.ucsd.edu sta=jts chan=lhz lcode=10 file=jts-lhz1
 last24 port=39137 server=idahub.ucsd.edu sta=jts chan=lh1 lcode=10 file=jts-lh110.gif thumbnail=jts-lh110_s.gif clip=6 ratio=0.0030 cache=cache/jts-lh110
 last24 port=39137 server=idahub.ucsd.edu sta=jts chan=lh2 lcode=10 file=jts-lh210.gif thumbnail=jts-lh210_s.gif clip=6 ratio=0.0030 cache=cache/jts-lh210
 
+last24 port=39137 server=idahub.ucsd.edu sta=jzax chan=lhz lcode=00 file=jzax-lhz00.gif thumbnail=jzax-lhz00_s.gif clip=6 ratio=0.0030 cache=cache/jzax-lhz00
+last24 port=39137 server=idahub.ucsd.edu sta=jzax chan=lh1 lcode=00 file=jzax-lh100.gif thumbnail=jzax-lh100_s.gif clip=6 ratio=0.0003 cache=cache/jzax-lh100
+last24 port=39137 server=idahub.ucsd.edu sta=jzax chan=lh2 lcode=00 file=jzax-lh200.gif thumbnail=jzax-lh200_s.gif clip=6 ratio=0.0003 cache=cache/jzax-lh200
+last24 port=39137 server=idahub.ucsd.edu sta=jzax chan=lhz lcode=10 file=jzax-lhz10.gif thumbnail=jzax-lhz10_s.gif clip=6 ratio=0.0030 cache=cache/jzax-lhz10
+last24 port=39137 server=idahub.ucsd.edu sta=jzax chan=lh1 lcode=10 file=jzax-lh110.gif thumbnail=jzax-lh110_s.gif clip=6 ratio=0.0030 cache=cache/jzax-lh110
+last24 port=39137 server=idahub.ucsd.edu sta=jzax chan=lh2 lcode=10 file=jzax-lh210.gif thumbnail=jzax-lh210_s.gif clip=6 ratio=0.0030 cache=cache/jzax-lh210
+
 last24 port=39137 server=idahub.ucsd.edu sta=kapi chan=lhz lcode=00 file=kapi-lhz00.gif thumbnail=kapi-lhz00_s.gif clip=6 ratio=0.0055 cache=cache/kapi-lhz00
 last24 port=39137 server=idahub.ucsd.edu sta=kapi chan=lh1 lcode=00 file=kapi-lh100.gif thumbnail=kapi-lh100_s.gif clip=6 ratio=0.0055 cache=cache/kapi-lh100
 last24 port=39137 server=idahub.ucsd.edu sta=kapi chan=lh2 lcode=00 file=kapi-lh200.gif thumbnail=kapi-lh200_s.gif clip=6 ratio=0.0055 cache=cache/kapi-lh200
@@ -177,9 +184,9 @@ last24 port=39137 server=idahub.ucsd.edu sta=mbar chan=lhz lcode=10 file=mbar-lh
 last24 port=39137 server=idahub.ucsd.edu sta=mbar chan=lh1 lcode=10 file=mbar-lh110.gif thumbnail=mbar-lh110_s.gif clip=6 ratio=0.0050 cache=cache/mbar-lh110
 last24 port=39137 server=idahub.ucsd.edu sta=mbar chan=lh2 lcode=10 file=mbar-lh210.gif thumbnail=mbar-lh210_s.gif clip=6 ratio=0.0050 cache=cache/mbar-lh210
 
-last24 port=39137 server=idahub.ucsd.edu sta=msey chan=lhz lcode=00 file=msey-lhz00.gif thumbnail=msey-lhz00_s.gif clip=6 ratio=0.0020 cache=cache/msey-lhz00
-last24 port=39137 server=idahub.ucsd.edu sta=msey chan=lh1 lcode=00 file=msey-lh100.gif thumbnail=msey-lh100_s.gif clip=6 ratio=0.0020 cache=cache/msey-lh100
-last24 port=39137 server=idahub.ucsd.edu sta=msey chan=lh2 lcode=00 file=msey-lh200.gif thumbnail=msey-lh200_s.gif clip=6 ratio=0.0020 cache=cache/msey-lh200
+#last24 port=39137 server=idahub.ucsd.edu sta=msey chan=lhz lcode=00 file=msey-lhz00.gif thumbnail=msey-lhz00_s.gif clip=6 ratio=0.0020 cache=cache/msey-lhz00
+#last24 port=39137 server=idahub.ucsd.edu sta=msey chan=lh1 lcode=00 file=msey-lh100.gif thumbnail=msey-lh100_s.gif clip=6 ratio=0.0020 cache=cache/msey-lh100
+#last24 port=39137 server=idahub.ucsd.edu sta=msey chan=lh2 lcode=00 file=msey-lh200.gif thumbnail=msey-lh200_s.gif clip=6 ratio=0.0020 cache=cache/msey-lh200
 last24 port=39137 server=idahub.ucsd.edu sta=msey chan=lhz lcode=10 file=msey-lhz10.gif thumbnail=msey-lhz10_s.gif clip=6 ratio=0.0020 cache=cache/msey-lhz10
 last24 port=39137 server=idahub.ucsd.edu sta=msey chan=lh1 lcode=10 file=msey-lh110.gif thumbnail=msey-lh110_s.gif clip=6 ratio=0.0020 cache=cache/msey-lh110
 last24 port=39137 server=idahub.ucsd.edu sta=msey chan=lh2 lcode=10 file=msey-lh210.gif thumbnail=msey-lh210_s.gif clip=6 ratio=0.0020 cache=cache/msey-lh210

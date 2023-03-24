@@ -14,22 +14,6 @@
 #endif 
 
 umask 002 
-#######################################
-# GET IDA/II (non-experimental) STATION LIST
-# UGH --- I HATE THIS. I WANT MY MDB...
-#set stalist = (COCO DGAR EFI ERM ESK FFC HOPE JTS KAPI KDAK KIV KURK KWJN LVZ MBAR MSEY MSVF NIL NNA OBN PALK RAYN RPN SACV SHEL SIMI SUR TAU TLY UOSS WRAB)
-#
-# NOTE: Above list missing BFO and Xxxx stations with non-standard components (aka 'NE') or locations. E.g. XBFO and XPFO
-#######################################
-
-#######################################
-# Loop through stations retrieving plots from MUSTANG and saving them for Web viewing
-#foreach sta ($stalist)
-#
-#    /ida/dcc/bin/mustango noise-spectrogram ii $sta 00,10 lhz,lh1,lh2,bhz,bh1,bh2    --name-tail last365                                          --plot.powerscale.height=20 --plot.powerscale.width=300 --outdir /ida/dcc/qc/PLOTS/PLOTS.mustang
-#end
-######################################
-
 
 /ida/dcc/bin/mustango noise-spectrogram ii aak 00,10 lh1,lh2,bh1,bh2    --name-tail last365   --plot.powerscale.range=-176,-110  --plot.powerscale.height=20  --plot.powerscale.width=300  --outdir /ida/dcc/qc/PLOTS/PLOTS.mustang
 /ida/dcc/bin/mustango noise-spectrogram ii aak 00,10 lhz,bhz            --name-tail last365   --plot.powerscale.range=-185,-107  --plot.powerscale.height=20  --plot.powerscale.width=300  --outdir /ida/dcc/qc/PLOTS/PLOTS.mustang
@@ -85,6 +69,9 @@ umask 002
 
 /ida/dcc/bin/mustango noise-spectrogram ii jts 00,10 lh1,lh2,bh1,bh2    --name-tail last365   --plot.powerscale.range=-177,-94   --plot.powerscale.height=20  --plot.powerscale.width=300  --outdir /ida/dcc/qc/PLOTS/PLOTS.mustang
 /ida/dcc/bin/mustango noise-spectrogram ii jts 00,10 lhz,bhz            --name-tail last365   --plot.powerscale.range=-182,-94   --plot.powerscale.height=20  --plot.powerscale.width=300  --outdir /ida/dcc/qc/PLOTS/PLOTS.mustang
+
+/ida/dcc/bin/mustango noise-spectrogram ii jzax 00,10 lh1,lh2,bh1,bh2    --name-tail last365   --plot.powerscale.range=-173,-95   --plot.powerscale.height=20  --plot.powerscale.width=300  --outdir /ida/dcc/qc/PLOTS/PLOTS.mustang
+/ida/dcc/bin/mustango noise-spectrogram ii jzax 00,10 lhz,bhz            --name-tail last365   --plot.powerscale.range=-183,-93   --plot.powerscale.height=20  --plot.powerscale.width=300  --outdir /ida/dcc/qc/PLOTS/PLOTS.mustang
 
 /ida/dcc/bin/mustango noise-spectrogram ii kapi 00,10 lh1,lh2,bh1,bh2   --name-tail last365   --plot.powerscale.range=-176,-105  --plot.powerscale.height=20  --plot.powerscale.width=300  --outdir /ida/dcc/qc/PLOTS/PLOTS.mustang
 /ida/dcc/bin/mustango noise-spectrogram ii kapi 00,10 lhz,bhz           --name-tail last365   --plot.powerscale.range=-185,-103  --plot.powerscale.height=20  --plot.powerscale.width=300  --outdir /ida/dcc/qc/PLOTS/PLOTS.mustang
