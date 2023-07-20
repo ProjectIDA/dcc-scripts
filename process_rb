@@ -34,7 +34,7 @@ matplotlib.use('Qt4Agg')
 import matplotlib.pyplot as plt
 from fabulous.color import bold, blue, red
 from numpy import pi, cos, sin, multiply, divide, median, polyfit, polyval
-from numpy import linspace, less, greater_equal, less_equal, logical_and
+from numpy import linspace, less, greater_equal, less_equal, logical_and, where
 
 
 version = '1.6.0'
@@ -428,9 +428,7 @@ def main(cl_args):
             if ci.is_ctbto() and (not ci.omit_lf) and (not ci.omit_hf):
 
                 # compute freq bands for comparison
-                # TODO need to change hf freq band to match filter band for analysis
-                #      with lower limit ~0.45hz
-                hf_freqs_in_band = less_equal(hftf_f, 0.9 * 0.5 * ci.opsr)
+                hf_freqs_in_band = where(((hftf_f >=0.45) & (hftf_f < 0.9 * 0.5 * ci.opsr)), True, False)
                 lf_freqs_in_band = less_equal(lftf_f, 0.9 * 0.5 *
                                               CALTYPE_RBLF_SAMPLERATE)
 
