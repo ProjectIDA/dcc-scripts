@@ -61,8 +61,9 @@ endif
 
 #
 # mail the tar file to DMC
+# Per email from Anh on Sept 6, 2023, email notification no longer required
 #
-Mail -s "SYNC files from $d1 to $d2" $dmc_admin < $tarfile
+###Mail -s "SYNC files from $d1 to $d2" $dmc_admin < $tarfile
 
 #
 # check for DONE.syncfile directory
