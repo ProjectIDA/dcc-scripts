@@ -1,0 +1,36 @@
+#! /bin/csh -f
+
+#----------------------------------------------------------------
+#
+# script to convert Taurus SEED file into CSS format for review.
+#
+#----------------------------------------------------------------
+
+if ($#argv < 1) then
+    echo "usage: convert_shaketable input_seedfile_name"
+    echo "example: convert_shaketable S2049_taurus_2049_20111025_010000.seed"
+    exit(1)
+endif
+
+set infile=$1
+
+set path=($ANTELOPE/bin $path)
+
+
+ln -s $infile foo
+if ($status != 0) then
+    echo "ERROR:  foo exists"
+    exit 1
+endif
+seed2db -nodataless foo yy
+trexcerpt -m convert -w shaketest.w -o s4 yy shaketest
+rm -rf foo yy* >& /dev/null
+
+wdedit sta=TRI < shaketest.wfdisc | sed 's/UN1  /bhz30/' | sed 's/UN2  /bhn30/' | sed 's/UN3  /bhe30/' > yy.wfdisc; mv yy.wfdisc shaketest.wfdisc
+wdedit sta=TRI < shaketest.wfdisc | sed 's/BHZ  /bhz30/' | sed 's/BHN  /bhn30/' | sed 's/BHE  /bhe30/' > yy.wfdisc; mv yy.wfdisc shaketest.wfdisc
+wdedit sta=TRI < shaketest.wfdisc | sed 's/BHZ  /bhz30/' | sed 's/BH1  /bhn30/' | sed 's/BH2  /bhe30/' > yy.wfdisc; mv yy.wfdisc shaketest.wfdisc
+rm -rf *.lastid >& /dev/null
+rm -f foo
+
+exit
+
