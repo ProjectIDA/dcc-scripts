@@ -14,8 +14,8 @@ if ($#argv != 2) then
   echo ""
   echo "  r2q_dataseg outputs a list of channels and their status for a given station/day."
   echo ""
-  echo "  For a given station/day, it obtains a channel list from table /ida/dcc/db/DMC/IDA.seed2dmc"
-  echo "  and marks 'withdraw' on the bad channels according to table /ida/dcc/db/DMC/IDA.withdraw."
+  echo "  For a given station/day, it obtains a channel list from table ${GSN_STORAGE_ROOT}/dcc/db/DMC/IDA.seed2dmc"
+  echo "  and marks 'withdraw' on the bad channels according to table ${GSN_STORAGE_ROOT}/dcc/db/DMC/IDA.withdraw."
   echo ""
   echo "  The output is in the format to be used as SELECTION FILE for DMC's program 'dataselect'"
   echo '  with "-s" option:'
@@ -29,7 +29,7 @@ if ($#argv != 2) then
   exit 1
 endif
 
-set path = (/ida/dcc/bin /ida/local/bin /usr/local/bin $path)
+set path = (${GSN_STORAGE_ROOT}/dcc/bin ${GSN_STORAGE_ROOT}/local/bin /usr/local/bin $path)
 
 set sta = $1
 set jdy = $2
@@ -44,7 +44,7 @@ set STA  = `echo $sta | ucase`
 set clist = /tmp/clist.$$
 rm -f $clist
 
-set db = /ida/dcc/db/DMC
+set db = ${GSN_STORAGE_ROOT}/dcc/db/DMC
 
 # --------
 # get all valid channels for a given day
@@ -109,9 +109,9 @@ rm $clist
 #
 # $Log: r2q_dataseg,v $
 # Revision 1.2  2015/11/16 23:16:02  dauerbach
-# remove references to path /ida/dcc/scripts in r2q_poc and referenced sub scripts
+# remove references to path ${GSN_STORAGE_ROOT}/dcc/scripts in r2q_poc and referenced sub scripts
 #
 # Revision 1.1  2015/11/16 21:54:43  dauerbach
-# Initial cvs load for production /ida/dcc/scripts r2q_proc & r2q_dataseg
+# Initial cvs load for production ${GSN_STORAGE_ROOT}/dcc/scripts r2q_proc & r2q_dataseg
 #
 #

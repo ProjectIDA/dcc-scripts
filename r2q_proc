@@ -14,31 +14,31 @@ if ($#argv < 2) then
   echo ""
   echo "  r2q_proc processes a single day of data for a given station."
   echo ""
-  echo "  It gathers IDA10 raw data files from /ida/archive/raw/[sta]/[year]/[day] and converts them"
+  echo "  It gathers IDA10 raw data files from ${GSN_STORAGE_ROOT}/archive/raw/[sta]/[year]/[day] and converts them"
   echo "  into mini-SEED data by running a in-house program 'imseed'.  Without option '-x', it uses"
-  echo "  DMC's program 'dataselect' to excludes bad data segments listed in /ida/dcc/db/DMC/IDA.withdraw."
+  echo "  DMC's program 'dataselect' to excludes bad data segments listed in ${GSN_STORAGE_ROOT}/dcc/db/DMC/IDA.withdraw."
   echo ""
   echo "  The final mini-SEED is sliced to the day's boundaries, ie from 00:00 to 23:59 and is marked"
   echo "  with 'Q'.  The mini-SEED is names as [STATION]_[JulianDay].ms and will be placed in"
-  echo "  /ida/tmp/daily/miniseed/[JulianDay] for future distribution to DMC."
+  echo "  ${GSN_STORAGE_ROOT}/tmp/daily/miniseed/[JulianDay] for future distribution to DMC."
   echo ""
   echo "  To view these mini-SEED data, run script 'r2q_view'."
   echo ""
   echo "  To send these mini-SEED data to DMC, run script 'r2q_send'."
   echo "" 
   echo "  To keep the accuracy of sending good data to DMC, it's important to update the table"
-  echo "  /ida/dcc/db/DMC/IDA.withdraw accordingly by running 'add_withdraw' and 'mod_withdraw'."
+  echo "  ${GSN_STORAGE_ROOT}/dcc/db/DMC/IDA.withdraw accordingly by running 'add_withdraw' and 'mod_withdraw'."
   echo ""
   echo "  Option '-x' will process the entire dataset, ie including both good and bad data segments."
   echo "  This allows operator to examine the complete dataset closely for a station/day if needed."
   echo "  The mini-SEED generated with '-x' will be named as [STATION]_[JulianDay]_ex.ms and is placed"
-  echo "  in /ida/tmp/daily/miniseed/[JulianDay]/extra."
+  echo "  in ${GSN_STORAGE_ROOT}/tmp/daily/miniseed/[JulianDay]/extra."
   echo ""
   echo ""
   exit 1
 endif
  
-set path = (/ida/local/bin /ida/dcc/bin /usr/local/bin $path)
+set path = (${GSN_STORAGE_ROOT}/local/bin ${GSN_STORAGE_ROOT}/dcc/bin /usr/local/bin /usr/local/scripts $path)
 
 set sta = `echo $1 | lcase`
 set jdy = $2
@@ -46,8 +46,8 @@ set yr  = `echo $jdy | cut -c1-4`
 set dy  = `echo $jdy | cut -c5-7`
 set STA = `echo $sta | ucase`
 
-set MINISEEDDIR = /ida/tmp/daily/miniseed
-set ARCHIVEDIR = /ida/archive
+set MINISEEDDIR = ${GSN_STORAGE_ROOT}/tmp/daily/miniseed
+set ARCHIVEDIR = ${GSN_STORAGE_ROOT}/archive
 set RAW = $ARCHIVEDIR/raw/$sta/$yr/$dy
 
 
@@ -273,10 +273,10 @@ exit 0
 # Added call to vhfilt for VH* data generation
 #
 # Revision 1.2  2015/11/16 23:16:02  dauerbach
-# remove references to path /ida/dcc/scripts in r2q_poc and referenced sub scripts
+# remove references to path ${GSN_STORAGE_ROOT}/dcc/scripts in r2q_poc and referenced sub scripts
 #
 # Revision 1.1  2015/11/16 21:54:43  dauerbach
-# Initial cvs load for production /ida/dcc/scripts r2q_proc & r2q_dataseg
+# Initial cvs load for production ${GSN_STORAGE_ROOT}/dcc/scripts r2q_proc & r2q_dataseg
 #
 #
 #

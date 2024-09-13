@@ -22,7 +22,7 @@ esac
 yr=`echo $juldate | cut -c1-4`
 
 # Set the log file to parse and the output filename below: 
-inputlog="/ida/log/idadcc/r2q_proc/$yr/$juldate.LOG"
+inputlog="${GSN_STORAGE_ROOT}/log/idadcc/r2q_proc/$yr/$juldate.LOG"
 #
 #
 # This script parses the daily processing log to just show the stations for which there is no data
@@ -35,8 +35,6 @@ echo
 echo "These stations were skipped because there was no data:"
 echo
 #
-# Send lines for stations with no data to output log, but exclude lines
-#   for ARU, BRVK, and KWAJ which are permanently down
 #
 cat $inputlog | grep Skipping
 #
