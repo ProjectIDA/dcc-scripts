@@ -1,28 +1,28 @@
 #!/bin/tcsh
 #
-# gz_check is to check the health of gz files in /ida/stage/[station]
+# gz_check is to check the health of gz files in ${GSN_STORAGE_ROOT}/stage/[station]
 #
 # It outputs the following information:
 #
-#   1. time period of data coverage from the gz/GZ files in /ida/stage/[station].
+#   1. time period of data coverage from the gz/GZ files in ${GSN_STORAGE_ROOT}/stage/[station].
 #   2. the delay of gz files (real time), if more then 4 hours.
 #   3. the number records of gz files if they do not have 3000 records.
 #   4. gaps among gz files, ie the number of missing gz files.
 #   5. any counter reset, ie the sequence number is reset to ZERO.
 #   6. any unknown situation.
 #
-# /ida/stage/0_INFO/0_NOT_RESDY_LIST contains stations with incomplete real time data files,
+# ${GSN_STORAGE_ROOT}/stage/0_INFO/0_NOT_RESDY_LIST contains stations with incomplete real time data files,
 # these are Russian stations and ALE. 
 #
 # If everything is ok, ie, without falling into situations of #2, #3, #4, #6, files will be
-# moved to /ida/stage/0_DONE/[station], except the last one.
+# moved to ${GSN_STORAGE_ROOT}/stage/0_DONE/[station], except the last one.
 #
 # Two routines are called in this script, gz_gap (script) and gz_counter (bin).
 #   gz_gap outputs the time lag between the last gz file and the current time.
 #   gz_counter outputs the counter in decimal. 
 #
 
-set path = ($path /ida/dcc/bin /ida/dcc/scripts)
+set path = ($path ${GSN_STORAGE_ROOT}/dcc/bin ${GSN_STORAGE_ROOT}/dcc/scripts)
 
 set LOG = /tmp/gz_check.$$
 
@@ -30,23 +30,23 @@ rm -f $LOG
 touch $LOG
 
 set today = `date "+%Y%j"`
-echo /ida/stage of $today ==================================================== >> $LOG
+echo ${GSN_STORAGE_ROOT}/stage of $today ==================================================== >> $LOG
 echo "(X) - stations with incomplete gz files: Russian stations and ALE.  File sizes are not checked." >> $LOG
 echo "(O) - stations with 'normal' gz files: record counts of 3000 + n x 1500 where (0 <= n <= 6) per file." >> $LOG
 echo "" >> $LOG
-echo "For stations without any EXTRA notes, gz files will be moved to /ida/stage/0_DONE/[sta]" >> $LOG
-echo "and these files are logged in /ida/stage/0_INFO/[sta].list.mv for reviewing." >> $LOG
+echo "For stations without any EXTRA notes, gz files will be moved to ${GSN_STORAGE_ROOT}/stage/0_DONE/[sta]" >> $LOG
+echo "and these files are logged in ${GSN_STORAGE_ROOT}/stage/0_INFO/[sta].list.mv for reviewing." >> $LOG
 echo "" >> $LOG
-echo "Files in /ida/stage/0_DONE should be removed periodically." >> $LOG
-echo "NOTE: These gz files can be deleted directly from /ida/stage instead of being moved to 0_DONE/." >> $LOG 
+echo "Files in ${GSN_STORAGE_ROOT}/stage/0_DONE should be removed periodically." >> $LOG
+echo "NOTE: These gz files can be deleted directly from ${GSN_STORAGE_ROOT}/stage instead of being moved to 0_DONE/." >> $LOG 
 echo ========================================================================== >> $LOG
 echo "" >> $LOG
 
-set admin = 'ezak@ucsd.edu,dauerbach@ucsd.edu,sbargabus@ucsd.edu,whatfield@ucsd.edu'
+set admin = 'erik.klimczak@earthscope.org,dan.auerbach@earthscope.org,sbargabus@ucsd.edu,whatfield@ucsd.edu'
 
-set STAGEDIR = /ida/stage
-set DONEDIR  = /ida/stage/0_DONE
-set INFODIR  = /ida/stage/0_INFO
+set STAGEDIR = ${GSN_STORAGE_ROOT}/stage
+set DONEDIR  = ${GSN_STORAGE_ROOT}/stage/0_DONE
+set INFODIR  = ${GSN_STORAGE_ROOT}/stage/0_INFO
 cd $STAGEDIR
 
 foreach sta ([a-z]*)

@@ -2,7 +2,7 @@
 #
 # $Id: gz_chk_raw,v 1.3 2015/11/18 18:46:52 dauerbach Exp $
 #
-# gz_chk_raw is to check gz/GZ files in /ida/archive/raw for a given sta/year/day - 
+# gz_chk_raw is to check gz/GZ files in ${GSN_STORAGE_ROOT}/archive/raw for a given sta/year/day - 
 #
 #  1. check non-standard file names, such as ????????????????????????-1.gz
 #  2. check the continuity of the files, ie missing gz/GZ files
@@ -20,7 +20,7 @@ set jdate = $2
 set year  = `echo $jdate | cut -c1-4`
 set day   = `echo $jdate | cut -c5-7`
 
-set ARCHIVEDIR = /ida/archive
+set ARCHIVEDIR = ${GSN_STORAGE_ROOT}/archive
 set RAWDIR = $ARCHIVEDIR/raw/$sta/$year/$day
 
 if !(-d $RAWDIR) then 
@@ -58,11 +58,11 @@ endif
 # check the continuity of filenames
 #
 set f1 = `head -1 $tmp2`
-set n1 = `/ida/dcc/bin/gz_counter $f1:r | awk '{print $2}'`	# get number from the first filename
+set n1 = `${GSN_STORAGE_ROOT}/dcc/bin/gz_counter $f1:r | awk '{print $2}'`	# get number from the first filename
 grep -v $f1 $tmp2 > $tmp3				# rm 1st file from list
 
 foreach f2 (`cat $tmp3`)
-    set n2 = `/ida/dcc/bin/gz_counter $f2:r | awk '{print $2}'`
+    set n2 = `${GSN_STORAGE_ROOT}/dcc/bin/gz_counter $f2:r | awk '{print $2}'`
     @ n3 = ( $n2 - $n1 ) - 3000
     if ( $n3 > 0 ) then
         @ nf = $n3 / 3000 
@@ -108,10 +108,10 @@ rm -f $tmp1 $tmp2 $tmp3 /tmp/junk$$
 # additional adjustments to err checking for run.r2q, r2q_proc, gz_chk_raw
 #
 # Revision 1.2  2015/11/16 23:16:02  dauerbach
-# remove references to path /ida/dcc/scripts in r2q_poc and referenced sub scripts
+# remove references to path ${GSN_STORAGE_ROOT}/dcc/scripts in r2q_poc and referenced sub scripts
 #
 # Revision 1.1  2015/11/16 21:55:18  dauerbach
-# Initial cvs load for production /ida/dcc/scripts/gz_chk_raw
+# Initial cvs load for production ${GSN_STORAGE_ROOT}/dcc/scripts/gz_chk_raw
 #
 #
 #
