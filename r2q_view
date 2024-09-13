@@ -16,35 +16,35 @@ if ($#argv < 1) then
   echo "  miniseed data sets created by r2q_proc.  It then runs 'dbpick' on the wfdisc"
   echo "  to review the data from BH, LH, LN and LD channels."
   echo ""
-  echo "  The miniseed data are in /ida/tmp/daily/miniseed/[jday] and the associated db files."
+  echo "  The miniseed data are in ${GSN_STORAGE_ROOT}/tmp/daily/miniseed/[jday] and the associated db files."
   echo ""
   exit 1
 endif
 
 set jdate = $1
-if (! -d /ida/tmp/daily/miniseed/$jdate) then
+if (! -d ${GSN_STORAGE_ROOT}/tmp/daily/miniseed/$jdate) then
   echo ""
-  echo "r2q_view: ERROR - /ida/tmp/daily/miniseed/$jdate does not exist, please run r2q_proc first."
+  echo "r2q_view: ERROR - ${GSN_STORAGE_ROOT}/tmp/daily/miniseed/$jdate does not exist, please run r2q_proc first."
   exit 1
 endif
 
-if (! -d /ida/tmp/daily/miniseed/$jdate/db) then
-  mkdir /ida/tmp/daily/miniseed/$jdate/db 
+if (! -d ${GSN_STORAGE_ROOT}/tmp/daily/miniseed/$jdate/db) then
+  mkdir ${GSN_STORAGE_ROOT}/tmp/daily/miniseed/$jdate/db 
   if ($status != 0) then
     echo ""
-    echo "r2q_view: ERROR - can not create /ida/tmp/daily/miniseed/$jdate/db"
+    echo "r2q_view: ERROR - can not create ${GSN_STORAGE_ROOT}/tmp/daily/miniseed/$jdate/db"
     exit 1
   endif
 endif
 
-cd /ida/tmp/daily/miniseed/$jdate/db
+cd ${GSN_STORAGE_ROOT}/tmp/daily/miniseed/$jdate/db
 
 #
 # get the station name if 2nd argument is given
 #
 if ($#argv == 2) then
   set sta = `echo $2 | lcase | awk -F'sta=' '{print $2}'| ucase`
-  set STA = `awk '{print $1}' /ida/dcc/db/DMC/IDA.seed2dmc |sort -u | grep -v ABKT | grep -v NRIL | grep $sta `
+  set STA = `awk '{print $1}' ${GSN_STORAGE_ROOT}/dcc/db/DMC/IDA.seed2dmc |sort -u | grep -v ABKT | grep -v NRIL | grep $sta `
   if ($status != 0) then
     echo ""
     echo "r2q_view: ERROR - $sta does not exist, please check the station name."
@@ -116,7 +116,7 @@ exec sleep 2
 quit
 INN
   
-echo "One can use dbpick to view $prefix individually at /ida/tmp/daily/miniseed/$jdate/db."
+echo "One can use dbpick to view $prefix individually at ${GSN_STORAGE_ROOT}/tmp/daily/miniseed/$jdate/db."
 echo "One can also use gs to view the postscrip files - screen dump from dbpick."
 ls -l $prefix.*
 echo ""
