@@ -33,8 +33,12 @@ set path = (${GSN_STORAGE_ROOT}/dcc/bin ${GSN_STORAGE_ROOT}/local/bin /usr/local
 
 set sta = $1
 set jdy = $2
-set tt1 = `htoe $jdy | awk '{printf "%ld\n", $1}'`
-set tt2 = `htoe $jdy | awk '{printf "%ld\n", $1+86400}'`
+set yr1 = `echo $1 | awk '{print substr($0, 0, 3)}'`
+set dy1 = `echo $1 | awk '{print substr($0, 4, 6)}'`
+set yr2 = `echo $2 | awk '{print substr($0, 0, 3)}'`
+set dy2 = `echo $2 | awk '{print substr($0, 4, 6)}'`
+set tt1 = `attol $yr1-$dy1 | awk '{printf "%ld\n", $1}'`
+set tt2 = `attol $yr2-$dy2 | awk '{printf "%ld\n", $1+86400}'`
 set STA  = `echo $sta | ucase`
 
 

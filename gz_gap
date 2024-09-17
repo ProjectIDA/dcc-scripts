@@ -13,7 +13,8 @@ set sta  = $2
 
 set year = `date "+%Y"`
 set now  = `date "+%Y%j %H:%M:%S"`
-set sec0 = `htoe $now | awk '{print $1}'`
+set now  = `date "+%Y-%j:%H:%M:%S"`
+set sec0 = `attol $now | awk '{print $1}'`
 
   set TT = `ls -lt $sta/*.gz $sta/*.GZ | head -1 | awk '{print $6,$7,$8}'`
   if ($TT[1] == 'Jan') then
