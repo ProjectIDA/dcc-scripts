@@ -58,11 +58,11 @@ endif
 # check the continuity of filenames
 #
 set f1 = `head -1 $tmp2`
-set n1 = `${GSN_STORAGE_ROOT}/dcc/bin/gz_counter $f1:r | awk '{print $2}'`	# get number from the first filename
+set n1 = `gz_counter $f1:r | awk '{print $2}'`	# get number from the first filename
 grep -v $f1 $tmp2 > $tmp3				# rm 1st file from list
 
 foreach f2 (`cat $tmp3`)
-    set n2 = `${GSN_STORAGE_ROOT}/dcc/bin/gz_counter $f2:r | awk '{print $2}'`
+    set n2 = `gz_counter $f2:r | awk '{print $2}'`
     @ n3 = ( $n2 - $n1 ) - 3000
     if ( $n3 > 0 ) then
         @ nf = $n3 / 3000 
