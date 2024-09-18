@@ -27,16 +27,21 @@ set t2 = $4
 set STA = `echo $sta | ucase`
 
 set jd1 = `echo $t1 | awk -F'-' '{print $1}'` 
+set yr1 = `echo $jd1 | awk '{print substr($0, 0, 3)}'`
+set dy1 = `echo $jd1 | awk '{print substr($0, 4, 6)}'`
 set tt1 = `echo $t1 | awk -F'-' '{print $2}'` 
-set tm1 = `htoe $jd1 $tt1 | awk '{print $1}'`
+#### set tm1 = `htoe $jd1 $tt1 | awk '{print $1}'`
+set tm1 = `attol ${yr1}-${dy1}:${tt1} | awk '{print $1}'`
 
 if ($t2 == ''-'') then
   set tm2 = 9999999999.99900
   set t2 = 'no_endtime'
 else
   set jd2 = `echo $t2 | awk -F'-' '{print $1}'` 
+  set yr2 = `echo $jd2 | awk '{print substr($0, 0, 3)}'`
+  set dy2 = `echo $jd2 | awk '{print substr($0, 4, 6)}'`
   set tt2 = `echo $t2 | awk -F'-' '{print $2}'` 
-  set tm2 = `htoe $jd2 $tt2 | awk '{print $1}'`
+  set tm2 = `attol ${yr2}-${dy2}:${tt2} | awk '{print $1}'`
 endif
 
 set db = /ida/dcc/db/DMC/
