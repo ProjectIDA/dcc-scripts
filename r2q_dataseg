@@ -14,8 +14,8 @@ if ($#argv != 2) then
   echo ""
   echo "  r2q_dataseg outputs a list of channels and their status for a given station/day."
   echo ""
-  echo "  For a given station/day, it obtains a channel list from table ${GSN_STORAGE_ROOT}/dcc/db/DMC/IDA.seed2dmc"
-  echo "  and marks 'withdraw' on the bad channels according to table ${GSN_STORAGE_ROOT}/dcc/db/DMC/IDA.withdraw."
+  echo "  For a given station/day, it obtains a channel list from table ${IDA_DATASCOPEDB_DIR}/DMC/IDA.seed2dmc"
+  echo "  and marks 'withdraw' on the bad channels according to table ${IDA_DATASCOPEDB_DIR}/DMC/IDA.withdraw."
   echo ""
   echo "  The output is in the format to be used as SELECTION FILE for DMC's program 'dataselect'"
   echo '  with "-s" option:'
@@ -29,18 +29,15 @@ if ($#argv != 2) then
   exit 1
 endif
 
-set path = (${GSN_STORAGE_ROOT}/dcc/bin ${GSN_STORAGE_ROOT}/local/bin /usr/local/bin $path)
+set path = (${GSN_STORAGE_ROOT}/local/bin /usr/local/bin $path)
 
 set sta = $1
 set jdy = $2
-set yr1 = `echo $1 | awk '{print substr($0, 0, 3)}'`
-set dy1 = `echo $1 | awk '{print substr($0, 4, 6)}'`
-set yr2 = `echo $2 | awk '{print substr($0, 0, 3)}'`
-set dy2 = `echo $2 | awk '{print substr($0, 4, 6)}'`
+set yr1 = `echo $jdy | awk '{print substr($0, 0, 4)}'`
+set dy1 = `echo $jdy | awk '{print substr($0, 5, 3)}'`
 set tt1 = `attol $yr1-$dy1 | awk '{printf "%ld\n", $1}'`
-set tt2 = `attol $yr2-$dy2 | awk '{printf "%ld\n", $1+86400}'`
+set tt2 = `attol $yr1-$dy1 | awk '{printf "%ld\n", $1+86400}'`
 set STA  = `echo $sta | ucase`
-
 
 # --------
 # get the channel list for a given station/day
@@ -48,13 +45,11 @@ set STA  = `echo $sta | ucase`
 set clist = /tmp/clist.$$
 rm -f $clist
 
-set db = ${GSN_STORAGE_ROOT}/dcc/db/DMC
-
+set db = ${IDA_DATASCOPEDB_DIR}/DMC
 # --------
 # get all valid channels for a given day
 # --------
 dbsubset $db/IDA.seed2dmc "sta=='$STA' && (time<$tt2 && endtime>=$tt1)" | dbselect - sta loccode chan | awk '{printf "%4s %02d %3s\n",$1,$2,$3}' | grep -i -v vm > $clist
-
 
 # --------
 # check the bad data segments for station/channel/day listed in clist
