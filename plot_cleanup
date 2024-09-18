@@ -6,8 +6,8 @@
 # review area to a holding dir pending deletion.
 #=====================================================================
 
-set PLOT_DIR=/ida/dcc/qc/PLOTS
-set RESULTS_DIR=/ida/dcc/qc/MISC_DATA
+set PLOT_DIR=${GSN_STORAGE_ROOT}/dcc/qc/PLOTS
+set RESULTS_DIR=${GSN_STORAGE_ROOT}/dcc/qc/MISC_DATA
 
 cd $PLOT_DIR
 

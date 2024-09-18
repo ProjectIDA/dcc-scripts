@@ -4,15 +4,15 @@
 
 if ($#argv < 1) then
   echo 'usage: get_caldata cal_data_dir_absolute_path [delay time]'
-  echo 'example: get_caldata /ida/cal/raw/tau/sts1/rbhf/2012-0111'
-  echo 'example: get_caldata /ida/cal/raw/tau/sts1/rbhf/2012-0111 10'
+  echo 'example: get_caldata ${GSN_STORAGE_ROOT}/cal/raw/tau/sts1/rbhf/2012-0111'
+  echo 'example: get_caldata ${GSN_STORAGE_ROOT}/cal/raw/tau/sts1/rbhf/2012-0111 10'
   exit
 endif
 
 set datadir=$1
 set outdirtree=/home/response/calib/data
 set outdirtree=/home/pdavis/tmp
-set outdirtree=/ida/cal/rb_testdata
+set outdirtree=${GSN_STORAGE_ROOT}/cal/rb_testdata
 
 set tshift=0
 if ( $#argv > 1 ) then

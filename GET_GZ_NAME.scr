@@ -15,7 +15,7 @@ set previous = $1
 set last     = $2
 set nfiles   = $3
 
-set path = ($path /ida/dcc/bin)
+set path = ($path /usr/local/bin)
 
 set f1   = `echo $previous | cut -c1-16`
 set hex1 = `echo $previous | cut -c17-24`

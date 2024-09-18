@@ -19,10 +19,10 @@ r2q_view	- reviewing data
 r2q_send	- sending data to DMC
 r2q_sync	- sending sync information to DMC (weekly cron job)
 
-### checking gz files in /ida/stage
-gz_check	- daily cron job to check gz files in /ida/stage
+### checking gz files in ${GSN_STORAGE_ROOT}/stage
+gz_check	- daily cron job to check gz files in ${GSN_STORAGE_ROOT}/stage
     gz_gap	-
-gz_mv		- force files to be moved/deleted from /ida/stage
+gz_mv		- force files to be moved/deleted from ${GSN_STORAGE_ROOT}/stage
 
 ### getting gz file names
 GET_GZ_NAME.scr

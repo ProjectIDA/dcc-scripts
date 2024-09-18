@@ -1,8 +1,8 @@
 #!/bin/tcsh
 #
-# VI_withdraw is to modify /ida/dcc/db/DMC/IDA.withdraw with vi.
+# VI_withdraw is to modify ${IDA_DATASCOPEDB_DIR}/DMC/IDA.withdraw with vi.
 #
-set dbdir     = /ida/dcc/db/DMC
+set dbdir     = ${IDA_DATASCOPEDB_DIR}/DMC
 set dbfile    = IDA.withdraw
 set dbfile_bk = $dbfile.`date +%s`
 

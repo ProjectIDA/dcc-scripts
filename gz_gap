@@ -4,11 +4,11 @@
 #
 if ($#argv != 2) then
   echo usage: gz_gap dir sta
-  echo example: gz_gap /ida/stage aak
+  echo example: gz_gap ${GSN_STORAGE_ROOT}/stage aak
   exit
 endif
 
-cd $1			# /ida/stage
+cd $1			# ${GSN_STORAGE_ROOT}/stage
 set sta  = $2
 
 set year = `date "+%Y"`

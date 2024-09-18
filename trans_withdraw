@@ -2,7 +2,7 @@
 #
 # this script displays channels listed in IDA.withdraw with human time
 #
-set ff = /ida/dcc/db/DMC/IDA.withdraw
+set ff = ${IDA_DATASCOPEDB_DIR}/DMC/IDA.withdraw
 
 foreach x ("`cat $ff`")
   set t1 = `echo $x | awk '{print $4}'`

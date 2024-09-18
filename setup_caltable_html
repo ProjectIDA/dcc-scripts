@@ -12,9 +12,8 @@
 #		changed '-1' to 'n/a' to output for for missing sensors
 #-----------------------------------------------------------------------------------------
 
-###OLD LOCATION##set ofile=/ida/web/WhatsNew/recalibration/html/GSN_recalibration_table.html
-set ofile=/ida/web/procedures/recalibration/html/GSN_recalibration_table.html
-cd /ida/dcc/db/CALS
+set ofile=${GSN_STORAGE_ROOT}/web/procedures/recalibration/html/GSN_recalibration_table.html
+cd ${IDA_DATASCOPEDB_DIR}/CALS
 
 listenv path
 

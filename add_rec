@@ -1,12 +1,12 @@
 #!/bin/tcsh
 #
 # add_rec adds records of a bad data segment in a database table,
-# /ida/dcc/db/DMC/IDA.withdraw.
+# ${IDA_DATASCOPEDB_DIR}/DMC/IDA.withdraw.
 #
 #
 if ($#argv != 4) then
   echo ""
-  echo "  add_rec adds records of bad data segments in /ida/dcc/db/DMC/IDA.withdraw"
+  echo "  add_rec adds records of bad data segments in ${IDA_DATASCOPEDB_DIR}/DMC/IDA.withdraw"
   echo ""
   echo "  Usage: add_rec sta chan time1 time2"
   echo ""
@@ -44,7 +44,7 @@ else
   set tm2 = `attol ${yr2}-${dy2}:${tt2}`
 endif
 
-set db = /ida/dcc/db/DMC/
+set db = ${IDA_DATASCOPEDB_DIR}/DMC/
 
 set Alist = `dbsubset $db/IDA.seed2dmc "sta=='$STA' && (endtime>=$tm1 && time<=$tm2)" | dbselect - chan loccode | awk '{print $1$2}'| grep -v vm`
 echo "${tm1} ${tm2} $Alist"

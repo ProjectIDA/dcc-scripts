@@ -17,7 +17,7 @@ echo ""
 echo "  <CTRL-C> to stop the script."
 echo ""
 
-set db = /ida/dcc/db/DMC
+set db = ${IDA_DATASCOPEDB_DIR}/DMC
 
 echo -n 'Station (eg. aak): '; set sta = "$<"
 while ($sta == "")
