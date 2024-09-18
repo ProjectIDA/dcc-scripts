@@ -91,9 +91,9 @@ if ($ttt == ''-'') then
 else
   set jd = `echo $ttt | awk -F'-' '{print $1}'`
   set tt = `echo $ttt | awk -F'-' '{print $2}'`
-  set yr = `echo $jd | awk '{print substr($0, 0, 3)}'`
-  set dy = `echo $jd | awk '{print substr($0, 4, 6)}'`
-  set newtm2 = `attol ${yr}-${dy}:$tt | awk '{print $1}'`
+  set yr = `echo $jd | awk '{print substr($0, 0, 4)}'`
+  set dy = `echo $jd | awk '{print substr($0, 5, 3)}'`
+  set newtm2 = `attol ${yr}-${dy}:$tt`
 endif
 
 if ($ans == 'all') then
