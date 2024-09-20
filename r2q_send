@@ -19,20 +19,20 @@ if ($#argv != 1) then
   echo ""
   echo ""
   echo "  To keep track the status of data transmission, miniseed2dmc creates a statefile in a local"
-  echo "  working directory.  It also creates a SYNC file in the same directory to display/track the"
-  echo "  data coverage of the transferred mini-SEED data.  The name of SYNC file contains the"
+  echo "  working directory.  It also creates a sync file in the same directory to display/track the"
+  echo "  data coverage of the transferred mini-SEED data.  The name of sync file contains the"
   echo "  connection start and end times when the data was sent.  For examples:"
   echo ""
   echo "     2014-10-28T10:36:25--2014-10-28T10:36:25.sync"
   echo "     2014-10-27T09:54:13--2014-10-27T09:54:13.sync"
   echo ""
-  echo "  Natually, each run of r2q_send, ie miniseed2dmc, will create a SYNC file and a statefile."
+  echo "  Natually, each run of r2q_send, ie miniseed2dmc, will create a sync file and a statefile."
   echo ""
   echo "  Several options can be used with miniseed2dmc:"
-  echo "  -p is to pretend, process input as usual and write the state and SYNC files but do NOT connect or send files."
+  echo "  -p is to pretend, process input as usual and write the state and sync files but do NOT connect or send files."
   echo "  -r 0 is to search mini-SEED data in the given directory and '0' means subdirectories will not be searched."
   echo "  -l is to specify an ASCII file containing mini-SEED data files to be sent to DMC."
-  echo "  -w is to specify a working directory other than the current directory for storing statefiles and SYNC files."
+  echo "  -w is to specify a working directory other than the current directory for storing statefiles and sync files."
   echo "  -S is to name a statefile different from the default, 'statefile'."
   echo ""
   echo "  NOTE:"
@@ -48,8 +48,8 @@ if ($#argv != 1) then
   echo ""
   echo "  At IDCDCC, when r2q_send is executed successfully, mini-SEED data in ${GSN_STORAGE_ROOT}/tmp/daily/miniseed/[jdate]"
   echo "  will be moved to a subdirectory DONE/, ie ${GSN_STORAGE_ROOT}/tmp/daily/miniseed/[jdate]/DONE."
-  echo "  The statefile will be copied to ${GSN_STORAGE_ROOT}/tmp/daily/SYNC/DONE.statefile for future reference, if necessary."
-  echo "  The SYNC files will be kept in ${GSN_STORAGE_ROOT}/tmp/daily/SYNC for a week and then forwarded to DMC's engine_room,"
+  echo "  The statefile will be copied to ${GSN_STORAGE_ROOT}/tmp/daily/sync/DONE.statefile for future reference, if necessary."
+  echo "  The sync files will be kept in ${GSN_STORAGE_ROOT}/tmp/daily/sync for a week and then forwarded to DMC's engine_room,"
   echo "  engine_room@iris.washington.edu by a cronjob.  See r2q_sync for details."
   echo ""
   echo "  If newer/better mini-SEED data become available later, they will replace the existing ones in DONE/."
@@ -81,12 +81,12 @@ set host  = ringsub.iris.washington.edu
 set port  = 16100
 # IDA has been asked to use port 16105 effective 2019-03-14, by Un Joe.
 
-set syncdir = ${GSN_STORAGE_ROOT}/tmp/daily/SYNC
+set syncdir = ${GSN_STORAGE_ROOT}/tmp/daily/sync
 if (! -d $syncdir) then
     mkdir -p $syncdir
 endif
 if ($status != 0) then
-    echo "ERROR Creating SYNC DIR: $syncdir"
+    echo "ERROR Creating sync DIR: $syncdir"
     exit
 endif
 
@@ -98,12 +98,13 @@ cd $syncdir
 # sync file to know what to pull from DMC
 #
 set aslsyncdir = /sync
+set awssyncdir = s3://gsn-status-prod-us-east-2-jhvessr3v5ku/sync/
 
 #
-# -p is to pretend, process input as usual and write the state and SYNC files but do NOT connect or send files.
+# -p is to pretend, process input as usual and write the state and sync files but do NOT connect or send files.
 # -r 0 is to search mini-SEED data in the given directory and '0' means subdirectories will not be searched.
 # -l is to specify an ASCII file containing mini-SEED files to be sent to DMC.
-# -w is to specify a working directory other than the current directory for storing statefiles and SYNC files.
+# -w is to specify a working directory other than the current directory for storing statefiles and sync files.
 # -S is to name a statefile different from the default, 'statefile'.
 #
 
@@ -166,12 +167,20 @@ if ($status == 0) then			# yes, all data sent to DMC, move them to DONE
   #
   # get sync file name from log and cp to shared ASL shared space
   # 
-  set syncfile = `grep "SYNC file" /tmp/ms2dmc.log.$$ | awk '{print $11}'`
-  cp $syncfile $aslsyncdir/ >& /dev/null
+  set syncfile = `grep "sync file" /tmp/ms2dmc.log.$$ | awk '{print $11}'`
+  if ("$GSN_STORAGE_ROOT" == "/ida") then
+      cp $syncfile $aslsyncdir/ >& /dev/null
+  else
+      aws s3 cp $syncfile $awssyncdir
+  endif
   if ($status != 0) then
     echo ""
-    echo r2q_send: Error copying SYNC file $syncfile to $aslsyncdir.
-    ###MIGRATION Mail -r ${USER}@ucsd.edu -s "Error copying SYNC file $syncfile to $aslsyncdir" $admin < /dev/null >& /dev/null
+    if ("$GSN_STORAGE_ROOT" == "/ida") then
+       echo r2q_send: Error copying sync file $syncfile to $aslsyncdir.
+    else
+       echo r2q_send: Error copying sync file $syncfile to $awssyncdir.
+    endif
+    ###MIGRATION Mail -r ${USER}@ucsd.edu -s "Error copying sync file $syncfile to $aslsyncdir" $admin < /dev/null >& /dev/null
     echo ""
     exit
   endif
