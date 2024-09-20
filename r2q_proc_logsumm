@@ -20,7 +20,7 @@ esac
 #
 #
 yr=`echo $juldate | cut -c1-4`
-set shorthost = `hostname -s`
+shorthost=`hostname -s`
 
 # Set the log file to parse and the output filename below: 
 inputlog="${GSN_STORAGE_ROOT}/log/$shorthost/r2q_proc/$yr/$juldate.LOG"
