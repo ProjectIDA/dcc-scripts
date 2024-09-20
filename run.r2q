@@ -93,13 +93,13 @@ if ($status != 0) then
 endif
 
 # now email log and log summary files
-Mail -s "Daily process info for $jdate" $admin < $LOG
+###MIGRATION Mail -s "Daily process info for $jdate" $admin < $LOG
 if ($status != 0) then
     echo "run.r2q: Error sending email to $admin for $jdate" >> $LOG
     goto failure
 endif
 
-Mail -s "Daily process SUMMARY for $jdate" $admin < $LOGSUMM
+###MIGRATION Mail -s "Daily process SUMMARY for $jdate" $admin < $LOGSUMM
 if ($status != 0) then
     echo "run.r2q: Error sending email to $admin for $jdate" >> $LOGSUMM
     goto failure

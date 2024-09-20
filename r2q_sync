@@ -33,7 +33,7 @@ ls *.sync >& /dev/null
 if ($status != 0) then
   echo ""
   echo r2q_sync: no SYNC files found in `pwd`.
-  Mail -s "no SYNC files found in `pwd`" $ida_admin < /dev/null >& /dev/null
+  ###MIGRATION  Mail -s "no SYNC files found in `pwd`" $ida_admin < /dev/null >& /dev/null
   echo ""
   exit
 endif
@@ -52,7 +52,7 @@ tar -cf $tarfile *.sync
 if ($status != 0) then
   echo ""
   echo r2q_sync: Error creating tar file: $tarfile.
-  Mail -s "Error tar'ing SYNC files found in `pwd`" $ida_admin < /dev/null >& /dev/null
+  ###MIGRATION Mail -s "Error tar'ing SYNC files found in `pwd`" $ida_admin < /dev/null >& /dev/null
   echo ""
   exit
 endif
@@ -69,7 +69,7 @@ if (! -d DONE.syncfile) mkdir DONE.syncfile
 if ($status != 0) then
   echo ""
   echo r2q_sync: Error creating DONE.syncfile directory in `pwd`.
-  Mail -s "Error creating DONE.syncfile directory in `pwd`" $ida_admin < /dev/null >& /dev/null
+  ###MIGRATION Mail -s "Error creating DONE.syncfile directory in `pwd`" $ida_admin < /dev/null >& /dev/null
   echo ""
   exit
 endif
@@ -86,7 +86,7 @@ else
   if ($status != 0) then
     echo ""
     echo r2q_sync: Error copying tar file $tarfile to ${dmc_pickup_dir}.
-    Mail -s "Error copying tar file $tarfile to ${dmc_pickup_dir}" $ida_admin < /dev/null >& /dev/null
+    ###MIGRATION  Mail -s "Error copying tar file $tarfile to ${dmc_pickup_dir}" $ida_admin < /dev/null >& /dev/null
     echo ""
   endif
 endif
@@ -98,7 +98,7 @@ mv $tarfile DONE.syncfile
 if ($status != 0) then
   echo ""
   echo r2q_sync: Error moving tar file: $tarfile.
-  Mail -s "Error moving $tarfile to DONE.syncfile" $ida_admin < /dev/null >& /dev/null
+  ###MIGRATION  Mail -s "Error moving $tarfile to DONE.syncfile" $ida_admin < /dev/null >& /dev/null
   echo ""
   exit
 endif

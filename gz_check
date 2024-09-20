@@ -160,6 +160,6 @@ end
 
 echo ========================================================================== >> $LOG
 
-Mail -s "GZFILENAME info (VM) @ $today" $admin < $LOG
+###MIGRATION Mail -s "GZFILENAME info (VM) @ $today" $admin < $LOG
 #rm $LOG
 

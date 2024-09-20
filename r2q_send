@@ -82,6 +82,13 @@ set port  = 16100
 # IDA has been asked to use port 16105 effective 2019-03-14, by Un Joe.
 
 set syncdir = ${GSN_STORAGE_ROOT}/tmp/daily/SYNC
+if (! -d $syncdir) then
+    mkdir -p $syncdir
+endif
+if ($status != 0) then
+    echo "ERROR Creating SYNC DIR: $syncdir"
+    exit
+endif
 
 # for some reason -S does not work well with -w, so let's just cd to syncdir
 cd $syncdir
@@ -164,7 +171,7 @@ if ($status == 0) then			# yes, all data sent to DMC, move them to DONE
   if ($status != 0) then
     echo ""
     echo r2q_send: Error copying SYNC file $syncfile to $aslsyncdir.
-    Mail -r ${USER}@ucsd.edu -s "Error copying SYNC file $syncfile to $aslsyncdir" $admin < /dev/null >& /dev/null
+    ###MIGRATION Mail -r ${USER}@ucsd.edu -s "Error copying SYNC file $syncfile to $aslsyncdir" $admin < /dev/null >& /dev/null
     echo ""
     exit
   endif
@@ -174,7 +181,7 @@ else
 endif
 
 #Mail -r ${USER}@ucsd.edu -s "miniseed2dmc $jdate status:$flag" $admin < /tmp/ms2dmc.log.$$
-Mail -s "miniseed2dmc $jdate status:$flag" $admin < /tmp/ms2dmc.log.$$
+###MIGRATION Mail -s "miniseed2dmc $jdate status:$flag" $admin < /tmp/ms2dmc.log.$$
 
 rm /tmp/list.$$ /tmp/ms2dmc.log.$$
 
