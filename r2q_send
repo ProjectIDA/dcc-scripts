@@ -98,7 +98,7 @@ cd $syncdir
 # sync file to know what to pull from DMC
 #
 set aslsyncdir = /sync
-set awssyncdir = s3://gsn-status-prod-us-east-2-jhvessr3v5ku/sync/
+set awssyncdir = "s3://gsn-status-prod-us-east-2-jhvessr3v5ku/sync/"
 
 #
 # -p is to pretend, process input as usual and write the state and sync files but do NOT connect or send files.
@@ -109,12 +109,11 @@ set awssyncdir = s3://gsn-status-prod-us-east-2-jhvessr3v5ku/sync/
 #
 
 rm -f /tmp/list.$$
-
 ls $dir/*.ms > /tmp/list.$$
 rm -f /tmp/ms2dmc.log.$$ 
 
 echo miniseed2dmc -v -w $syncdir -S statefile.$jdate "$host":"$port" -l /tmp/list.$$
-     miniseed2dmc -v -w $syncdir -S statefile.$jdate "$host":"$port" -l /tmp/list.$$ >& /tmp/ms2dmc.log.$$
+     miniseed2dmc -v -w $syncdir -S statefile.$jdate "$host":"$port" -l /tmp/list.$$  >& /tmp/ms2dmc.log.$$
 
 
 #
@@ -150,6 +149,7 @@ if ($status == 0) then			# yes, all data sent to DMC, move them to DONE
   echo "r2q_send: Updating DONE_Summary.txt..."
   touch $dir/DONE/summary.csv
   msi -tg -Q -tf 2 $dir/DONE/*.ms | awk '{print $1 ", " $2 ", " $3 ", " $5}' >> $dir/DONE/summary.csv
+ 
 
   # move statefile
   if (-f $syncdir/DONE.statefile/statefile.$jdate) then
@@ -167,7 +167,7 @@ if ($status == 0) then			# yes, all data sent to DMC, move them to DONE
   #
   # get sync file name from log and cp to shared ASL shared space
   # 
-  set syncfile = `grep "sync file" /tmp/ms2dmc.log.$$ | awk '{print $11}'`
+  set syncfile = `grep "Wrote SYNC file" /tmp/ms2dmc.log.$$ | awk '{print $11}'`
   if ("$GSN_STORAGE_ROOT" == "/ida") then
       cp $syncfile $aslsyncdir/ >& /dev/null
   else
@@ -192,6 +192,6 @@ endif
 #Mail -r ${USER}@ucsd.edu -s "miniseed2dmc $jdate status:$flag" $admin < /tmp/ms2dmc.log.$$
 ###MIGRATION Mail -s "miniseed2dmc $jdate status:$flag" $admin < /tmp/ms2dmc.log.$$
 
-rm /tmp/list.$$ /tmp/ms2dmc.log.$$
+rm -f /tmp/list.$$ /tmp/ms2dmc.log.$$
 
 exit
