@@ -95,7 +95,12 @@ def main():
 
     from ida.calibration.absolute import APSurvey
 
-    logfile = __file__ + '.log'
+    dcc_log_dir = os.getenv('IDA_DCC_LOG_DIR')
+    if dcc_log_dir:
+        logfile = os.path.join(dcc_log_dir, os.path.splitext(os.path.basename(__file__))[0] + '.log')
+    else:
+        logfile = os.path.splitext(os.path.realpath(__file__))[0] + '.log'
+
     setup_logging(log_file=logfile, debug=debug)
     logger = logging.getLogger(__file__.upper())
     logger.info('='*72)
